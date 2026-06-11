@@ -11,6 +11,7 @@
   --text:         #dedad4;
   --text-2:       #8a8680;
   --text-3:       #4a4845;
+  --text-nav:     #b8b4ae;
   --amber:        #c4803c;
   --amber-soft:   rgba(196,128,60,0.1);
   --amber-line:   rgba(196,128,60,0.25);
@@ -84,7 +85,7 @@ nav {
   padding: 0.35rem 0.9rem;
   font-size: 0.825rem;
   font-weight: 450;
-  color: var(--text-2);
+  color: var(--text-nav);
   text-decoration: none;
   letter-spacing: 0.01em;
   transition: color 0.1s;
@@ -102,7 +103,7 @@ nav {
 .btn-nav-ghost {
   font-size: 0.825rem;
   font-weight: 500;
-  color: var(--text-2);
+  color: var(--text-nav);
   text-decoration: none;
   padding: 0.35rem 0.9rem;
   border: 1px solid var(--border-2);
@@ -308,6 +309,7 @@ main { padding-top: var(--nav-h); }
   --text:    #181614;
   --text-2:  #4a4845;
   --text-3:  #9a9890;
+  --text-nav:#33312e;
   --code-bg: #f0efea;
 }
 
@@ -626,7 +628,7 @@ footer {
   display: block;
   padding: 0.1rem 0.875rem;
   font-size: 0.78rem;
-  color: var(--text-2);
+  color: var(--text-nav);
   text-decoration: none;
   transition: color 0.1s;
   border-right: 1px solid var(--border);
@@ -635,7 +637,7 @@ footer {
 .footer-links a:hover { color: var(--text); }
 .footer-copy {
   font-size: 0.72rem;
-  color: var(--text-2);
+  color: var(--text-nav);
   letter-spacing: 0.04em;
 }
 .footer-copy a {
