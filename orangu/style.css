@@ -536,6 +536,54 @@ code {
   background: var(--bg-2);
 }
 
+/* ─── Support grid ────────────────────────────── */
+.support-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+.support-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3rem;
+  background: var(--bg-2);
+  display: flex;
+  flex-direction: column;
+}
+.support-card-commercial {
+  border-color: var(--amber-line);
+}
+.support-card-title {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+.support-card-body {
+  font-size: 0.925rem;
+  color: var(--text-2);
+  line-height: 1.8;
+  margin-bottom: 2rem;
+  flex: 1;
+}
+.support-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.support-email {
+  font-size: 0.825rem;
+  color: var(--text-3);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: color 0.1s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.support-email:hover { color: var(--amber); }
+
 /* ─── Scroll reveal ───────────────────────────── */
 .reveal {
   opacity: 0;
@@ -626,6 +674,145 @@ footer {
   line-height: 1.65;
 }
 
+/* ─── Border glow ─────────────────────────────── */
+.border-glow-card {
+  --edge-proximity: 0;
+  --cursor-angle: 45deg;
+  --edge-sensitivity: 25;
+  --color-sensitivity: 45;
+  --cone-spread: 25;
+  --glow-padding: 40px;
+  --fill-opacity: 0.3;
+  --glow-card-bg: var(--bg);
+  --glow-color:    hsl(28deg 62% 60% / 100%);
+  --glow-color-60: hsl(28deg 62% 60% / 60%);
+  --glow-color-50: hsl(28deg 62% 60% / 50%);
+  --glow-color-40: hsl(28deg 62% 60% / 40%);
+  --glow-color-30: hsl(28deg 62% 60% / 30%);
+  --glow-color-20: hsl(28deg 62% 60% / 20%);
+  --glow-color-10: hsl(28deg 62% 60% / 10%);
+  --gradient-one:   radial-gradient(at 80% 55%, #c4803c 0px, transparent 50%);
+  --gradient-two:   radial-gradient(at 69% 34%, #e8a060 0px, transparent 50%);
+  --gradient-three: radial-gradient(at 8% 6%,   #9a5f22 0px, transparent 50%);
+  --gradient-four:  radial-gradient(at 41% 38%, #c4803c 0px, transparent 50%);
+  --gradient-five:  radial-gradient(at 86% 85%, #e8a060 0px, transparent 50%);
+  --gradient-six:   radial-gradient(at 82% 18%, #9a5f22 0px, transparent 50%);
+  --gradient-seven: radial-gradient(at 51% 4%,  #e8a060 0px, transparent 50%);
+  --gradient-base:  linear-gradient(#c4803c 0 100%);
+  position: relative;
+  isolation: isolate;
+  transform: translate3d(0, 0, 0.01px);
+}
+.support-card.border-glow-card,
+.community-card.border-glow-card,
+.step-block.border-glow-card { --glow-card-bg: var(--bg-2); }
+
+.border-glow-card::before,
+.border-glow-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.border-glow-card > .edge-light {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.border-glow-card:not(:hover)::before,
+.border-glow-card:not(:hover)::after,
+.border-glow-card:not(:hover) > .edge-light {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+.border-glow-card:hover::before,
+.border-glow-card:hover::after,
+.border-glow-card:hover > .edge-light {
+  transition: opacity 0.25s ease-out;
+}
+
+.border-glow-card::before {
+  z-index: -1;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--glow-card-bg) 0 100%) padding-box,
+    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+    var(--gradient-one)   border-box,
+    var(--gradient-two)   border-box,
+    var(--gradient-three) border-box,
+    var(--gradient-four)  border-box,
+    var(--gradient-five)  border-box,
+    var(--gradient-six)   border-box,
+    var(--gradient-seven) border-box,
+    var(--gradient-base)  border-box;
+  opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mask-image: conic-gradient(
+    from var(--cursor-angle) at center,
+    black calc(var(--cone-spread) * 1%),
+    transparent calc((var(--cone-spread) + 15) * 1%),
+    transparent calc((100 - var(--cone-spread) - 15) * 1%),
+    black calc((100 - var(--cone-spread)) * 1%)
+  );
+}
+
+.border-glow-card::after {
+  z-index: -1;
+  background:
+    var(--gradient-one)   padding-box,
+    var(--gradient-two)   padding-box,
+    var(--gradient-three) padding-box,
+    var(--gradient-four)  padding-box,
+    var(--gradient-five)  padding-box,
+    var(--gradient-six)   padding-box,
+    var(--gradient-seven) padding-box,
+    var(--gradient-base)  padding-box;
+  mask-image:
+    conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%),
+    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+    linear-gradient(to bottom, black, black);
+  mask-composite: subtract, add, add, add, add, add;
+  opacity: calc(var(--fill-opacity) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mix-blend-mode: soft-light;
+}
+
+.border-glow-card > .edge-light {
+  z-index: 1;
+  inset: calc(var(--glow-padding) * -1);
+  mask-image: conic-gradient(
+    from var(--cursor-angle) at center,
+    black 2.5%, transparent 10%, transparent 90%, black 97.5%
+  );
+  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  mix-blend-mode: plus-lighter;
+}
+.border-glow-card > .edge-light::before {
+  content: '';
+  position: absolute;
+  inset: var(--glow-padding);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color),
+    inset 0 0 1px 0 var(--glow-color-60),
+    inset 0 0 3px 0 var(--glow-color-50),
+    inset 0 0 6px 0 var(--glow-color-40),
+    inset 0 0 15px 0 var(--glow-color-30),
+    inset 0 0 25px 2px var(--glow-color-20),
+    inset 0 0 50px 2px var(--glow-color-10),
+    0 0 1px 0 var(--glow-color-60),
+    0 0 3px 0 var(--glow-color-50),
+    0 0 6px 0 var(--glow-color-40),
+    0 0 15px 0 var(--glow-color-30),
+    0 0 25px 2px var(--glow-color-20),
+    0 0 50px 2px var(--glow-color-10);
+}
+
 /* ─── Responsive ──────────────────────────────── */
 @media (max-width: 900px) {
   .split { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -645,6 +832,8 @@ footer {
   .grid-2 { grid-template-columns: 1fr; }
   .hero-title { letter-spacing: -0.03em; }
   .cta-band { padding: 2.5rem 1.5rem; }
+  .support-grid { grid-template-columns: 1fr; }
+  .support-card { padding: 2rem 1.5rem; }
   footer { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .footer-links { margin-left: 0; }
 }
