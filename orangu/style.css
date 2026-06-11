@@ -112,6 +112,13 @@ nav {
 }
 .btn-nav-ghost:hover { color: var(--text); border-color: var(--text-3); }
 
+.btn-nav-github {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.6rem;
+}
+.btn-nav-github svg { display: block; }
+
 .btn-nav-cta {
   font-size: 0.825rem;
   font-weight: 600;
@@ -619,23 +626,23 @@ footer {
   display: block;
   padding: 0.1rem 0.875rem;
   font-size: 0.78rem;
-  color: var(--text-3);
+  color: var(--text-2);
   text-decoration: none;
   transition: color 0.1s;
   border-right: 1px solid var(--border);
 }
 .footer-links li:last-child a { border-right: none; }
-.footer-links a:hover { color: var(--text-2); }
+.footer-links a:hover { color: var(--text); }
 .footer-copy {
   font-size: 0.72rem;
-  color: var(--text-3);
+  color: var(--text-2);
   letter-spacing: 0.04em;
 }
 .footer-copy a {
   color: inherit;
   text-decoration: none;
 }
-.footer-copy a:hover { color: var(--text-2); }
+.footer-copy a:hover { color: var(--text); }
 
 /* ─── Grid helpers ────────────────────────────── */
 .grid-3 {
