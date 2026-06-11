@@ -40,11 +40,23 @@
     });
   }
 
+  function initBar(bar) {
+    if (bar.classList.contains('edge-glow-bar')) return;
+    bar.classList.add('edge-glow-bar');
+
+    bar.addEventListener('pointermove', function (e) {
+      var rect = bar.getBoundingClientRect();
+      var x = ((e.clientX - rect.left) / rect.width) * 100;
+      bar.style.setProperty('--glow-x', x.toFixed(2) + '%');
+    });
+  }
+
   function init() {
     ['.support-card', '.doc-cell', '.g-cell', '.community-card', '.step-block']
       .forEach(function (sel) {
         document.querySelectorAll(sel).forEach(initCard);
       });
+    document.querySelectorAll('nav, footer').forEach(initBar);
   }
 
   if (document.readyState === 'loading') {

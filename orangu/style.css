@@ -90,7 +90,7 @@ nav {
   letter-spacing: 0.01em;
   transition: color 0.1s;
 }
-.nav-center a:hover { color: var(--text); }
+.nav-center a:hover { color: var(--amber); }
 .nav-center a.active { color: var(--text); }
 
 .nav-right {
@@ -111,7 +111,7 @@ nav {
   transition: color 0.1s, border-color 0.1s;
   letter-spacing: 0.01em;
 }
-.btn-nav-ghost:hover { color: var(--text); border-color: var(--text-3); }
+.btn-nav-ghost:hover { color: var(--amber); border-color: var(--amber-line); }
 
 .btn-nav-github {
   display: inline-flex;
@@ -610,6 +610,28 @@ footer {
   gap: 2rem;
   flex-wrap: wrap;
 }
+
+/* ─── Edge glow on nav & footer ───────────────── */
+.edge-glow-bar { position: relative; }
+.edge-glow-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: radial-gradient(180px 100% at var(--glow-x, 50%) 50%,
+              var(--amber) 0%,
+              rgba(196, 128, 60, 0.35) 45%,
+              transparent 75%);
+  box-shadow: 0 0 14px rgba(196, 128, 60, 0.35);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+nav.edge-glow-bar { position: fixed; }
+nav.edge-glow-bar::after { bottom: -1px; }
+footer.edge-glow-bar::after { top: -1px; }
+.edge-glow-bar:hover::after { opacity: 1; }
 .footer-brand {
   font-size: 0.75rem;
   font-weight: 700;
@@ -634,7 +656,7 @@ footer {
   border-right: 1px solid var(--border);
 }
 .footer-links li:last-child a { border-right: none; }
-.footer-links a:hover { color: var(--text); }
+.footer-links a:hover { color: var(--amber); }
 .footer-copy {
   font-size: 0.72rem;
   color: var(--text-nav);
