@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo — orangu</title>
+  <meta name="description" content="Watch orangu in action: overview, code review, Git workflow, bisect, and more — all inside your terminal." />
+  <link rel="stylesheet" href="style.css" />
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+  <style>
+    /* ─── Video card ─────────────────────────────── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    /* overflow: visible lets the border-glow edge-light extend beyond the card */
+    .video-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: visible;
+      background: var(--bg-2);
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.15s;
+    }
+
+    /* Featured card spans full width */
+    .video-card-featured {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: stretch;
+    }
+    .video-card-featured .video-thumb-wrap {
+      flex: 0 0 62%;
+      /* left side of the card — only round the left corners */
+      border-radius: 8px 0 0 8px;
+    }
+    .video-card-featured .video-meta {
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Aspect-ratio thumbnail area — overflow:hidden clips the image to border-radius */
+    .video-thumb-wrap {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      cursor: pointer;
+      overflow: hidden;
+      display: block;
+      text-decoration: none;
+      border-radius: 8px 8px 0 0;
+    }
+    .video-thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .video-thumb-wrap:hover img { transform: scale(1.03); }
+
+    /* Play overlay */
+    .video-play {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.35);
+      transition: background 0.15s;
+    }
+    .video-thumb-wrap:hover .video-play { background: rgba(0, 0, 0, 0.2); }
+    .video-play svg {
+      width: 52px;
+      height: 52px;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+      transition: transform 0.15s;
+    }
+    .video-thumb-wrap:hover .video-play svg { transform: scale(1.1); }
+
+    /* Metadata below/beside the thumb */
+    .video-meta {
+      padding: 1.25rem 1.5rem 1.5rem;
+      flex: 1;
+    }
+    .video-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .video-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+    .video-card-featured .video-title {
+      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+      margin-bottom: 0.75rem;
+    }
+    .video-desc {
+      font-size: 0.82rem;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+    .video-card-featured .video-desc {
+      font-size: 0.9rem;
+      max-width: 380px;
+    }
+
+    /* Coming-soon placeholder cards */
+    .video-soon {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: visible;
+      background: var(--bg-2);
+    }
+    /* overflow:hidden on the thumb clips the bg to rounded top corners */
+    .video-soon-thumb {
+      aspect-ratio: 16 / 9;
+      background: var(--bg-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      overflow: hidden;
+    }
+    .video-soon-thumb span {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+    .video-soon-meta {
+      padding: 1.25rem 1.5rem 1.5rem;
+    }
+    .video-soon-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .video-soon-title {
+      font-size: 0.925rem;
+      font-weight: 700;
+      color: var(--text-3);
+      letter-spacing: -0.01em;
+    }
+
+    /* ─── Responsive ──────────────────────────────── */
+    @media (max-width: 900px) {
+      .video-grid { grid-template-columns: 1fr 1fr; }
+      .video-card-featured { flex-direction: column; }
+      .video-card-featured .video-thumb-wrap { flex: none; border-radius: 8px 8px 0 0; }
+      .video-card-featured .video-meta { padding: 1.25rem 1.5rem 1.5rem; }
+    }
+    @media (max-width: 640px) {
+      .video-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="edge-glow-bar">
+  <a class="nav-logo" href="index.html">ORANGU</a>
+  <ul class="nav-center">
+    <li><a href="features.html">Features</a></li>
+    <li><a href="install.html">Install</a></li>
+    <li><a href="doc/getting-started.html">Docs</a></li>
+    <li><a href="demo.html" class="active">Demo</a></li>
+    <li><a href="community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="nav-right">
+    <a class="btn-nav-ghost btn-nav-github" href="https://github.com/mnemosyne-systems/orangu" target="_blank" aria-label="GitHub"><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<main>
+
+  <section class="hero" style="min-height: 30vh; padding-bottom: 2rem;">
+    <div class="hero-left">
+      <p class="hero-eyebrow">Demo</p>
+      <h1 class="hero-title">See orangu<br>in action.</h1>
+      <p class="hero-subtitle" style="margin-bottom: 2rem;">
+        Watch real sessions: code review, Git workflows, bisect, local LLM setup, and more — straight from the terminal.
+      </p>
+      <div style="display:flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="doc/getting-started.html" class="btn-primary">
+          Get started
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+        <a href="install.html" class="btn-secondary">Install</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Videos ──────────────────────────────────── -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+
+      <div class="video-grid reveal">
+
+        <!-- Featured: Overview -->
+        <div class="video-card video-card-featured">
+          <a class="video-thumb-wrap" href="https://www.youtube.com/watch?v=F96ti-q5MRo" target="_blank" rel="noopener" aria-label="Watch Overview on YouTube">
+            <img
+              src="https://i.ytimg.com/vi/F96ti-q5MRo/maxresdefault.jpg"
+              alt="orangu overview"
+              loading="lazy"
+            />
+            <div class="video-play">
+              <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="36" cy="36" r="36" fill="rgba(0,0,0,0.55)"/>
+                <polygon points="29,22 55,36 29,50" fill="#c4803c"/>
+              </svg>
+            </div>
+          </a>
+          <div class="video-meta">
+            <span class="video-tag">Featured</span>
+            <h2 class="video-title">Overview</h2>
+            <p class="video-desc">
+              A full walkthrough of orangu from first launch: connecting to a local LLM,
+              exploring the workspace, running slash commands, streaming responses, and
+              using the built-in code review and Git tools.
+            </p>
+          </div>
+        </div>
+
+        <!-- Coming soon placeholders -->
+        <div class="video-soon">
+          <div class="video-soon-thumb"><span>Coming soon</span></div>
+          <div class="video-soon-meta">
+            <span class="video-soon-tag">Workflow</span>
+            <p class="video-soon-title">Code Review with /auto_review</p>
+          </div>
+        </div>
+
+        <div class="video-soon">
+          <div class="video-soon-thumb"><span>Coming soon</span></div>
+          <div class="video-soon-meta">
+            <span class="video-soon-tag">Git</span>
+            <p class="video-soon-title">Full Git Workflow</p>
+          </div>
+        </div>
+
+        <div class="video-soon">
+          <div class="video-soon-thumb"><span>Coming soon</span></div>
+          <div class="video-soon-meta">
+            <span class="video-soon-tag">Debugging</span>
+            <p class="video-soon-title">Bug Hunting with /bisect</p>
+          </div>
+        </div>
+
+        <div class="video-soon">
+          <div class="video-soon-thumb"><span>Coming soon</span></div>
+          <div class="video-soon-meta">
+            <span class="video-soon-tag">Setup</span>
+            <p class="video-soon-title">Running llama.cpp Locally</p>
+          </div>
+        </div>
+
+        <div class="video-soon">
+          <div class="video-soon-thumb"><span>Coming soon</span></div>
+          <div class="video-soon-meta">
+            <span class="video-soon-tag">Terminal</span>
+            <p class="video-soon-title">Tab Completion &amp; Key Bindings</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── CTA ─────────────────────────────────────── -->
+  <section class="section" style="padding-top: 0;">
+    <div class="container-sm">
+      <div class="cta-band reveal">
+        <span class="section-label" style="display:block; margin-bottom: 1.25rem;">Ready to try it?</span>
+        <h2 class="section-title" style="font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; margin-bottom: 1rem;">
+          Install orangu in one command.
+        </h2>
+        <p style="font-size: 0.95rem; color: var(--text-2); max-width: 420px; margin: 0 auto 1.75rem; line-height: 1.8;">
+          Linux, macOS, and Windows. No build step required.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="install.html" class="btn-primary">Install now</a>
+          <a href="doc/getting-started.html" class="btn-secondary">Read the docs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="edge-glow-bar">
+  <a class="footer-brand" href="index.html">ORANGU</a>
+  <ul class="footer-links">
+    <li><a href="doc/introduction.html">Introduction</a></li>
+    <li><a href="doc/getting-started.html">Getting Started</a></li>
+    <li><a href="doc/configuration.html">Configuration</a></li>
+    <li><a href="doc/git-tools.html">Git Tools</a></li>
+    <li><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></li>
+  </ul>
+  <span class="footer-copy">GPL v3 · <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a></span>
+</footer>
+
+<!-- ─── Scripts ──────────────────────────────────── -->
+<script>
+  /* Scroll reveal */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+<script>
+  /* Theme toggle */
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+<script src="border-glow.js"></script>
+
+</body>
+</html>

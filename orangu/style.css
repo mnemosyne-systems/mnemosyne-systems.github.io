@@ -736,7 +736,9 @@ footer.edge-glow-bar::after { top: -1px; }
 }
 .support-card.border-glow-card,
 .community-card.border-glow-card,
-.step-block.border-glow-card { --glow-card-bg: var(--bg-2); }
+.step-block.border-glow-card,
+.video-card.border-glow-card,
+.video-soon.border-glow-card { --glow-card-bg: var(--bg-2); }
 
 .border-glow-card::before,
 .border-glow-card::after {

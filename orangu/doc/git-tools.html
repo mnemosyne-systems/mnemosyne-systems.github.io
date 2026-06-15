@@ -15,6 +15,7 @@
     <li><a href="../index.html">Home</a></li>
     <li><a href="../features.html">Features</a></li>
     <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
     <li><a href="../community.html">Community</a></li>
     <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
   </ul>
@@ -65,6 +66,7 @@
             <li><a href="#pull_request">/pull_request</a></li>
             <li><a href="#comment">/comment</a></li>
             <li><a href="#close">/close</a></li>
+            <li><a href="#get_comments">/get_comments</a></li>
           </ul>
         </li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
@@ -341,14 +343,21 @@ new pr</code></pre>
     <h2 id="comment">/comment<a class="anchor" href="#comment">#</a></h2>
     <p>Adds a comment to a GitHub or GitLab issue. Requires the <code>gh</code> or <code>glab</code> CLI.</p>
     <pre><code>/comment &lt;number&gt; "&lt;comment&gt;"
-/comment &lt;number&gt; &lt;file&gt;</code></pre>
-    <p>When the third argument is a quoted string it is used as the body directly. When it is a bare word it is treated as a filename relative to <code>~/.orangu/comments/</code>.</p>
+/comment &lt;number&gt; &lt;file&gt;
+/comment &lt;number&gt; with review
+/comment &lt;number&gt; with auto review</code></pre>
+    <p>When the third argument is a quoted string it is used as the body directly. When it is a bare word it is treated as a filename relative to <code>~/.orangu/comments/</code>; Tab completion lists the files in that directory.</p>
+    <p><code>with review</code> posts the last <code>/review</code> summary of the session as the comment body, and <code>with auto review</code> posts the last <code>/auto_review</code> report — the same Markdown that is copied to the clipboard on exit. Each keyword is offered by completion only once the matching review has actually been run; when none has, the command points you at <code>/review</code> or <code>/auto_review</code>.</p>
     <h3>Examples</h3>
     <pre><code>/comment 51 "Thanks, merged."
-/comment 51 merged.md</code></pre>
+/comment 51 merged.md
+/comment 48 with review
+/comment 48 with auto review</code></pre>
     <p>Natural-language forms:</p>
     <pre><code>add comment on 51 "My comment"
-comment on 51 "My comment"</code></pre>
+comment on 51 "My comment"
+comment on 48 with review
+comment on 48 with auto review</code></pre>
 
     <!-- /close -->
     <h2 id="close">/close<a class="anchor" href="#close">#</a></h2>
@@ -361,6 +370,19 @@ comment on 51 "My comment"</code></pre>
     <p>Natural-language forms:</p>
     <pre><code>close issue 51
 close pr 58</code></pre>
+
+    <!-- /get_comments -->
+    <h2 id="get_comments">/get_comments<a class="anchor" href="#get_comments">#</a></h2>
+    <p>Lists the comments on a GitHub/GitLab issue or pull request. Requires <code>gh</code> or <code>glab</code>.</p>
+    <pre><code>/get_comments -i &lt;number&gt;    # comments on an issue
+/get_comments -p &lt;number&gt;    # comments on a pull request / merge request</code></pre>
+    <p>For a GitHub pull request both the conversation comments and the inline review comments are fetched and merged chronologically. Each comment is shown as a block: a grey <code>● &lt;date&gt; &lt;author&gt;</code> header line, then the body indented two spaces. GitLab system notes (label changes, assignments, and so on) are skipped.</p>
+    <h3>Examples</h3>
+    <pre><code>/get_comments -i 51
+/get_comments -p 58</code></pre>
+    <p>Natural-language forms:</p>
+    <pre><code>get comments for issue 51
+get comments for pull request 58</code></pre>
 
     <div class="doc-footer-nav">
       <a href="core-tools.html" class="prev">Core Tools</a>

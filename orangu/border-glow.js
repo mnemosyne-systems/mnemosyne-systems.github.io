@@ -41,7 +41,12 @@
   }
 
   function initBar(bar) {
-    if (bar.classList.contains('edge-glow-bar')) return;
+    // Guard on a dataset flag, not the edge-glow-bar class: several pages
+    // hardcode that class in the markup, so keying off it would skip the
+    // pointermove listener below and the glow would sit at its default centre
+    // (--glow-x: 50%) instead of tracking the cursor.
+    if (bar.dataset.edgeGlowReady) return;
+    bar.dataset.edgeGlowReady = '1';
     bar.classList.add('edge-glow-bar');
 
     bar.addEventListener('pointermove', function (e) {
@@ -52,7 +57,7 @@
   }
 
   function init() {
-    ['.support-card', '.doc-cell', '.g-cell', '.community-card', '.step-block']
+    ['.support-card', '.doc-cell', '.g-cell', '.community-card', '.step-block', '.video-card', '.video-soon']
       .forEach(function (sel) {
         document.querySelectorAll(sel).forEach(initCard);
       });

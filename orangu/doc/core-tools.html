@@ -15,6 +15,7 @@
     <li><a href="../index.html">Home</a></li>
     <li><a href="../features.html">Features</a></li>
     <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
     <li><a href="../community.html">Community</a></li>
     <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
   </ul>
@@ -54,6 +55,8 @@
             <li><a href="#show_file">/show_file</a></li>
             <li><a href="#build">/build</a></li>
             <li><a href="#review">/review</a></li>
+            <li><a href="#auto_review">/auto_review</a></li>
+            <li><a href="#export">/export</a></li>
           </ul>
         </li>
         <li><a href="git-tools.html">Git Tools</a></li>
@@ -289,8 +292,12 @@ run build</code></pre>
     <p>The view is split into two panes:</p>
     <ul>
       <li><strong>Left pane</strong>: diff of the selected file, rendered through the configured pager (e.g. <code>delta</code>) when set. Scrolls independently.</li>
-      <li><strong>Right pane</strong>: checklist of changed files. Each row shows a status box: <code>[ ]</code> not yet reviewed, <code>[*]</code> in progress, <code>[x]</code> done.</li>
+      <li><strong>Right pane</strong>: checklist of changed files. Each row begins with a review-status box: <code>[ ]</code> not yet reviewed, a green dot once approved (<code>Alt+a</code>), a red dot once rejected (<code>Alt+r</code>).</li>
     </ul>
+
+    <h3>Asking the model and commenting</h3>
+
+    <p>Type a request in the input window and press <code>Alt+o</code> to send it together with the selected file's diff to the model; the reply opens in a feedback window and is added to your session. Press <code>Alt+c</code> on a line to attach a category-tagged comment to it, or <code>Alt+e</code> to open the file in your <code>$EDITOR</code>. On exit a category-grouped report is written to the output window and copied to the clipboard, so it can be posted with <code>/comment &lt;number&gt; with review</code> or saved with <code>/export review</code>.</p>
 
     <h3>Examples</h3>
     <pre><code>/review</code></pre>
@@ -299,6 +306,49 @@ run build</code></pre>
 review changes
 code review
 review branch</code></pre>
+
+    <!-- /auto_review -->
+    <h2 id="auto_review">/auto_review<a class="anchor" href="#auto_review">#</a></h2>
+
+    <p>Runs an LLM-driven review of the current branch in the same two-pane view as <code>/review</code>. The model reviews the changes overall and each file on its own, sorts what it finds into the <strong>Overall</strong>, <strong>Code</strong>, <strong>Security</strong>, <strong>Memory</strong>, <strong>Performance</strong>, <strong>Test Suite</strong>, and <strong>Documentation</strong> categories, and marks every file approved or rejected. Requires a connected LLM server.</p>
+
+    <p>The same change set as <code>/review</code> is reviewed — committed and uncommitted changes against the merge base with the default branch — and the branch must be rebased first. Lock files and binary assets are approved with no request; documentation files are reviewed only for the Documentation category; every other file is scanned for all categories. Each finding is prefixed with its location as <code>file:line</code>, and a status bar tracks progress, elapsed time, and an estimate of the time remaining.</p>
+
+    <h3>Reviewing a single file</h3>
+
+    <p><code>/auto_review &lt;file&gt;</code> reviews one file instead of the whole branch. On <code>main</code>/<code>master</code> the whole file is read and reviewed; on any other branch only its changes against the default branch are. The file argument Tab-completes on the file's <em>name</em>, not its path.</p>
+
+    <h3>After the run</h3>
+
+    <p>The report stays on screen for browsing: <code>Alt+j</code>/<code>Alt+k</code> move through the files, <code>Alt+a</code> approves a file (dropping its findings), <code>Alt+r</code> rejects it with a category and a Markdown comment, <code>Up</code>/<code>Down</code> move through the findings, and <code>-</code> removes the highlighted item. On exit the report is rendered to the output window and its Markdown is copied to the clipboard, ready to post with <code>/comment &lt;number&gt; with auto review</code> or save with <code>/export review</code>.</p>
+
+    <h3>Examples</h3>
+    <pre><code>/auto_review
+/auto_review src/tui.rs</code></pre>
+    <p>Natural-language forms:</p>
+    <pre><code>auto review
+auto review src/tui.rs</code></pre>
+
+    <!-- /export -->
+    <h2 id="export">/export<a class="anchor" href="#export">#</a></h2>
+
+    <p>Writes a buffer to a PDF in the workspace root, so a session's output or a review can be shared outside the terminal.</p>
+
+    <ul>
+      <li><code>/export</code> or <code>/export console</code>: the <strong>console output window</strong> — everything currently in the main output window, with the terminal styling removed.</li>
+      <li><code>/export review</code>: the <strong>review buffer</strong> — the Markdown of the last <code>/review</code> (or, failing that, the last <code>/auto_review</code>) report from this session.</li>
+    </ul>
+
+    <p>The file is saved as <code>{repository}-{branch}-console.pdf</code> or <code>{repository}-{branch}-review.pdf</code> (a branch such as <code>feature/x</code> becomes <code>feature-x</code>); an existing file of the same name is overwritten and the saved path is printed. Every page carries a header band with <code>{repository}-{branch}</code> and a footer band with <code>orangu {version} ({model})</code>. Text is set in the embedded Red Hat Text font, so no system fonts are needed. The <strong>review</strong> export opens with a summary page (per-category finding counts and an Approved/Rejected banner) and a table of contents, then sets one category per page.</p>
+
+    <h3>Examples</h3>
+    <pre><code>/export
+/export console
+/export review</code></pre>
+    <p>Natural-language forms:</p>
+    <pre><code>export
+export console
+export review</code></pre>
 
     <div class="doc-footer-nav">
       <a href="terminal.html" class="prev">Terminal Interface</a>
