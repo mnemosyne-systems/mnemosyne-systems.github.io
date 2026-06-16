@@ -57,6 +57,7 @@
             <li><a href="#amend">/amend</a></li>
             <li><a href="#squash">/squash</a></li>
             <li><a href="#stash">/stash</a></li>
+            <li><a href="#bisect">/bisect</a></li>
             <li><a href="#branch">/branch</a></li>
             <li><a href="#merge">/merge</a></li>
             <li><a href="#rebase">/rebase</a></li>
@@ -233,6 +234,40 @@ git squash</code></pre>
 pop stash
 list stashes
 drop stash</code></pre>
+
+    <!-- /bisect -->
+    <h2 id="bisect">/bisect<a class="anchor" href="#bisect">#</a></h2>
+    <p>Runs a binary-search session to find the commit that introduced a bug.</p>
+    <ul>
+      <li><code>/bisect</code> or <code>/bisect status</code> — shows the current bisect state; reports "No bisect session in progress" when none is active.</li>
+      <li><code>/bisect start [&lt;commit&gt;]</code> — begins a new bisect session, optionally marking <code>&lt;commit&gt;</code> as the first known-bad revision.</li>
+      <li><code>/bisect good [&lt;commit&gt;]</code> — marks the current (or specified) commit as good.</li>
+      <li><code>/bisect bad [&lt;commit&gt;]</code> — marks the current (or specified) commit as bad.</li>
+      <li><code>/bisect skip [&lt;commit&gt;]</code> — tells Git to skip the current (or specified) commit when it cannot be tested.</li>
+      <li><code>/bisect reset</code> — ends the bisect session and returns <code>HEAD</code> to its original position.</li>
+      <li><code>/bisect log</code> — prints the log of all good/bad markings made so far.</li>
+    </ul>
+    <p>All subcommands run plain <code>git bisect &lt;sub&gt;</code>; there is no <code>gh</code> equivalent.</p>
+    <h3>Examples</h3>
+    <pre><code>/bisect start
+/bisect bad
+/bisect good abc1234
+/bisect skip
+/bisect log
+/bisect reset</code></pre>
+    <p>Natural-language forms:</p>
+    <pre><code>bisect start
+start bisect
+bisect good
+mark good
+bisect bad
+mark bad
+bisect skip
+skip commit
+bisect reset
+reset bisect
+bisect log
+bisect</code></pre>
 
     <!-- /branch -->
     <h2 id="branch">/branch<a class="anchor" href="#branch">#</a></h2>
@@ -413,5 +448,6 @@ get comments for pull request 58</code></pre>
   })();
 </script>
 
+<script src="../copy-code.js"></script>
 </body>
 </html>

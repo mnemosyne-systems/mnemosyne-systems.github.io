@@ -57,7 +57,7 @@
   }
 
   function init() {
-    ['.support-card', '.doc-cell', '.g-cell', '.community-card', '.step-block', '.video-card', '.video-soon']
+    ['.support-card', '.doc-cell', '.g-cell', '.community-card', '.step-block', '.video-card', '.video-soon', '.release-card']
       .forEach(function (sel) {
         document.querySelectorAll(sel).forEach(initCard);
       });

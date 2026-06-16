@@ -65,6 +65,24 @@
 
     <p>This chapter gets <strong>orangu</strong> running against a local OpenAI-compatible server such as <strong>llama.cpp</strong> with the sample configuration in <code>doc/etc/orangu.conf</code>.</p>
 
+    <h2 id="install">Install orangu<a class="anchor" href="#install">#</a></h2>
+
+    <p>The quickest way to install the latest release binary is the one-liner installer.</p>
+
+    <p><strong>Linux / macOS:</strong></p>
+
+    <pre><code>curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh</code></pre>
+
+    <p><strong>Windows</strong> (Command Prompt):</p>
+
+    <pre><code>curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.cmd -o install.cmd &amp;&amp; install.cmd</code></pre>
+
+    <p><strong>Windows</strong> (PowerShell alternative):</p>
+
+    <pre><code>Invoke-WebRequest -Uri https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.cmd -OutFile install.cmd; .\install.cmd</code></pre>
+
+    <p>The script installs to <code>~/.local/bin</code> (Linux/macOS) or <code>%USERPROFILE%\.local\bin</code> (Windows) and warns if the directory is not in your <code>PATH</code>. See <a href="building.html">Building</a> for instructions on building from source.</p>
+
     <h2 id="start-llama">Start llama.cpp<a class="anchor" href="#start-llama">#</a></h2>
 
     <p>Run <code>llama-server</code> with your preferred model:</p>
@@ -197,5 +215,6 @@
   })();
 </script>
 
+<script src="../copy-code.js"></script>
 </body>
 </html>

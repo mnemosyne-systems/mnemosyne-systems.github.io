@@ -62,8 +62,8 @@
   <div class="install-strip">
     <div class="install-pill">
       <span class="prompt">$</span>
-      <span class="cmd">cargo build --release &amp;&amp; ./target/release/orangu --init</span>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('cargo build --release && ./target/release/orangu --init');this.textContent='Copied';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
+      <span class="cmd">curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh</span>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh');this.textContent='Copied';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
     </div>
   </div>
 
@@ -128,7 +128,7 @@
           <div class="code-window-body">
             <div><span class="c-d">## issue-85-prune...origin/issue-85-prune</span></div>
             <div>&nbsp;</div>
-            <div><span class="c-a">&gt;</span> <span class="c-w">review the diff and suggest improvements</span></div>
+            <div><span class="c-a">&gt;</span> <span class="c-w">/auto_review</span></div>
             <div>&nbsp;</div>
             <div><span class="c-t">Working @ 38.2 t/s (4s)</span></div>
             <div>&nbsp;</div>
@@ -162,9 +162,77 @@
           <span class="stat-label">Cloud dependencies</span>
         </div>
         <div class="stat-cell">
-          <span class="stat-number">0.6</span>
+          <span class="stat-number">0.7</span>
           <span class="stat-label">Current version</span>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── What's new ──────────────────────────── -->
+  <style>
+    .release-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .release-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem; }
+    .release-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--border); }
+    .release-ver { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .release-badge { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber); background: var(--amber-soft); border: 1px solid var(--amber-line); border-radius: 4px; padding: 0.25rem 0.5rem; }
+    .release-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+    .release-list li { font-size: 0.83rem; color: var(--text-2); line-height: 1.6; padding-left: 1rem; position: relative; }
+    .release-list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--amber); }
+    .release-list strong { color: var(--text); font-weight: 600; }
+    .release-list code { font-size: 0.78rem; }
+    @media (max-width: 900px) { .release-grid { grid-template-columns: 1fr; } }
+  </style>
+  <section class="section reveal" id="whats-new">
+    <div class="container">
+      <div style="margin-bottom: 3rem;">
+        <span class="section-label">What's new</span>
+        <div class="sep"></div>
+        <h2 class="section-title">Highlights by release.</h2>
+      </div>
+
+      <div class="release-grid">
+
+        <div class="release-card">
+          <div class="release-head">
+            <span class="release-ver">0.7</span>
+            <span class="release-badge">Latest</span>
+          </div>
+          <ul class="release-list">
+            <li><strong>AI code review</strong> — <code>/auto_review</code> reviews your whole branch or a single file, with categorized findings you can approve or reject.</li>
+            <li><strong>Bug bisection</strong> — <code>/bisect</code> drives <code>git bisect</code> from the prompt to find the commit that broke things.</li>
+            <li><strong>One-line install</strong> — <code>install.sh</code> / <code>install.cmd</code> for Linux, macOS and Windows; no build step.</li>
+            <li><strong>Export to PDF</strong> — <code>/export</code> saves the console or a review report as a polished PDF.</li>
+            <li><strong>Built-in manual</strong> — <code>/manual</code>, searchable and fully offline.</li>
+          </ul>
+        </div>
+
+        <div class="release-card">
+          <div class="release-head">
+            <span class="release-ver">0.6</span>
+          </div>
+          <ul class="release-list">
+            <li><strong>GitLab support</strong> — drive GitLab through <code>glab</code>, alongside GitHub.</li>
+            <li><strong>Git stash</strong> — <code>/stash</code> push, pop, list and drop.</li>
+            <li><strong>Shell completions</strong> — <code>orangu -s</code> for bash, zsh and fish.</li>
+            <li><strong>Issue &amp; PR control</strong> — <code>/close</code> issues and PRs, and <code>/restart</code> in place.</li>
+            <li><strong>Session tooling</strong> — <code>/prune</code> old sessions and highlighted <code>/session</code> listings.</li>
+          </ul>
+        </div>
+
+        <div class="release-card">
+          <div class="release-head">
+            <span class="release-ver">0.5</span>
+          </div>
+          <ul class="release-list">
+            <li><strong>Review mode</strong> — the full-screen, two-pane <code>/review</code> of your branch.</li>
+            <li><strong>Pull requests</strong> — <code>/pull_request</code> opens a PR for the current branch.</li>
+            <li><strong>GitHub comments</strong> — <code>/comment</code> posts to GitHub issues.</li>
+            <li><strong>Usage stats</strong> — <code>/usage</code> reports session time and tokens.</li>
+            <li><strong>Virtual terminal</strong> — a wide canvas with horizontal panning for long lines.</li>
+          </ul>
+        </div>
+
       </div>
     </div>
   </section>
