@@ -44,16 +44,24 @@
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
-        <li><a href="usage-tools.html" class="active">Usage Tools</a>
-          <ul>
-            <li><a href="#manual">/manual</a></li>
-            <li><a href="#usage">/usage</a></li>
-            <li><a href="#clear">/clear</a></li>
-            <li><a href="#quit">/quit</a></li>
-          </ul>
-        </li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#usage-tools">Usage tools</a>
+      <ul>
+      <li><a href="#manual">/manual</a></li>
+      <li><a href="#usage">/usage</a></li>
+      <li><a href="#clear">/clear</a></li>
+      <li><a href="#quit">/quit</a></li>
+      </ul></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -68,71 +76,51 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Usage Tools</h1>
-
-    <p>The usage tools cover session-level housekeeping: reading the built-in manual, inspecting how much the current session has consumed, clearing the conversation, and leaving the client. Like all local commands, they are handled locally and keep working even when the server or model status in the header is red.</p>
-
-    <h2 id="manual">/manual<a class="anchor" href="#manual">#</a></h2>
-
-    <p>Opens the built-in user manual in a full-screen, two-pane viewer: the text of the selected section in the left pane and the table of contents in the right pane. The manual is embedded into the binary at compile time, so it is always available — no external files are read, and it works regardless of server or model state.</p>
-
-    <p>Switch sections with <code>Alt+J</code>/<code>Alt+K</code>, move the highlighted line with <code>Up</code>/<code>Down</code>, scroll with <code>Alt+Up</code>/<code>Alt+Down</code> or <code>PageUp</code>/<code>PageDown</code>, and pan long lines with <code>Left</code>/<code>Right</code>. <code>Alt+S</code> opens a search window over the entire manual (<code>Enter</code> jumps to the next match, <code>Esc</code> closes it). <code>Alt+X</code> (or <code>Esc</code> <code>Esc</code>) exits.</p>
-
-    <h3>Examples</h3>
-    <pre><code>/manual</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>manual
+<h1 id="usage-tools">Usage tools</h1>
+<p>The usage tools cover the session-level housekeeping commands: reading the built-in manual, inspecting how much the current session has used, clearing the conversation, and leaving the client. Like the other local commands, they are handled locally and keep working even when the server or model status in the header is red.</p>
+<h2 id="manual">/manual</h2>
+<p>Opens this manual in a full-screen, two-pane viewer: the text of the selected section in the left pane and the table of contents in the right pane. The manual text is embedded into the binary at compile time, so it is always available — no external files are read. Pressing <code>Alt+S</code> opens a search window that searches the entire manual (<code>Enter</code> jumps to the next match, <code>Esc</code> closes it).</p>
+<p>The viewer, its layout, and its key bindings are described in the Built-in manual section of the Terminal interface chapter.</p>
+<p>It is handled locally and works regardless of server or model state.</p>
+<h3 id="examples">Examples</h3>
+<pre class="text"><code>/manual</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>manual
 show manual
 open manual</code></pre>
-
-    <h2 id="usage">/usage<a class="anchor" href="#usage">#</a></h2>
-
-    <p>Shows usage statistics for the current session. The report covers:</p>
-
-    <ul>
-      <li>Total application time</li>
-      <li>Total time spent waiting for LLM responses</li>
-      <li>Total tokens generated (counted with the bundled tokenizer)</li>
-      <li>Average tokens per second</li>
-    </ul>
-
-    <h3>Examples</h3>
-    <pre><code>/usage</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>usage
+<h2 id="usage">/usage</h2>
+<p>Shows usage statistics for the current session.</p>
+<p>The report covers:</p>
+<ul>
+<li>total application time,</li>
+<li>total time spent waiting for LLM responses,</li>
+<li>total tokens generated (counted with the bundled tokenizer), and</li>
+<li>average tokens per second.</li>
+</ul>
+<h3 id="examples-1">Examples</h3>
+<pre class="text"><code>/usage</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>usage
 show usage</code></pre>
-
-    <h2 id="clear">/clear<a class="anchor" href="#clear">#</a></h2>
-
-    <p>Clears the current conversation. The in-memory conversation history is dropped so the next prompt starts a fresh exchange. The session itself is preserved; only the conversation context is cleared. To also return to the configured model and server, use <code>/reload</code>.</p>
-
-    <h3>Examples</h3>
-    <pre><code>/clear</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>clear
+<h2 id="clear">/clear</h2>
+<p>Clears the current conversation.</p>
+<p>The in-memory conversation history is dropped so the next prompt starts a fresh exchange. The session itself is preserved — only the conversation context is cleared. (To also return to the configured model and server, use <code>/reload</code>.)</p>
+<h3 id="examples-2">Examples</h3>
+<pre class="text"><code>/clear</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>clear
 clear conversation
 reset conversation</code></pre>
-
-    <h2 id="quit">/quit<a class="anchor" href="#quit">#</a></h2>
-
-    <p><code>/quit</code> exits immediately, whereas <code>Ctrl+C</code> uses a two-step confirmation (press once to arm quit mode, then again within two seconds to exit). On exit the full resume command is printed:</p>
-
-    <pre><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
-
-    <p>The resume command is not printed when the session had no LLM interaction and was on <code>main</code>, <code>master</code>, or outside a Git repository. In that case, the session directory is deleted silently.</p>
-
-    <h3>Examples</h3>
-    <pre><code>/quit</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>quit
+<h2 id="quit">/quit</h2>
+<p>Exits the client.</p>
+<p><code>/quit</code> exits immediately, whereas <code>Ctrl+C</code> uses a two-step confirmation (press it once to arm quit mode, then again within two seconds to exit). On exit the full resume command is printed — for example:</p>
+<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>so you can return to exactly this session later. The resume command is not printed when the session had no LLM interaction (zero tokens generated) and was on <code>main</code>, <code>master</code>, or outside a Git repository; in that case the session directory is deleted silently. See the Sessions section of the Terminal interface chapter for the full cleanup rules.</p>
+<h3 id="examples-3">Examples</h3>
+<pre class="text"><code>/quit</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>quit
 exit</code></pre>
-
-    <div class="doc-footer-nav">
-      <a href="git-tools.html" class="prev">Git Tools</a>
-      <a href="local-llm.html" class="next">Local LLM</a>
-    </div>
-
   </main>
 </div>
 

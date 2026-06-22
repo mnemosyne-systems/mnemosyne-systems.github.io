@@ -44,9 +44,18 @@
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html" class="active">Local LLM</a></li>
+        <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#openai-platform">OpenAI platform</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -61,88 +70,95 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Local LLM</h1>
-
-    <p><code>orangu</code> is designed to talk directly to a local llama.cpp server using its OpenAI-compatible API.</p>
-
-    <h2 id="example-configuration">Example configuration<a class="anchor" href="#example-configuration">#</a></h2>
-
-    <pre><code>[orangu]
-server = main-server
-model = ggml-org/gemma-4-E4B-it-GGUF
-timeout = 1800
-max_tool_rounds = 10
-
-[main-server]
-provider = llama.cpp
-endpoint = http://localhost:8100/v1
-model = ggml-org/gemma-4-E4B-it-GGUF</code></pre>
-
-    <h2 id="quick-verification">Quick verification<a class="anchor" href="#quick-verification">#</a></h2>
-
-    <p>Check that the server is reachable:</p>
-
-    <pre><code>curl http://localhost:8100/v1/models</code></pre>
-
-    <p>Then run the client:</p>
-
-    <pre><code>orangu --config ./orangu.conf</code></pre>
-
-    <h2 id="notes">Notes<a class="anchor" href="#notes">#</a></h2>
-
-    <ul>
-      <li>The endpoint may be configured as either the server root (<code>http://localhost:8100</code>) or the <code>/v1</code> path. The client normalizes it internally.</li>
-      <li>Tool-calling prompts can be slow on local models; a larger timeout (e.g. <code>timeout = 3600</code>) is recommended</li>
-      <li>The local tools run against the current workspace and can edit files on disk</li>
-      <li>If you start <code>llama-server</code> with <code>--api-key &lt;key&gt;</code>, set <code>api_key = &lt;key&gt;</code> in the server section. The key is sent on every request including the <code>/v1/models</code> health probe.</li>
-    </ul>
-
-    <h2 id="recommended-llama-flags">Recommended llama-server flags<a class="anchor" href="#recommended-llama-flags">#</a></h2>
-
-    <p>For best results with tool-calling workloads:</p>
-
-    <pre><code>llama-server \
-  --model /path/to/model.gguf \
-  --port 8100 \
-  --ctx-size 65536 \
-  --jinja \
-  --chat-template chatml \
-  -sm layer \
-  -t 4</code></pre>
-
-    <div class="callout">
-      <strong>Context size matters:</strong> Tool-calling conversations accumulate tokens quickly. A context size of at least <code>32768</code> is recommended; <code>65536</code> or more is ideal for long sessions.
-    </div>
-
-    <h2 id="coding-model">Coding model<a class="anchor" href="#coding-model">#</a></h2>
-
-    <p>For coding-focused sessions, launch <code>llama-server</code> with a coding model:</p>
-
-    <pre><code>llama-server -hf yuxinlu1/gemma-4-12B-coder-fable5-composer2.5-v1-GGUF \
-             --port 8100 \
-             --ctx-size 131072 \
-             -t 4 \
-             --webui-mcp-proxy \
-             --fit on \
-             --image-min-tokens 1024 \
-             --tools all</code></pre>
-
-    <p>or</p>
-
-    <pre><code>llama-server -hf unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF \
-             --port 8100 \
-             --ctx-size 262144 \
-             -sm layer \
-             -t 4 \
-             --webui-mcp-proxy \
-             --fit on</code></pre>
-
-    <div class="doc-footer-nav">
-      <a href="usage-tools.html" class="prev">Usage Tools</a>
-      <span></span>
-    </div>
-
+<h2 id="openai-platform">OpenAI platform</h2>
+<h3 id="llama.cpp">llama.cpp</h3>
+<p>[<strong>llama.cpp</strong>][llama] is an OpenAI compatible platform.</p>
+<p>Please, look at their documentation for further information.</p>
+<p><strong>Building</strong></p>
+<p>Clone the repository</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/ggml-org/llama.cpp.git</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">-DCMAKE_C_COMPILER</span><span class="op">=</span>clang <span class="at">-DCMAKE_CXX_COMPILER</span><span class="op">=</span>clang++ <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">-DCMAKE_INSTALL_PREFIX</span><span class="op">=</span>/usr/local/ <span class="at">-DGGML_VULKAN</span><span class="op">=</span>1 <span class="at">-B</span> build</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--build</span> build <span class="at">--config</span> Debug <span class="at">-j</span> 12</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> build</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">su</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> install</span></code></pre></div>
+<p>for example for an AMD/Vulkan based platform.</p>
+<p><strong>Running</strong></p>
+<p>Small model</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> ggml-org/gemma-4-E4B-it-GGUF <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 65536 <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-sm</span> layer <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
+<p>Coding model</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> yuxinlu1/gemma-4-12B-coder-fable5-composer2.5-v1-GGUF <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 131072 <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on <span class="dt">\</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--image-min-tokens</span> 1024 <span class="dt">\</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">--tools</span> all</span></code></pre></div>
+<p>or</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 262144 <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-sm</span> layer <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
+<p>Big model</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> bartowski/Qwen_Qwen3.6-27B-GGUF <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 65536 <span class="dt">\</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
+<p>Review model</p>
+<p><a href="https://huggingface.co/collections/ggml-org/gemma-4">Gemma4</a> models will work locally.</p>
+<p>For example</p>
+<ul>
+<li>gemma-4-E4B-it-GGUF</li>
+<li>gemma-4-12B-it-GGUF</li>
+<li>gemma-4-31B-it-GGUF</li>
+</ul>
+<p>depending on your machine size, and then</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> ggml-org/gemma-4-12B-it-GGUF <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 262144 <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-np</span> 1 <span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-fa</span> on <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ctk</span> q8_0 <span class="dt">\</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ctv</span> q8_0 <span class="dt">\</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">-b</span> 2048 <span class="dt">\</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ub</span> 2048 <span class="dt">\</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">--cache-reuse</span> 256 <span class="dt">\</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">--reasoning-budget</span> 0 <span class="dt">\</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">--reasoning</span> off <span class="dt">\</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">--temp</span> 0.7 <span class="dt">\</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">--top-p</span> 0.8 <span class="dt">\</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">--top-k</span> 20 <span class="dt">\</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">--min-p</span> 0 <span class="dt">\</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>             <span class="at">--jinja</span> <span class="dt">\</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
+<p>Or, you can use a Qwen model which might give more feedback, but many more false positives</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> bartowski/Qwen_Qwen3.6-35B-A3B-GGUF <span class="dt">\</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 32768 <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-np</span> 1 <span class="dt">\</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-fa</span> on <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ctk</span> q8_0 <span class="at">-ctv</span> q8_0 <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">-b</span> 2048 <span class="at">-ub</span> 2048 <span class="dt">\</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">--cache-reuse</span> 256 <span class="dt">\</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">--reasoning-budget</span> 0 <span class="dt">\</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">--chat-template-kwargs</span> <span class="st">&#39;{&quot;enable_thinking&quot;: false}&#39;</span> <span class="dt">\</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">--temp</span> 0.7 <span class="at">--top-p</span> 0.8 <span class="at">--top-k</span> 20 <span class="at">--min-p</span> 0 <span class="dt">\</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">--jinja</span> <span class="dt">\</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
   </main>
 </div>
 

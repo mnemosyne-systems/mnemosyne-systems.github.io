@@ -42,24 +42,33 @@
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
-        <li><a href="terminal.html" class="active">Terminal Interface</a>
-          <ul>
-            <li><a href="#startup">Startup</a></li>
-            <li><a href="#header">Header</a></li>
-            <li><a href="#prompt-area">Prompt area</a></li>
-            <li><a href="#waiting">Waiting state</a></li>
-            <li><a href="#sessions">Sessions</a></li>
-            <li><a href="#natural-language">Natural language</a></li>
-            <li><a href="#shortcuts">Shortcuts &amp; keys</a></li>
-            <li><a href="#completion">Tab completion</a></li>
-            <li><a href="#scrolling">Scrolling &amp; panning</a></li>
-            <li><a href="#footer">Footer</a></li>
-          </ul>
-        </li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#terminal-interface">Terminal interface</a>
+      <ul>
+      <li><a href="#startup">Startup</a></li>
+      <li><a href="#header">Header</a></li>
+      <li><a href="#prompt-area">Prompt area</a></li>
+      <li><a href="#waiting-state">Waiting state</a></li>
+      <li><a href="#sessions">Sessions</a></li>
+      <li><a href="#history-and-navigation">History and navigation</a></li>
+      <li><a href="#natural-language-command-aliases">Natural-language command aliases</a></li>
+      <li><a href="#comments-and-ignored-input">Comments and ignored input</a></li>
+      <li><a href="#shortcuts-and-keys">Shortcuts and keys</a></li>
+      <li><a href="#built-in-manual">Built-in manual</a></li>
+      <li><a href="#footer-behavior">Footer behavior</a></li>
+      </ul></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -74,250 +83,276 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Terminal Interface</h1>
-
-    <p><code>orangu</code> is an interactive terminal client with a persistent header and a prompt area anchored to the bottom of the terminal. This chapter covers the terminal itself: startup, the header and prompt, sessions, input editing, completion, and scrolling.</p>
-
-    <h2 id="startup">Startup<a class="anchor" href="#startup">#</a></h2>
-
-    <p>When started inside a Git repository, <strong>orangu</strong> fast-forwards the local default branch (<code>main</code>/<code>master</code>) to <code>origin</code> so it is in sync with upstream. The sync runs in the background and never delays startup. Progress appears on the left of the status bar: <code>Syncing with origin…</code> while running, then <code>Synced &lt;branch&gt; with origin</code> for a few seconds. It is skipped silently when there is no <code>origin</code> remote.</p>
-
-    <h3>Command-line options</h3>
-
-    <table>
-      <thead>
-        <tr><th>Short</th><th>Long</th><th>Description</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>-c</code></td>
-          <td><code>--config</code></td>
-          <td>Path to the configuration file (<code>orangu.conf</code>)</td>
-        </tr>
-        <tr>
-          <td><code>-w</code></td>
-          <td><code>--workspace</code></td>
-          <td>Workspace root the local tools operate on. Defaults to <code>.</code></td>
-        </tr>
-        <tr>
-          <td><code>-r</code></td>
-          <td><code>--resume</code></td>
-          <td>Resume a specific session by UUID</td>
-        </tr>
-        <tr>
-          <td><code>-i</code></td>
-          <td><code>--init</code></td>
-          <td>Run the interactive setup wizard to generate a configuration</td>
-        </tr>
-        <tr>
-          <td><code>-s</code></td>
-          <td><code>--shell-completions</code></td>
-          <td>Print the shell completion script for the shell detected from <code>$SHELL</code>, then exit (e.g. <code>eval "$(orangu -s)"</code>)</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2 id="header">Header<a class="anchor" href="#header">#</a></h2>
-
-    <p>The top banner displays: current version, workspace status, server status, model status, and a <code>/help</code> reminder. While no request is active, server and model status are rechecked once per minute.</p>
-
-    <h2 id="prompt-area">Prompt area<a class="anchor" href="#prompt-area">#</a></h2>
-
-    <p>The prompt area stays at the bottom of the terminal window.</p>
-
-    <ul>
-      <li>Long input wraps upward</li>
-      <li>Submitted input moves directly into the output area</li>
-      <li>The banner and prompt stay fixed while the output window scrolls independently</li>
-      <li>Markdown in assistant output is rendered with terminal styling: bold, italic, headings, lists, links, and code blocks with syntax highlighting when the language is supported</li>
-    </ul>
-
-    <p>All slash commands are handled locally and are never sent to the model, so they continue to work even when the model is unavailable. Free-form prompts are blocked when the server or model status in the header is red.</p>
-
-    <h2 id="waiting">Waiting state<a class="anchor" href="#waiting">#</a></h2>
-
-    <p>While the model is generating a response, the left side of the footer shows a rolling status indicator:</p>
-
-    <pre><code>Thinking (2s)</code></pre>
-
-    <p>You can keep typing and submitting commands while a response is pending. Submitted commands are queued and executed in order after the active response finishes.</p>
-
-    <p>The <code>/pending</code> command lists the queued commands, numbered in execution order; <code>/pending delete &lt;n&gt;</code> removes one by its number. The center of the footer mirrors the queue depth as <code>Pending: X</code>.</p>
-
-    <p>When using <code>provider = llama.cpp</code>, the footer switches from <code>Thinking (&lt;CLOCK&gt;)</code> to native generation throughput once tokens stream:</p>
-
-    <pre><code>Working @ 42.5 t/s (2s)</code></pre>
-
-    <p>Press <code>Esc</code> twice within 2 seconds during the waiting state to cancel the active request without exiting. Queued commands are preserved.</p>
-
-    <h2 id="sessions">Sessions<a class="anchor" href="#sessions">#</a></h2>
-
-    <p>Each run creates or resumes a session identified by a UUID. Session data is stored under <code>~/.orangu/sessions/&lt;uuid&gt;/</code>:</p>
-
-    <pre><code>history    per-session command history (readline)
-messages   full conversation turn history (JSON array)
+<h1 id="terminal-interface">Terminal interface</h1>
+<p><code>orangu</code> is an interactive terminal client with a persistent header and a prompt area anchored to the bottom of the terminal.</p>
+<p>The individual commands you can type at the prompt are documented in the Core tools, Git tools, and Usage tools chapters. This chapter covers the terminal itself: startup, the header and prompt, sessions, input editing, completion, and scrolling.</p>
+<h2 id="startup">Startup</h2>
+<p>When started inside a Git repository, <strong>orangu</strong> fast-forwards the local default branch (<code>main</code>/<code>master</code>) to <code>origin</code> so it is in sync with upstream. If you are on the default branch it fast-forwards your working tree (<code>git pull --ff-only</code>); on any other branch it fast-forwards the local default ref in place (<code>git fetch origin &lt;branch&gt;:&lt;branch&gt;</code>) without touching your current branch or working tree. It never creates a merge commit or rebases.</p>
+<p>The sync runs in the background so it never delays startup. Its progress and result appear on the left of the status bar — <code>Syncing with origin…</code> while it runs, then <code>Synced &lt;branch&gt; with origin</code> (or <code>Sync failed: …</code>) for a few seconds. It is skipped silently when there is no <code>origin</code> remote, and a diverged branch or an unreachable <code>origin</code> is reported only on the status bar; startup continues normally regardless.</p>
+<h3 id="command-line-options">Command-line options</h3>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 16%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Short</th>
+<th>Long</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>-c</code></td>
+<td><code>--config</code></td>
+<td>Path to the configuration file (<code>orangu.conf</code>).</td>
+</tr>
+<tr class="even">
+<td><code>-w</code></td>
+<td><code>--workspace</code></td>
+<td>Workspace root the local tools operate on. Defaults to <code>.</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>-r</code></td>
+<td><code>--resume</code></td>
+<td>Resume a specific session by UUID.</td>
+</tr>
+<tr class="even">
+<td><code>-a</code></td>
+<td><code>--all</code></td>
+<td>Reopen the workspace tabs that were open at the end of the last run.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="header">Header</h2>
+<p>The top banner displays:</p>
+<ul>
+<li>Current version</li>
+<li>Workspace status</li>
+<li>Server status</li>
+<li>Model status</li>
+<li><code>/help</code> reminder</li>
+</ul>
+<p>While no request is active, server and model status are rechecked once per minute.</p>
+<h2 id="prompt-area">Prompt area</h2>
+<p>The prompt area stays at the bottom of the terminal window.</p>
+<ul>
+<li>Long input wraps upward</li>
+<li>Submitted input moves directly into the output area</li>
+<li>The banner and prompt stay fixed while the output window scrolls independently</li>
+<li>Markdown in assistant output is rendered with terminal styling when possible, including emphasis, strong text, lists, headings, links, and code</li>
+<li>Fenced code blocks with a language tag such as ```c use syntax highlighting in the terminal when the language is supported by the bundled highlighter</li>
+</ul>
+<p>All slash commands are handled locally and are never sent to the model, so they continue to work even when the model is unavailable. Free-form prompts, by contrast, are blocked when the server or model status in the header is red.</p>
+<h2 id="waiting-state">Waiting state</h2>
+<p>While the model is generating a response, the left side of the footer shows a rolling:</p>
+<pre class="text"><code>Thinking (2s)</code></pre>
+<p>status indicator.</p>
+<p>You can keep typing and submitting commands while a response is pending. Submitted commands are queued and executed in order after the active response finishes.</p>
+<p>When a profile uses <code>provider = llama.cpp</code>, the footer starts with <code>Thinking (&lt;CLOCK&gt;)</code> and switches to llama.cpp's native generation throughput once tokens are streaming, for example <code>Working @ 42.5 t/s (2s)</code>.</p>
+<p>Press <code>Esc</code> twice within 2 seconds during the waiting state to cancel the active request without exiting the client. Queued commands are preserved.</p>
+<h2 id="sessions">Sessions</h2>
+<p>Each run of <code>orangu</code> creates or resumes a session identified by a UUID. The <code>/session</code> command (see the Core tools chapter) lists and switches between them; this section describes how they are stored and resumed.</p>
+<h3 id="automatic-resume">Automatic resume</h3>
+<p>On startup, <code>orangu</code> checks whether a session already exists for the current workspace path and Git branch. If exactly one matching session with conversation history is found, it is resumed automatically. The status bar lower-left shows:</p>
+<pre class="text"><code>Resuming session 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>for five seconds or until the first command is run. No <code>--resume</code> flag is needed for normal branch-based workflows.</p>
+<p>If more than one session matches the current workspace and branch, a fresh session is started instead. Use <code>--resume &lt;uuid&gt;</code> to target a specific session explicitly.</p>
+<h3 id="manual-resume">Manual resume</h3>
+<p>To resume a specific session regardless of workspace or branch, pass <code>--resume &lt;uuid&gt;</code> (short form <code>-r</code>) when starting:</p>
+<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>This restores the previous conversation context and per-session readline history.</p>
+<h3 id="session-cleanup-on-exit">Session cleanup on exit</h3>
+<p>When you exit, the resume command is printed:</p>
+<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>Sessions that had no LLM interaction (zero tokens generated) and are on <code>main</code>, <code>master</code>, or a workspace with no Git repository are deleted automatically on exit. No resume command is printed for deleted sessions. Sessions on feature branches are always kept even when empty, so that returning to the branch triggers auto-resume correctly.</p>
+<h3 id="session-storage">Session storage</h3>
+<p>Session data is stored under <code>~/.orangu/sessions/&lt;uuid&gt;/</code>:</p>
+<pre class="text"><code>history    per-session command history (readline)
+messages   full conversation turn history (JSON array of role/content objects)
 metadata   session metadata (JSON)</code></pre>
-
-    <p>The <code>metadata</code> file records when the session was created, last used, which workspace it belongs to, and which Git branch was active:</p>
-
-    <pre><code>{
-  "started_at": 1748000000,
-  "last_updated_at": 1748003600,
-  "workspace": "/home/user/myproject",
-  "branch": "feature/my-pr"
-}</code></pre>
-
-    <h3>Automatic resume</h3>
-
-    <p>On startup, orangu checks whether a session already exists for the current workspace path and Git branch. If exactly one matching session with history is found, it is resumed automatically. The status bar shows:</p>
-
-    <pre><code>Resuming session 550e8400-e29b-41d4-a716-446655440000</code></pre>
-
-    <p>If more than one session matches, a fresh session is started. Use <code>--resume &lt;uuid&gt;</code> to target a specific session explicitly.</p>
-
-    <h3>Session cleanup on exit</h3>
-
-    <p>On exit, the resume command is printed:</p>
-
-    <pre><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
-
-    <p>Sessions with no LLM interaction on <code>main</code>, <code>master</code>, or outside a Git repository are deleted automatically. Sessions on feature branches are always kept.</p>
-
-    <h2 id="natural-language">Natural-language command aliases<a class="anchor" href="#natural-language">#</a></h2>
-
-    <p>Local commands can be entered in plain language, like <code>open README.md</code>, <code>show status</code>, <code>create pull request</code>, or <code>switch model to &lt;name&gt;</code>. The phrases recognized for each command are listed under its <strong>Examples</strong> in the Core tools, Git tools, and Usage tools chapters.</p>
-
-    <h2 id="comments">Comments and ignored input<a class="anchor" href="#comments">#</a></h2>
-
-    <ul>
-      <li>First non-whitespace character <code>#</code>: treated as a local comment, shown in the transcript, not sent to the LLM</li>
-      <li>First non-whitespace character <code>\</code>: the line is ignored entirely</li>
-    </ul>
-
-    <h2 id="shortcuts">Shortcuts and keys<a class="anchor" href="#shortcuts">#</a></h2>
-
-    <h3>Prompt editing</h3>
-
-    <table>
-      <thead>
-        <tr><th>Key</th><th>Action</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>Ctrl+A</code> / <code>Home</code></td><td>Move cursor to start of input</td></tr>
-        <tr><td><code>Ctrl+E</code> / <code>End</code></td><td>Move cursor to end of input</td></tr>
-        <tr><td><code>Left</code></td><td>Move one character left</td></tr>
-        <tr><td><code>Right</code></td><td>Move one character right</td></tr>
-        <tr><td><code>Ctrl+Left</code></td><td>Move one word left (bash-style)</td></tr>
-        <tr><td><code>Ctrl+Right</code></td><td>Move one word right (bash-style)</td></tr>
-        <tr><td><code>Backspace</code></td><td>Delete character to the left</td></tr>
-        <tr><td><code>Delete</code></td><td>Delete character under cursor</td></tr>
-        <tr><td><code>Ctrl+D</code></td><td>Like Delete; exits when input is empty</td></tr>
-        <tr><td><code>Ctrl+K</code></td><td>Delete from cursor to end of line</td></tr>
-        <tr><td><code>Ctrl+U</code></td><td>Delete from start of line to cursor</td></tr>
-        <tr><td><code>Ctrl+W</code></td><td>Delete from cursor to previous whitespace</td></tr>
-        <tr><td><code>Alt+Backspace</code></td><td>Delete backward using bash-style word boundaries</td></tr>
-        <tr><td><code>Alt+D</code></td><td>Delete forward using bash-style word boundaries</td></tr>
-      </tbody>
-    </table>
-
-    <h3>History</h3>
-
-    <table>
-      <thead>
-        <tr><th>Key</th><th>Action</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>↑</code></td><td>Move backward through command history</td></tr>
-        <tr><td><code>↓</code></td><td>Move forward through command history</td></tr>
-      </tbody>
-    </table>
-
-    <p>History navigation preserves the current unfinished line as a draft and restores it when you move back out of history.</p>
-
-    <h3>Inline command hints (ghost text)</h3>
-
-    <p>As you type, a grey inline hint previews the command your input is growing into. It covers slash commands and natural-language bindings:</p>
-
-    <ul>
-      <li>Press <code>Tab</code> to accept the hint</li>
-      <li>Press <code>Shift+Tab</code> to cycle through alternative candidates when several commands share the prefix</li>
-      <li>The hint disappears once your input already spells a complete command</li>
-      <li>Editing the line, moving the cursor, or pasting resets the cycle back to the first candidate</li>
-    </ul>
-
-    <h3>Waiting and exit control</h3>
-
-    <table>
-      <thead>
-        <tr><th>Key</th><th>Action</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>Esc Esc</code> (within 2s)</td><td>Cancel the active request, keep queued commands</td></tr>
-        <tr><td><code>Ctrl+C</code></td><td>Arm quit mode, clear current input</td></tr>
-        <tr><td><code>Ctrl+C</code> again (within 2s)</td><td>Exit the client</td></tr>
-        <tr><td><code>Enter</code></td><td>Submit the current input line</td></tr>
-      </tbody>
-    </table>
-
-    <h2 id="completion">Tab completion<a class="anchor" href="#completion">#</a></h2>
-
-    <p><code>Tab</code> uses context-sensitive completion. The first <code>Tab</code> inserts the first match; repeated presses cycle through remaining matches. Completion cycling resets as soon as you edit the line, move the cursor, or paste text.</p>
-
-    <p>The completion modes are checked in order:</p>
-
-    <ol>
-      <li><code>/branch</code>, <code>/checkout</code>, or <code>checkout </code>: complete branch names first, then workspace file paths</li>
-      <li><code>switch to </code>: complete branch names and tag names</li>
-      <li><code>/add_file</code>, <code>add </code>, <code>add file </code>: complete untracked directories first, then untracked files</li>
-      <li><code>/remove_file</code>, <code>remove </code>, <code>git rm </code>: complete tracked directories first, then tracked files</li>
-      <li><code>/move_file</code>: first argument from tracked files; second from all workspace paths</li>
-      <li><code>/cherry_pick</code>, <code>cherry pick </code>: abbreviated commit hashes from the default branch</li>
-      <li><code>/merge</code>, <code>merge </code>: local branch names first, then remote-only branch names</li>
-      <li><code>/branch -d</code>, <code>delete branch </code>: local branch names excluding <code>main</code>/<code>master</code></li>
-      <li><code>/session </code>: session UUIDs sorted newest-first, then distinct workspace paths</li>
-      <li><code>/model </code>: models available on the selected server</li>
-      <li><code>/server </code>: names of all configured server sections</li>
-      <li><code>/open_file</code>, <code>/show_file</code>: workspace file paths recursively; once a file is present, next Tab cycles commit history</li>
-      <li><code>/</code>: built-in slash commands</li>
-      <li>Otherwise: filesystem entries from the current token relative to the workspace</li>
-    </ol>
-
-    <div class="callout">
-      <strong>Path completion details:</strong> Completion skips <code>.git</code>, <code>build</code>, and <code>target</code> content, as well as paths ignored by the workspace <code>.gitignore</code>. Quoted file completion is supported for <code>/open_file "..."</code> and similar forms.
-    </div>
-
-    <h2 id="scrolling">Output scrolling and horizontal panning<a class="anchor" href="#scrolling">#</a></h2>
-
-    <table>
-      <thead>
-        <tr><th>Key</th><th>Action</th></tr>
-      </thead>
-      <tbody>
-        <tr><td><code>Shift+PageUp</code></td><td>Scroll backward one full page</td></tr>
-        <tr><td><code>Shift+PageDown</code></td><td>Scroll forward one full page</td></tr>
-        <tr><td><code>Alt+Up</code></td><td>Scroll backward one line</td></tr>
-        <tr><td><code>Alt+Down</code></td><td>Scroll forward one line</td></tr>
-        <tr><td><code>Alt+Right</code></td><td>Pan the output window right</td></tr>
-        <tr><td><code>Alt+Left</code></td><td>Pan the output window left</td></tr>
-      </tbody>
-    </table>
-
-    <p>The output scrollback buffer keeps the most recent 10,000 lines. <code>orangu</code> maintains a virtual canvas wider than the visible terminal; source files shown with <code>/show_file</code> may contain lines longer than the terminal width, which are laid out on the full canvas and can be panned horizontally without reflowing. The virtual canvas width is set by the <code>width</code> key in the <code>[orangu]</code> config section (default <code>512</code>).</p>
-
-    <h2 id="footer">Footer behavior<a class="anchor" href="#footer">#</a></h2>
-
-    <ul>
-      <li><strong>Left</strong>: <code>Thinking (&lt;CLOCK&gt;)</code> while waiting for a response to start; <code>Working @ X.Y t/s (&lt;CLOCK&gt;)</code> while tokens stream</li>
-      <li><strong>Center</strong>: <code>Pending: X</code> showing how many queued commands are waiting</li>
-      <li><strong>Right</strong>: the model name currently in use</li>
-    </ul>
-
-    <div class="doc-footer-nav">
-      <a href="configuration.html" class="prev">Configuration</a>
-      <a href="core-tools.html" class="next">Core Tools</a>
-    </div>
-
+<p>The <code>messages</code> file preserves the complete conversation so that resuming restores the exact context the model had when the session was last active.</p>
+<p>The <code>metadata</code> file records when the session was created, last used, which workspace it belongs to, and which Git branch was active:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;started_at&quot;</span><span class="fu">:</span> <span class="dv">1748000000</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;last_updated_at&quot;</span><span class="fu">:</span> <span class="dv">1748003600</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;workspace&quot;</span><span class="fu">:</span> <span class="st">&quot;/home/user/myproject&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;feature/my-pr&quot;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>branch</code> is an empty string for sessions started outside a Git repository or in a detached HEAD state. Timestamps are Unix seconds (UTC).</p>
+<h2 id="history-and-navigation">History and navigation</h2>
+<p>Command history is stored per session in:</p>
+<pre class="text"><code>~/.orangu/sessions/&lt;uuid&gt;/history</code></pre>
+<p>Use:</p>
+<ul>
+<li><code>&lt;ARROW_UP&gt;</code> to move backward in history</li>
+<li><code>&lt;ARROW_DOWN&gt;</code> to move forward in history</li>
+</ul>
+<h2 id="natural-language-command-aliases">Natural-language command aliases</h2>
+<p>Local commands can also be entered in plain language — for example <code>open README.md</code>, <code>show status</code>, <code>create pull request</code>, or <code>switch model to &lt;name&gt;</code>. The phrases recognized for each command are listed under its <strong>Examples</strong> in the Core tools, Git tools, and Usage tools chapters.</p>
+<p>Natural-language forms are recognized only for the built-in local command phrases. Ordinary prompts continue to go to the model.</p>
+<h2 id="comments-and-ignored-input">Comments and ignored input</h2>
+<ul>
+<li>If the first non-whitespace character is <code>#</code>, the line is treated as a local comment, shown in the transcript, and not sent to the LLM</li>
+<li>If the first non-whitespace character is <code>\</code>, the line is ignored</li>
+</ul>
+<h2 id="shortcuts-and-keys">Shortcuts and keys</h2>
+<h3 id="prompt-editing">Prompt editing</h3>
+<ul>
+<li><code>Ctrl+A</code> or <code>Home</code> moves the cursor to the start of the input line</li>
+<li><code>Ctrl+E</code> or <code>End</code> moves the cursor to the end of the input line</li>
+<li><code>Left</code> moves the cursor one character left</li>
+<li><code>Right</code> moves the cursor one character right</li>
+<li><code>Ctrl+Left</code> moves one word left using bash-style word boundaries</li>
+<li><code>Ctrl+Right</code> moves one word right using bash-style word boundaries</li>
+<li><code>Backspace</code> deletes the character to the left of the cursor</li>
+<li><code>Delete</code> deletes the character under the cursor</li>
+<li><code>Ctrl+D</code> behaves like <code>Delete</code>; when the input is empty it exits the client immediately</li>
+<li><code>Ctrl+K</code> deletes from the cursor to the end of the line</li>
+<li><code>Ctrl+U</code> deletes from the start of the line to the cursor</li>
+<li><code>Ctrl+W</code> deletes from the cursor to the previous whitespace</li>
+<li><code>Alt+Backspace</code> deletes backward using bash-style word boundaries</li>
+<li><code>Alt+D</code> deletes forward using bash-style word boundaries</li>
+<li>Pasted text is inserted at the current cursor position</li>
+</ul>
+<h3 id="history-and-completion">History and completion</h3>
+<ul>
+<li><code>&lt;ARROW_UP&gt;</code> moves backward through command history</li>
+<li><code>&lt;ARROW_DOWN&gt;</code> moves forward through command history</li>
+<li>History navigation preserves the current unfinished line as a draft and restores it when you move back out of history</li>
+</ul>
+<h3 id="inline-command-hints-ghost-text">Inline command hints (ghost text)</h3>
+<p>As you type, a grey inline hint previews the command your input is growing into, drawn just after the cursor. It covers both slash commands and the natural-language bindings:</p>
+<ul>
+<li>Typing <code>/q</code> shows <code>/q``uit</code>, with <code>uit</code> greyed; typing <code>c</code> shows <code>c``urrent model</code>.</li>
+<li>Press <code>Tab</code> to accept the hint, filling in the rest of the command (for an argument-taking form such as <code>diff against</code>, the cursor lands after the trailing space, ready for the argument).</li>
+<li>When several commands share your prefix (for example <code>c</code> matches <code>current model</code>, <code>code review</code>, <code>checkout</code>, <code>commit</code>, and more), <code>Shift+Tab</code> cycles the hint through them in priority order, wrapping back to the first. <code>Tab</code> then accepts whichever candidate is currently shown.</li>
+<li>The hint only appears while the cursor is at the end of the line, and disappears once your input already spells a complete command (so <code>status</code> and <code>diff</code> show no hint, even though <code>diff against</code> shares the latter's prefix).</li>
+<li>Editing the line, moving the cursor, or pasting resets the <code>Shift+Tab</code> cycle back to the first candidate.</li>
+</ul>
+<p>The natural-language hint takes priority over generic filename completion, so <code>c</code> + <code>Tab</code> completes to <code>current model</code> rather than a same-prefixed file such as <code>contrib/</code>. Slash-command and argument completion (branches, files, commit hashes, and so on) continue to use the cycling <code>Tab</code> behavior described next.</p>
+<h3 id="tab-completion">Tab completion</h3>
+<p><code>Tab</code> uses context-sensitive completion. The first <code>Tab</code> inserts the first match. Repeated <code>Tab</code> presses cycle through the remaining matches for the same completion range.</p>
+<p>Completion cycling is reset as soon as you edit the line, move the cursor, paste text, or otherwise change the input.</p>
+<p>The completion modes are checked in order:</p>
+<ol type="1">
+<li>If the line starts with <code>/branch</code>, <code>/checkout</code>, or with the natural-language prefixes <code>checkout</code> or <code>git checkout</code>, complete branch names first (from <code>git branch --all</code>), then workspace file paths. Branch names always appear before file names in the candidate list. If the line starts with the natural-language prefix <code>switch to</code>, complete branch names and tag names (from <code>git tag</code>), sorted together; workspace file paths are excluded.</li>
+<li>If the line starts with <code>/add_file</code>, or with the natural-language prefixes <code>add</code>, <code>add file</code>, or <code>git add</code>, complete untracked directories first (from <code>git ls-files --others --directory</code>), then untracked files. Already-tracked content is excluded.</li>
+<li>If the line starts with <code>/remove_file</code>, or with the natural-language prefixes <code>remove</code>, <code>remove file</code>, or <code>git rm</code>, complete tracked directories first (from <code>git ls-files</code>), then tracked files. Untracked content is excluded.</li>
+<li>If the line starts with <code>/move_file</code>, or with the natural-language prefixes <code>move</code>, <code>move file</code>, or <code>git mv</code>, complete the first argument from tracked directories and files; complete the second argument from all workspace paths.</li>
+<li>If the line starts with <code>/cherry_pick</code>, or with the natural-language prefixes <code>cherry pick</code>, <code>cherry-pick</code>, or <code>git cherry-pick</code>, complete abbreviated commit hashes from the default branch (<code>origin/main</code>, <code>origin/master</code>, <code>main</code>, or <code>master</code>, tried in that order).</li>
+<li>If the line starts with <code>/fetch</code>, or with the natural-language prefixes <code>fetch</code> or <code>git fetch</code>, complete the configured remotes (from <code>git remote</code>), with <code>origin</code> floated to the front so the default is offered first and previewed as the inline ghost.</li>
+<li>If the line starts with <code>/rebase</code>, or with the natural-language prefixes <code>rebase</code> or <code>git rebase</code>, complete the rebase target in priority order: local branch names first (from <code>git branch</code>), then the configured remotes (from <code>git remote</code>, <code>origin</code> floated to the front), then the remote-tracking branches (from <code>git branch --all</code>, e.g. <code>origin/main</code>). The first local branch is previewed as the inline ghost.</li>
+<li>If the line starts with <code>/merge</code>, or with the natural-language prefixes <code>merge</code> or <code>git merge</code>, complete local branch names first (from <code>git branch</code>), then remote-only branch names (from <code>git branch --all</code>).</li>
+<li>If the line starts with <code>/branch -d</code>, or with the natural-language prefixes <code>delete</code>, <code>delete branch</code>, or <code>git branch -D</code>, complete local branch names (from <code>git branch</code>) excluding <code>main</code> and <code>master</code>.</li>
+<li>If the line starts with <code>/session</code> (with a trailing space), complete session UUIDs sorted newest-first by last-modified time.</li>
+<li>If the line starts with <code>/model</code>, complete the models available on the selected server, cycling through them. If the line starts with <code>/server</code>, complete the names of all INI sections identified as servers; selecting one switches the active server.</li>
+<li>If the line starts with <code>/open_file</code> or <code>/show_file</code>, complete workspace file paths recursively for the first positional argument. <code>/show_file</code> also completes <code>--hash</code> and <code>--author</code>. When a file path is already present, the next Tab press cycles through that file's commit history (abbreviated hashes from <code>git log --follow</code>).</li>
+<li>If the line starts with the natural-language prefixes <code>open</code>, <code>open file</code>, <code>edit</code>, or <code>edit file</code>, complete workspace file paths recursively.</li>
+<li>If the line starts with <code>/</code>, complete built-in slash commands and any discovered Agent Skills. Examples include <code>/help</code>, <code>/skills</code>, <code>/model</code>, <code>/server</code>, <code>/list_files</code>, <code>/show_file</code>, <code>/tools</code>, <code>/quit</code>, and a discovered skill such as <code>/debugging</code>.</li>
+<li>Otherwise, complete filesystem entries from the current token relative to the workspace, using the token before the cursor.</li>
+</ol>
+<p>Path-completion details:</p>
+<ul>
+<li>General filesystem completion lists entries from the matching directory level and appends <code>/</code> to directories</li>
+<li><code>/open_file</code>, <code>/show_file</code>, and the natural-language open/edit forms search recursively through the workspace</li>
+<li>Recursive file completion matches either the full relative path or, when no <code>/</code> is present in the token, the file name</li>
+<li>Quoted file completion is supported for <code>/open_file "..."</code>, <code>/show_file "..."</code>, and <code>open "..."</code>; the inserted completion keeps the opening quote</li>
+<li>Completion skips <code>.git</code>, <code>build</code>, and <code>target</code> content</li>
+<li>Completion also skips paths ignored by the workspace <code>.gitignore</code></li>
+</ul>
+<h3 id="output-scrolling">Output scrolling</h3>
+<ul>
+<li><code>Shift+PageUp</code> scrolls backward through the output window by a full page</li>
+<li><code>Shift+PageDown</code> scrolls forward through the output window by a full page</li>
+<li><code>Alt+Up</code> scrolls backward one line at a time</li>
+<li><code>Alt+Down</code> scrolls forward one line at a time</li>
+<li>The output scrollback buffer keeps the most recent 10,000 lines</li>
+<li>Scrolling is limited to the output window; it does not replace the header or prompt area</li>
+</ul>
+<h3 id="horizontal-panning">Horizontal panning</h3>
+<p><code>orangu</code> maintains a virtual canvas that can be wider than the visible terminal. Source files shown with <code>/show_file</code> may contain lines longer than the terminal width; those lines are laid out on the full virtual canvas and can be panned horizontally without reflowing.</p>
+<ul>
+<li><code>Alt+Right</code> pans the output window right (reveals content that extends past the right edge)</li>
+<li><code>Alt+Left</code> pans the output window left (back toward the start of the line)</li>
+</ul>
+<p>The header, status bar, and input window always occupy the full visible terminal width and are not affected by panning.</p>
+<p>The virtual canvas width is set by the <code>width</code> key in the <code>[orangu]</code> config section (default <code>512</code>). When the terminal is resized to a width larger than the configured virtual width, the virtual width grows to match so that content is never clipped unexpectedly. The virtual width never shrinks below its initial value during a session.</p>
+<p>LLM and tool output is always wrapped or clipped to the visible terminal width and does not pan. Only <code>/show_file</code> output — where source lines must stay intact — uses the full virtual canvas.</p>
+<h3 id="waiting-and-exit-control">Waiting and exit control</h3>
+<ul>
+<li><code>Esc</code> twice within 2 seconds cancels the active request without exiting and keeps queued commands</li>
+<li><code>Ctrl+C</code> once arms quit mode, shows a warning in the transcript, and clears the current input line</li>
+<li><code>Ctrl+C</code> again within 2 seconds exits the client</li>
+<li><code>Enter</code> submits the current input line</li>
+</ul>
+<h2 id="built-in-manual">Built-in manual</h2>
+<p>Type <code>/manual</code> at the prompt (or the natural-language forms <code>manual</code>, <code>show manual</code>, or <code>open manual</code>) to open this manual inside the client. The manual text is embedded into the binary at compile time, so no external files are read — the manual is always available, even offline.</p>
+<p>The viewer uses the same full-screen, two-pane layout as <code>/review</code>, with the status bar and an (inactive) input window kept at the bottom:</p>
+<ul>
+<li><strong>Left pane</strong> — the text of the selected section, rendered with the same Markdown styling as model output in the console (bold, italics, headings, lists, links, and tables). Fenced code blocks are shown syntax-highlighted according to their language tag, without the ``` fence lines, and links are shown as their underlined labels only. It is the larger pane and scrolls independently.</li>
+<li><strong>Right pane</strong> — the table of contents, one entry per section. The sections follow the page breaks of the printed manual (one entry per <code>\newpage</code>-delimited page): chapter entries are flush left and their sections are indented beneath them. The pane is kept as narrow as possible while still fitting the longest entry. The selected entry is highlighted, and selecting a different entry replaces the left pane with that section's text, shown from the top.</li>
+</ul>
+<pre><code> # Core tools                           |Contents (56)
+                                        |Introduction
+ The core tools are the local slash     |Quickstart
+ commands that drive the client ...     |Core tools    &lt;- selected
+ (only the selected section&#39;s text,     |  /help
+  scrollable)                           |  /server</code></pre>
+<h3 id="searching">Searching</h3>
+<p>Press <code>Alt+S</code> to open a search window at the top of the text pane. Type the text to find and press <code>Enter</code> to jump to its next occurrence: the search is case-insensitive, scans forward from the highlighted line through the <strong>entire manual</strong> — continuing past the end of the current section into the following ones and wrapping around to the beginning — and highlights the matching line. Press <code>Enter</code> again to jump to the next instance. If the text is not found anywhere, <code>No match for '&lt;text&gt;'</code> is shown on the status bar.</p>
+<p>Press <code>Esc</code> to close the search window; the highlighted line stays on the last match, so you can keep reading from there.</p>
+<h3 id="key-bindings">Key bindings</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Alt+J</code></td>
+<td>Select the next section (shows its text in the left pane)</td>
+</tr>
+<tr class="even">
+<td><code>Alt+K</code></td>
+<td>Select the previous section</td>
+</tr>
+<tr class="odd">
+<td><code>Alt+S</code></td>
+<td>Open the search window (<code>Enter</code> next match, <code>Esc</code> close)</td>
+</tr>
+<tr class="even">
+<td><code>Up</code> / <code>Down</code></td>
+<td>Move the highlighted line through the text, view following</td>
+</tr>
+<tr class="odd">
+<td><code>Alt+Up</code> / <code>Alt+Down</code></td>
+<td>Scroll the text one line at a time</td>
+</tr>
+<tr class="even">
+<td><code>PageUp</code> / <code>PageDown</code></td>
+<td>Scroll the text by a full page</td>
+</tr>
+<tr class="odd">
+<td><code>Left</code> / <code>Right</code></td>
+<td>Pan long lines horizontally</td>
+</tr>
+<tr class="even">
+<td><code>Alt+X</code> or <code>Esc</code> <code>Esc</code></td>
+<td>Leave the manual and return to the prompt</td>
+</tr>
+</tbody>
+</table>
+<h2 id="footer-behavior">Footer behavior</h2>
+<ul>
+<li>The left side of the footer shows <code>Thinking (&lt;CLOCK&gt;)</code> while waiting for a response to start, and <code>Working @ X.Y t/s (&lt;CLOCK&gt;)</code> while tokens are streaming</li>
+<li>The center side of the footer shows <code>Pending: X</code> to show how many queued commands are waiting</li>
+<li>The right side of the footer shows the model name used</li>
+</ul>
   </main>
 </div>
 

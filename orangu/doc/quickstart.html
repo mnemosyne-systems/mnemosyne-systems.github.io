@@ -40,13 +40,29 @@
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html" class="active">Quick Start</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#quick-start">Quick start</a>
+      <ul>
+      <li><a href="#install-orangu">Install orangu</a></li>
+      <li><a href="#start-llama.cpp">Start llama.cpp</a></li>
+      <li><a href="#create-a-configuration">Create a configuration</a></li>
+      <li><a href="#run-the-client">Run the client</a></li>
+      <li><a href="#review-your-first-branch">Review your first branch</a></li>
+      </ul></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -61,75 +77,46 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Quick Start</h1>
-
-    <p>This chapter gets <strong>orangu</strong> running against a local OpenAI-compatible server such as <strong>llama.cpp</strong> with the sample configuration in <code>doc/etc/orangu.conf</code>.</p>
-
-    <h2 id="install">Install orangu<a class="anchor" href="#install">#</a></h2>
-
-    <p>The quickest way to install the latest release binary is the one-liner installer.</p>
-
-    <p><strong>Linux / macOS:</strong></p>
-
-    <pre><code>curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh</code></pre>
-
-    <p><strong>Windows</strong> (Command Prompt):</p>
-
-    <pre><code>curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.cmd -o install.cmd &amp;&amp; install.cmd</code></pre>
-
-    <p><strong>Windows</strong> (PowerShell alternative):</p>
-
-    <pre><code>Invoke-WebRequest -Uri https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.cmd -OutFile install.cmd; .\install.cmd</code></pre>
-
-    <p>The script installs to <code>~/.local/bin</code> (Linux/macOS) or <code>%USERPROFILE%\.local\bin</code> (Windows) and warns if the directory is not in your <code>PATH</code>. See <a href="building.html">Building</a> for instructions on building from source.</p>
-
-    <h2 id="start-llama">Start llama.cpp<a class="anchor" href="#start-llama">#</a></h2>
-
-    <p>Run <code>llama-server</code> with your preferred model:</p>
-
-    <pre><code>llama-server -hf ggml-org/gemma-4-E4B-it-GGUF \
-             --port 8100 \
-             --ctx-size 65536 \
-             -sm layer \
-             -t 4 \
-             --webui-mcp-proxy \
-             --fit on</code></pre>
-
-    <p><strong>orangu</strong> expects an OpenAI-compatible endpoint:</p>
-
-    <pre><code>http://localhost:8100/v1</code></pre>
-
-    <h2 id="create-configuration">Create a configuration<a class="anchor" href="#create-configuration">#</a></h2>
-
-    <p>The fastest path is the interactive wizard, which auto-detects a model from the server and writes <code>~/.orangu/orangu.conf</code>:</p>
-
-    <pre><code>orangu --init</code></pre>
-
-    <p>See <a href="configuration.html">Configuration</a> for details of the wizard. Or copy the sample:</p>
-
-    <pre><code>cp doc/etc/orangu.conf ./orangu.conf</code></pre>
-
-    <p>Default configuration lookup order:</p>
-
-    <ol>
-      <li><code>./orangu.conf</code></li>
-      <li><code>~/.orangu/orangu.conf</code></li>
-    </ol>
-
-    <h2 id="run">Run the client<a class="anchor" href="#run">#</a></h2>
-
-    <pre><code>orangu</code></pre>
-
-    <p>Or point it at a specific configuration file:</p>
-
-    <pre><code>orangu --config ./orangu.conf</code></pre>
-
-    <p>By default the workspace tools operate on the current directory. Use <code>--workspace /path/to/project</code> to point <strong>orangu</strong> at another tree. The startup flags have short forms: <code>-c</code> for <code>--config</code>, <code>-w</code> for <code>--workspace</code>, <code>-r</code> for <code>--resume</code>, and <code>-i</code> for <code>--init</code>.</p>
-
-    <h2 id="commands">First commands to try<a class="anchor" href="#commands">#</a></h2>
-
-    <pre><code>/help
+<h1 id="quick-start">Quick start</h1>
+<p>This chapter gets <strong>orangu</strong> running against a local OpenAI-compatible server such as <strong>llama.cpp</strong> with the sample configuration in <code>doc/etc/orangu.conf</code>.</p>
+<h2 id="install-orangu">Install orangu</h2>
+<p>The quickest way to install the latest release binary is the one-liner installer.</p>
+<p><strong>Linux / macOS:</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh <span class="kw">|</span> <span class="fu">sh</span></span></code></pre></div>
+<p><strong>Windows</strong> (Command Prompt):</p>
+<pre class="cmd"><code>curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.cmd -o install.cmd &amp;&amp; install.cmd</code></pre>
+<p><strong>Windows</strong> (PowerShell alternative):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Invoke-WebRequest</span> <span class="op">-</span>Uri https<span class="op">://</span>raw<span class="op">.</span><span class="fu">githubusercontent</span><span class="op">.</span><span class="fu">com</span><span class="op">/</span>mnemosyne<span class="op">-</span>systems<span class="op">/</span>orangu<span class="op">/</span>main<span class="op">/</span>install<span class="op">.</span><span class="fu">cmd</span> <span class="op">-</span>OutFile install<span class="op">.</span><span class="fu">cmd</span><span class="op">;</span> <span class="op">.</span>\install<span class="op">.</span><span class="fu">cmd</span></span></code></pre></div>
+<p>The script installs to <code>~/.local/bin</code> (Linux/macOS) or <code>%USERPROFILE%\.local\bin</code> (Windows) and warns if the directory is not in your <code>PATH</code>. See <a href="../../BUILDING.md">BUILDING.md</a> for instructions on building from source.</p>
+<h2 id="start-llama.cpp">Start llama.cpp</h2>
+<p>Run <code>llama-server</code> with your preferred model, for example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> ggml-org/gemma-4-E4B-it-GGUF <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 65536 <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-sm</span> layer <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
+<p><strong>orangu</strong> expects an OpenAI-compatible endpoint, such as:</p>
+<pre class="text"><code>http://localhost:8100/v1</code></pre>
+<h2 id="create-a-configuration">Create a configuration</h2>
+<p>The fastest path is the interactive wizard, which auto-detects a model from the server, writes <code>~/.orangu/orangu.conf</code>, and installs any bundled skills into <code>~/.orangu/skills/</code> when they are not already present:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--init</span></span></code></pre></div>
+<p>See <a href="20-configuration.md">Configuration</a> for the details of the wizard.</p>
+<p>Or copy the sample:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> doc/etc/orangu.conf ./orangu.conf</span></code></pre></div>
+<p>Default configuration lookup order is:</p>
+<ol type="1">
+<li><code>./orangu.conf</code></li>
+<li><code>~/.orangu/orangu.conf</code></li>
+</ol>
+<h2 id="run-the-client">Run the client</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span></span></code></pre></div>
+<p>Or:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--config</span> ./orangu.conf</span></code></pre></div>
+<p>Then start with:</p>
+<pre class="text"><code>/help
+/skills
 /server
 /disconnect
 /reload
@@ -139,17 +126,21 @@
 /list_files
 /open_file README.md
 /show_file README.md
+/debugging reproduce the failing request path
 /build
 /add_file README.md
-/amend "[#42] My feature"
+/auto_review
+/amend &quot;[#42] My feature&quot;
 /branch main
 /branch -b feature/new
 /branch -m new-name
 /branch -d feature/old
 /cherry_pick abc1234
-/comment 51 "My comment"
+/comment 51 &quot;My comment&quot;
 /close -i 51
-/commit "[#42] My feature"
+/issue reviewer 114 jesperpedersen
+/get_comments -i 51
+/commit &quot;[#42] My feature&quot;
 /restore README.md
 /diff
 /init_repo
@@ -168,30 +159,32 @@
 /usage
 /clear
 /quit</code></pre>
-
-    <h2 id="sessions">Sessions<a class="anchor" href="#sessions">#</a></h2>
-
-    <p><strong>orangu</strong> automatically resumes an existing session when you return to the same workspace and Git branch. When a previous session is found, the status bar shows:</p>
-
-    <pre><code>Resuming session 550e8400-e29b-41d4-a716-446655440000</code></pre>
-
-    <p>for five seconds or until the first command is run. On exit, the resume command is printed so you can return from a different branch or machine:</p>
-
-    <pre><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
-
-    <p>Sessions that had no LLM interaction on <code>main</code>, <code>master</code>, or outside a Git repository are deleted automatically on exit. Feature branch sessions are always kept.</p>
-
-    <h2 id="comments">Comments and ignored input<a class="anchor" href="#comments">#</a></h2>
-
-    <div class="callout">
-      Lines whose first non-whitespace character is <code>#</code> stay local and are not sent to the model. Lines whose first non-whitespace character is <code>\</code> are ignored entirely.
-    </div>
-
-    <div class="doc-footer-nav">
-      <a href="getting-started.html" class="prev">Getting Started</a>
-      <a href="configuration.html" class="next">Configuration</a>
-    </div>
-
+<p>Most of these are thin wrappers around the matching <code>git</code>/<code>gh</code> commands. Two open full-screen views instead: <code>/review</code> walks you through the branch's diff file by file for a manual review, and <code>/auto_review</code> has the connected model review the branch's changes by itself — per file and per category (Code, Security, Memory, Performance, Test Suite, Documentation) — lets you override its verdicts afterwards (approve a file, or reject it with your own categorized comments), and copies the resulting report to the clipboard on exit. <code>/auto_review &lt;file&gt;</code> (Tab-completes on the file name) reviews a single file — the whole file on main/master, or just its changes on a branch. Both are described in detail in the Core tools chapter.</p>
+<p>orangu also supports Agent Skills: reusable directories containing a <code>SKILL.md</code>. Skills are discovered from <code>~/.orangu/skills/</code>, <code>~/.agents/skills/</code>, <code>&lt;workspace&gt;/.orangu/skills/</code>, and <code>&lt;workspace&gt;/.agents/skills/</code>. Use <code>/skills</code> to list them. Invoke one directly with <code>/skill-name</code>, for example:</p>
+<pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
+<h2 id="review-your-first-branch">Review your first branch</h2>
+<p>The review workflow is orangu's standout feature, so it is worth trying right away. From a feature branch with some changes (committed or just edited in the working tree):</p>
+<pre class="text"><code>review</code></pre>
+<p>This opens the interactive reviewer: a two-pane view with your changed files on the right and the selected file's diff on the left. Use <code>Alt+j</code>/<code>Alt+k</code> to move between files, <code>Alt+a</code>/<code>Alt+r</code> to approve or reject one, and <code>Alt+c</code> to leave a categorized comment on a line. Type a question such as <code>is this thread-safe?</code> and press <code>Enter</code> to ask the model about the selected file. Press <code>Alt+x</code> to leave; the report is copied to your clipboard.</p>
+<p>To have the model do the work, run:</p>
+<pre class="text"><code>auto review</code></pre>
+<p>orangu reviews the whole change and each file across the Overall, Code, Security, Memory, Performance, Test Suite, and Documentation categories, marks every file with a green or red dot, and ends with an <code>orangu approves/rejects this patch</code> verdict. When the run finishes you can override any verdict and remove findings before the report lands on the clipboard.</p>
+<blockquote>
+<p>The branch must be rebased up to date first — if it is behind, orangu points you at <code>/rebase</code>. If you review with a <em>thinking</em> model and the answers look truncated, raise <code>review_max_tokens</code> in <code>[orangu]</code> (e.g. <code>2048</code>); see the Configuration chapter.</p>
+</blockquote>
+<p>Share the result without leaving the terminal:</p>
+<pre class="text"><code>export review              # write the report to a PDF in the workspace root
+comment on 42 with auto review  # post it on GitHub/GitLab issue/PR #42</code></pre>
+<p>By default the tools operate on the current directory. Use <code>--workspace /path/to/project</code> to point <strong>orangu</strong> at another tree.</p>
+<p>The startup flags have short forms: <code>-c</code> for <code>--config</code>, <code>-w</code> for <code>--workspace</code>, <code>-r</code> for <code>--resume</code>, <code>-i</code> for <code>--init</code>, and <code>-a</code> for <code>--all</code> (reopen the tabs from the previous run).</p>
+<p><strong>orangu</strong> automatically resumes an existing session when you return to the same workspace and Git branch. When a previous session is found, the status bar shows:</p>
+<pre class="text"><code>Resuming session 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>for five seconds or until the first command is run.</p>
+<p>On exit, the resume command is printed so you can return to the session from a different branch or machine:</p>
+<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>Sessions that had no LLM interaction on <code>main</code>, <code>master</code>, or outside a Git repository are deleted automatically on exit. Feature branch sessions are always kept.</p>
+<p>Use <code>/session</code> to list all sessions and their branches. Use <code>/session &lt;uuid&gt;</code> (Tab completion cycles UUIDs and workspace paths) to switch to a specific session; passing a workspace switches straight to it when it matches exactly one session, otherwise it lists the matches. Passing a directory path that no session uses yet opens it as a new workspace — Tab falls back to filesystem completion (with <code>~</code> expansion) so you can navigate there, e.g. <code>/session ~/Po&lt;Tab&gt;/pga&lt;Tab&gt;/of&lt;Tab&gt;</code>.</p>
+<p>Lines whose first non-whitespace character is <code>#</code> stay local and are not sent to the model. Lines whose first non-whitespace character is <code>\</code> are ignored.</p>
   </main>
 </div>
 

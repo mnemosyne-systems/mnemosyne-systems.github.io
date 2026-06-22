@@ -38,15 +38,30 @@
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html" class="active">Building</a></li>
+        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#developer-information">Developer information</a>
+      <ul>
+      <li><a href="#main-components">Main components</a></li>
+      <li><a href="#development-workflow">Development workflow</a></li>
+      <li><a href="#documentation-workflow">Documentation workflow</a></li>
+      <li><a href="#orangu-files">Orangu files</a></li>
+      </ul></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -61,63 +76,45 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Building orangu</h1>
-
-    <p><code>orangu</code> is a Rust project with a single interactive client binary.</p>
-
-    <h2 id="prerequisites">Prerequisites<a class="anchor" href="#prerequisites">#</a></h2>
-
-    <ul>
-      <li>Rust toolchain with <code>cargo</code></li>
-      <li>A running llama.cpp (or compatible) server exposing an OpenAI-compatible API</li>
-    </ul>
-
-    <p>Install Rust on Fedora / RHEL:</p>
-
-    <pre><code>dnf install -y git rust cargo</code></pre>
-
-    <p>On other distributions, install Rust via <a href="https://rustup.rs" target="_blank">rustup.rs</a>. On Windows, use WSL2 with a Linux distribution.</p>
-
-    <h2 id="build">Build<a class="anchor" href="#build">#</a></h2>
-
-    <p>Clone the repository and build a debug binary:</p>
-
-    <pre><code>git clone https://github.com/mnemosyne-systems/orangu.git
-cd orangu
-cargo build</code></pre>
-
-    <p>For an optimized release binary:</p>
-
-    <pre><code>cargo build --release</code></pre>
-
-    <p>The release binary is at <code>target/release/orangu</code>. To install system-wide:</p>
-
-    <pre><code>sudo install -Dm755 target/release/orangu /usr/local/bin/orangu</code></pre>
-
-    <h2 id="test">Test<a class="anchor" href="#test">#</a></h2>
-
-    <pre><code>cargo test</code></pre>
-
-    <h2 id="example-run">Example run<a class="anchor" href="#example-run">#</a></h2>
-
-    <p>Run without installing using the sample configuration:</p>
-
-    <pre><code>cargo run --bin orangu -- --config ./doc/etc/orangu.conf</code></pre>
-
-    <h2 id="manual">Manual generation<a class="anchor" href="#manual">#</a></h2>
-
-    <p>The project includes a pandoc-based manual layout under <code>doc/manual/en</code>. To build the HTML and PDF manual:</p>
-
-    <pre><code>./doc/build_manual.sh</code></pre>
-
-    <p>The script writes output to <code>target/doc/</code>.</p>
-
-    <div class="doc-footer-nav">
-      <a href="introduction.html" class="prev">Introduction</a>
-      <a href="getting-started.html" class="next">Getting Started</a>
-    </div>
-
+<h1 id="developer-information">Developer information</h1>
+<h2 id="main-components">Main components</h2>
+<ul>
+<li><code>src/bin/orangu.rs</code> - terminal loop, command handling, history, connection state, and waiting state</li>
+<li><code>src/bin/orangu/manual.rs</code> - built-in manual viewer (<code>/manual</code>); embeds the <code>doc/manual/en</code> chapters at compile time, so a new chapter file must be added to its <code>MANUAL_SOURCES</code> list</li>
+<li><code>src/config.rs</code> - INI parsing and normalization</li>
+<li><code>src/llm/openai.rs</code> - OpenAI-compatible client for llama.cpp-style backends</li>
+<li><code>src/session.rs</code> - tool-calling conversation flow</li>
+<li><code>src/tools.rs</code> - workspace-scoped local tool execution</li>
+<li><code>src/tui.rs</code> - header, prompt frame, and status rendering</li>
+</ul>
+<h2 id="development-workflow">Development workflow</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> fmt</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div>
+<h2 id="documentation-workflow">Documentation workflow</h2>
+<ol type="1">
+<li><p>Download dependencies</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnf</span> install pandoc texlive-scheme-basic</span></code></pre></div></li>
+<li><p>Download Eisvogel</p>
+<p>Use the command <code>pandoc --version</code> to locate the user data directory. On Fedora systems, this directory is typically located at <code>$HOME/.local/share/pandoc</code>.</p>
+<p>Download the <code>Eisvogel</code> template for <code>pandoc</code>, please visit the <a href="https://github.com/Wandmalfarbe/pandoc-latex-template">pandoc-latex-template</a> repository. For a standard installation, you can follow the steps outlined below.</p></li>
+</ol>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">wget</span> https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/v3.4.0/Eisvogel-3.4.0.tar.gz</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tar</span> <span class="at">-xzf</span> Eisvogel-3.4.0.tar.gz</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$HOME</span>/.local/share/pandoc/templates</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mv</span> Eisvogel-3.4.0/eisvogel.latex <span class="va">$HOME</span>/.local/share/pandoc/templates/</span></code></pre></div>
+<ol start="3" type="1">
+<li><p>Add package for LaTeX</p>
+<p>Download the additional packages required for generating PDF and HTML files.</p></li>
+</ol>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dnf</span> install <span class="st">&#39;tex(footnote.sty)&#39;</span> <span class="st">&#39;tex(footnotebackref.sty)&#39;</span> <span class="st">&#39;tex(pagecolor.sty)&#39;</span> <span class="st">&#39;tex(hardwrap.sty)&#39;</span> <span class="st">&#39;tex(mdframed.sty)&#39;</span> <span class="st">&#39;tex(sourcesanspro.sty)&#39;</span> <span class="st">&#39;tex(ly1enc.def)&#39;</span> <span class="st">&#39;tex(sourcecodepro.sty)&#39;</span> <span class="st">&#39;tex(titling.sty)&#39;</span> <span class="st">&#39;tex(csquotes.sty)&#39;</span> <span class="st">&#39;tex(zref-abspage.sty)&#39;</span> <span class="st">&#39;tex(needspace.sty)&#39;</span> <span class="st">&#39;tex(selnolig.sty)&#39;</span> texlive-collection-latexextra</span></code></pre></div>
+<p>Then</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./doc/build_manual.sh</span></span></code></pre></div>
+<p>which will produce a HTML and PDF manual.</p>
+<h2 id="orangu-files">Orangu files</h2>
+<ul>
+<li>The default config lookup path is <code>~/.orangu/orangu.conf</code></li>
+<li>Command history is stored in <code>~/.orangu/orangu.history</code></li>
+</ul>
   </main>
 </div>
 

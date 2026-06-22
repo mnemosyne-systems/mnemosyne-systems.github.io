@@ -44,35 +44,46 @@
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="git-tools.html" class="active">Git Tools</a>
-          <ul>
-            <li><a href="#status">/status</a></li>
-            <li><a href="#log">/log</a></li>
-            <li><a href="#diff">/diff</a></li>
-            <li><a href="#grep">/grep</a></li>
-            <li><a href="#add_file">/add_file</a></li>
-            <li><a href="#remove_file">/remove_file</a></li>
-            <li><a href="#move_file">/move_file</a></li>
-            <li><a href="#restore">/restore</a></li>
-            <li><a href="#commit">/commit</a></li>
-            <li><a href="#amend">/amend</a></li>
-            <li><a href="#squash">/squash</a></li>
-            <li><a href="#stash">/stash</a></li>
-            <li><a href="#bisect">/bisect</a></li>
-            <li><a href="#branch">/branch</a></li>
-            <li><a href="#merge">/merge</a></li>
-            <li><a href="#rebase">/rebase</a></li>
-            <li><a href="#cherry_pick">/cherry_pick</a></li>
-            <li><a href="#push">/push</a></li>
-            <li><a href="#pull">/pull</a></li>
-            <li><a href="#pull_request">/pull_request</a></li>
-            <li><a href="#comment">/comment</a></li>
-            <li><a href="#close">/close</a></li>
-            <li><a href="#get_comments">/get_comments</a></li>
-          </ul>
-        </li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#git-tools">Git tools</a>
+      <ul>
+      <li><a href="#status">/status</a></li>
+      <li><a href="#log">/log</a></li>
+      <li><a href="#diff">/diff</a></li>
+      <li><a href="#grep">/grep</a></li>
+      <li><a href="#add_file">/add_file</a></li>
+      <li><a href="#remove_file">/remove_file</a></li>
+      <li><a href="#move_file">/move_file</a></li>
+      <li><a href="#restore">/restore</a></li>
+      <li><a href="#commit">/commit</a></li>
+      <li><a href="#amend">/amend</a></li>
+      <li><a href="#squash">/squash</a></li>
+      <li><a href="#stash">/stash</a></li>
+      <li><a href="#bisect">/bisect</a></li>
+      <li><a href="#branch">/branch</a></li>
+      <li><a href="#fetch">/fetch</a></li>
+      <li><a href="#merge">/merge</a></li>
+      <li><a href="#rebase">/rebase</a></li>
+      <li><a href="#cherry_pick">/cherry_pick</a></li>
+      <li><a href="#init_repo">/init_repo</a></li>
+      <li><a href="#push">/push</a></li>
+      <li><a href="#pull">/pull</a></li>
+      <li><a href="#pull_request">/pull_request</a></li>
+      <li><a href="#comment">/comment</a></li>
+      <li><a href="#close">/close</a></li>
+      <li><a href="#issue">/issue</a></li>
+      <li><a href="#get_comments">/get_comments</a></li>
+      </ul></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -87,177 +98,171 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Git Tools</h1>
-
-    <p>The Git tools wrap common Git, GitHub, and GitLab operations as local slash commands. They all require a Git repository in the workspace and, unless noted, run plain Git under the hood. A few commands integrate with the <code>gh</code> (GitHub) or <code>glab</code> (GitLab) CLI when installed.</p>
-
-    <p>Several commands surface a combined hint when the current branch is behind its base or carries more than one commit: <em>branch is N commits behind base; run /rebase</em> and/or <em>N commits ahead of base; run /squash</em>. The base branch is detected in the order <code>origin/main</code>, <code>origin/master</code>, <code>main</code>, then <code>master</code>.</p>
-
-    <p>Every command below also accepts the natural-language aliases listed in its <strong>Examples</strong>.</p>
-
-    <!-- /status -->
-    <h2 id="status">/status<a class="anchor" href="#status">#</a></h2>
-    <p>Shows the working-tree status with color highlighting. Runs <code>git status --branch --short</code>. Added and untracked entries are shown in green, deleted in red, modified in the default color; the branch line is muted.</p>
-    <h3>Examples</h3>
-    <pre><code>/status</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>status
+<h1 id="git-tools">Git tools</h1>
+<p>The Git tools wrap common Git, GitHub, and GitLab operations as local slash commands. They all require a Git repository in the workspace and, unless noted, run plain Git under the hood. A few commands integrate with the <code>gh</code> (GitHub) or <code>glab</code> (GitLab) CLI when it is installed — and a small number require it.</p>
+<p>Several commands surface a combined hint when the current branch is behind its base or carries more than one commit: <code>branch is N commits behind &lt;base&gt;; run /rebase</code> and/or <code>N commits ahead of &lt;base&gt;; run /squash</code>. The base branch is detected in the order <code>origin/main</code>, <code>origin/master</code>, <code>main</code>, then <code>master</code>.</p>
+<p>As with the core tools, every command below also accepts the natural-language aliases listed in its <strong>Examples</strong>.</p>
+<h2 id="status">/status</h2>
+<p>Shows the working-tree status with color highlighting.</p>
+<p>It runs <code>git status --branch --short</code>. Added files and untracked entries are shown in green, deleted entries in red, and modified entries in the default terminal color; the branch line is shown in a muted color. <code>gh</code> has no equivalent, so this always uses plain Git.</p>
+<h3 id="examples">Examples</h3>
+<pre class="text"><code>/status</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>status
 show status
 git status</code></pre>
-
-    <!-- /log -->
-    <h2 id="log">/log<a class="anchor" href="#log">#</a></h2>
-    <p>Shows the commit log. Uses <code>git lg</code> if a <code>lg</code> alias is found in <code>~/.gitconfig</code>, otherwise falls back to <code>git log --graph --oneline --decorate</code>. An optional number limits output to the most recent N commits. Below the log it appends a working-tree summary: <code>● Working tree clean</code> or <code>● N change(s)</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/log
-/log 5</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>log
+<h2 id="log">/log</h2>
+<p>Shows the commit log.</p>
+<p>If a <code>lg</code> alias is found in <code>~/.gitconfig</code> it runs <code>git lg</code>, otherwise it falls back to <code>git log --graph --oneline --decorate</code>. Pass an optional number to limit the output to the latest that many commits. Below the log it appends a highlighted summary of the working tree — either <code>● Working tree clean</code> or, when there are pending changes, <code>● N change(s)</code> broken down into uncommitted (tracked) and untracked counts. See the optional tools chapter for the recommended <code>git lg</code> alias setup.</p>
+<h3 id="examples-1">Examples</h3>
+<p>Show the full log:</p>
+<pre class="text"><code>/log</code></pre>
+<p>Show only the latest five commits:</p>
+<pre class="text"><code>/log 5</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>log
 show log
 git log
 git lg</code></pre>
-
-    <!-- /diff -->
-    <h2 id="diff">/diff<a class="anchor" href="#diff">#</a></h2>
-    <p>Shows a color unified diff. Without a branch it shows unstaged changes; with a branch it runs <code>git diff &lt;branch&gt;...HEAD</code>. Applies any configured non-interactive Git pager such as <code>delta</code>. Tab completion offers local and remote branch names.</p>
-    <h3>Examples</h3>
-    <pre><code>/diff
-/diff main</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>diff
+<h2 id="diff">/diff</h2>
+<p>Shows a color unified diff.</p>
+<p>Without a branch it shows unstaged changes; with a branch it runs <code>git diff &lt;branch&gt;...HEAD</code> to show the commits on the current branch that are not yet in the specified branch. Inside a Git repository it applies any configured non-interactive Git pager such as <code>delta</code>. Tab completion after <code>/diff</code> (or the natural-language form <code>diff against</code>) offers local and remote branch names.</p>
+<h3 id="examples-2">Examples</h3>
+<p>Show unstaged changes:</p>
+<pre class="text"><code>/diff</code></pre>
+<p>Show what the current branch adds over <code>main</code>:</p>
+<pre class="text"><code>/diff main</code></pre>
+<p>Natural-language forms — unstaged changes:</p>
+<pre class="text"><code>diff
 show diff
-git diff
-diff against main
-show diff against main</code></pre>
-
-    <!-- /grep -->
-    <h2 id="grep">/grep<a class="anchor" href="#grep">#</a></h2>
-    <p>Searches all tracked files for a pattern with <code>git grep</code>. Output is piped through the configured pager when one is set. Exit code 1 (no matches) is handled gracefully.</p>
-    <h3>Examples</h3>
-    <pre><code>/grep TODO
-/grep "fn main"</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>grep TODO
+git diff</code></pre>
+<p>Natural-language forms — against a branch:</p>
+<pre class="text"><code>diff against main
+show diff against main
+git diff main</code></pre>
+<h2 id="grep">/grep</h2>
+<p>Searches the workspace for a pattern with <code>git grep</code>.</p>
+<p>It searches all tracked files and requires a Git repository. Output is piped through the configured non-interactive pager (<code>pager.grep</code>, then <code>core.pager</code>) when one is set — if <code>delta</code> is configured it will colorize and format the results. Exit code 1 (no matches) is handled gracefully. <code>gh</code> has no equivalent, so it always uses plain Git.</p>
+<h3 id="examples-3">Examples</h3>
+<pre class="text"><code>/grep TODO
+/grep &quot;fn main&quot;</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>grep TODO
 find TODO
 git grep TODO</code></pre>
-
-    <!-- /add_file -->
-    <h2 id="add_file">/add_file<a class="anchor" href="#add_file">#</a></h2>
-    <p>Stages a file or directory with <code>git add</code>. Tab completion offers untracked directories first, then untracked files; already-tracked content is excluded.</p>
-    <h3>Examples</h3>
-    <pre><code>/add_file README.md
+<h2 id="add_file">/add_file</h2>
+<p>Stages a file or directory with <code>git add</code>.</p>
+<p>Tab completion after <code>/add_file</code> offers untracked directories first, then untracked files; already-tracked content is excluded.</p>
+<h3 id="examples-4">Examples</h3>
+<pre class="text"><code>/add_file README.md
 /add_file src/</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>add README.md
+<p>Natural-language forms:</p>
+<pre class="text"><code>add README.md
 add file src/
 git add README.md</code></pre>
-
-    <!-- /remove_file -->
-    <h2 id="remove_file">/remove_file<a class="anchor" href="#remove_file">#</a></h2>
-    <p>Removes a file or directory from Git tracking with <code>git rm</code> (using <code>-r</code> for directories). Tab completion offers tracked content; untracked content is excluded.</p>
-    <h3>Examples</h3>
-    <pre><code>/remove_file old.rs
+<h2 id="remove_file">/remove_file</h2>
+<p>Removes a file or directory from Git tracking with <code>git rm</code> (using <code>-r</code> for directories).</p>
+<p>Tab completion after <code>/remove_file</code> offers tracked directories first, then tracked files; untracked content is excluded.</p>
+<h3 id="examples-5">Examples</h3>
+<pre class="text"><code>/remove_file old.rs
 /remove_file legacy/</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>remove old.rs
+<p>Natural-language forms:</p>
+<pre class="text"><code>remove old.rs
 remove file legacy/
 git rm old.rs</code></pre>
-
-    <!-- /move_file -->
-    <h2 id="move_file">/move_file<a class="anchor" href="#move_file">#</a></h2>
-    <p>Renames or moves a tracked file with <code>git mv</code>. Tab completion for the first argument offers tracked files and directories; the second argument completes from all workspace paths.</p>
-    <h3>Examples</h3>
-    <pre><code>/move_file old.rs new.rs</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>move old.rs new.rs
+<h2 id="move_file">/move_file</h2>
+<p>Renames or moves a tracked file with <code>git mv</code>.</p>
+<pre class="text"><code>/move_file &lt;source&gt; &lt;destination&gt;</code></pre>
+<p>Tab completion for the first argument offers tracked directories first, then tracked files; the second argument completes from all workspace paths.</p>
+<h3 id="examples-6">Examples</h3>
+<pre class="text"><code>/move_file old.rs new.rs</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>move old.rs new.rs
 move file old.rs new.rs
 git mv old.rs new.rs</code></pre>
-
-    <!-- /restore -->
-    <h2 id="restore">/restore<a class="anchor" href="#restore">#</a></h2>
-    <p>Discards working-tree changes with <code>git restore &lt;file&gt;</code>, or unstages with <code>--staged</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/restore src/main.rs
-/restore --staged src/main.rs</code></pre>
-    <p>Natural-language form:</p>
-    <pre><code>restore src/main.rs</code></pre>
-
-    <!-- /commit -->
-    <h2 id="commit">/commit<a class="anchor" href="#commit">#</a></h2>
-    <p>Commits all tracked changes with <code>git commit -a -m &lt;message&gt;</code>. Quote the message when it contains spaces or issue-prefix characters such as <code>[#42]</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/commit Fix the parser
-/commit "[#42] Add the new feature"</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>commit Fix the bug
-commit "[#42] My feature"
-git commit -m "Fix the bug"</code></pre>
-
-    <!-- /amend -->
-    <h2 id="amend">/amend<a class="anchor" href="#amend">#</a></h2>
-    <p>Rewrites the last commit message with <code>git commit --amend -m &lt;message&gt;</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/amend Fix the parser
-/amend "[#42] Add the new feature"</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>amend Fix the bug
-amend "[#42] My feature"
-amend message "[#42] My feature"</code></pre>
-
-    <!-- /squash -->
-    <h2 id="squash">/squash<a class="anchor" href="#squash">#</a></h2>
-    <p>Squashes all commits on the current branch into a single commit, reusing the oldest commit's message. The branch is compared against <code>origin/main</code>, <code>origin/master</code>, <code>main</code>, or <code>master</code>. At least two commits are required, and squashing on <code>main</code> or <code>master</code> is blocked.</p>
-    <h3>Examples</h3>
-    <pre><code>/squash</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>squash
+<h2 id="restore">/restore</h2>
+<p>Discards working-tree changes to a file with <code>git restore &lt;file&gt;</code>, or unstages it with <code>--staged</code>.</p>
+<pre class="text"><code>/restore [--staged] &lt;file&gt;</code></pre>
+<p>With <code>--staged</code> it runs <code>git restore --staged &lt;file&gt;</code> to unstage the file without changing its contents. <code>gh</code> has no equivalent, so it always uses plain Git.</p>
+<h3 id="examples-7">Examples</h3>
+<p>Discard local changes to a file:</p>
+<pre class="text"><code>/restore src/main.rs</code></pre>
+<p>Unstage a file:</p>
+<pre class="text"><code>/restore --staged src/main.rs</code></pre>
+<p>Natural-language form:</p>
+<pre class="text"><code>restore src/main.rs</code></pre>
+<h2 id="commit">/commit</h2>
+<p>Commits all tracked changes with <code>git commit -a -m &lt;message&gt;</code>.</p>
+<p><code>gh</code> has no equivalent, so it always uses plain Git. The message may be bare or quoted; quote it when it contains spaces or shell-significant characters such as the <code>[#42]</code> issue prefix.</p>
+<h3 id="examples-8">Examples</h3>
+<pre class="text"><code>/commit Fix the parser
+/commit &quot;[#42] Add the new feature&quot;</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>commit Fix the bug
+commit &quot;[#42] My feature&quot;
+git commit -m &quot;Fix the bug&quot;</code></pre>
+<h2 id="amend">/amend</h2>
+<p>Rewrites the last commit message with <code>git commit --amend -m &lt;message&gt;</code>.</p>
+<p>The message is mandatory and may be bare or quoted. <code>gh</code> has no equivalent, so it always uses plain Git.</p>
+<h3 id="examples-9">Examples</h3>
+<pre class="text"><code>/amend Fix the parser
+/amend &quot;[#42] Add the new feature&quot;</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>amend Fix the bug
+amend &quot;[#42] My feature&quot;
+amend message &quot;[#42] My feature&quot;
+git amend &quot;Fix the bug&quot;
+git commit --amend -m &quot;Fix the bug&quot;</code></pre>
+<h2 id="squash">/squash</h2>
+<p>Squashes all commits on the current branch into a single commit, reusing the oldest commit's message.</p>
+<p>The branch is compared against <code>origin/main</code>, <code>origin/master</code>, <code>main</code>, or <code>master</code>, tried in that order. At least two commits are required, and squashing on <code>main</code> or <code>master</code> is blocked. <code>gh</code> has no equivalent, so it always uses plain Git.</p>
+<h3 id="examples-10">Examples</h3>
+<pre class="text"><code>/squash</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>squash
 squash branch
 squash commits
 git squash</code></pre>
-
-    <!-- /stash -->
-    <h2 id="stash">/stash<a class="anchor" href="#stash">#</a></h2>
-    <p>Saves and restores uncommitted changes on the stash stack.</p>
-    <ul>
-      <li><code>/stash</code>: runs <code>git stash push</code>, saves all staged and unstaged changes</li>
-      <li><code>/stash pop</code>: runs <code>git stash pop</code>, restores and removes the most recent entry</li>
-      <li><code>/stash list</code>: shows all stash entries with index and description</li>
-      <li><code>/stash drop</code>: runs <code>git stash drop</code>, discards the most recent entry</li>
-    </ul>
-    <h3>Examples</h3>
-    <pre><code>/stash
+<h2 id="stash">/stash</h2>
+<p>Saves and restores uncommitted changes on the stash stack.</p>
+<ul>
+<li><code>/stash</code> runs <code>git stash push</code> to save all uncommitted changes, both staged and unstaged.</li>
+<li><code>/stash pop</code> restores and removes the most recent stash entry with <code>git stash pop</code>.</li>
+<li><code>/stash list</code> shows all stash entries with their index and description.</li>
+<li><code>/stash drop</code> discards the most recent stash entry with <code>git stash drop</code>.</li>
+</ul>
+<p><code>gh</code> has no stash equivalent, so all four operations always use plain Git. Running <code>/stash</code> with a clean working tree produces an error from Git.</p>
+<h3 id="examples-11">Examples</h3>
+<pre class="text"><code>/stash
 /stash pop
 /stash list
 /stash drop</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>stash
+<p>Natural-language forms:</p>
+<pre class="text"><code>stash
 pop stash
 list stashes
 drop stash</code></pre>
-
-    <!-- /bisect -->
-    <h2 id="bisect">/bisect<a class="anchor" href="#bisect">#</a></h2>
-    <p>Runs a binary-search session to find the commit that introduced a bug.</p>
-    <ul>
-      <li><code>/bisect</code> or <code>/bisect status</code> — shows the current bisect state; reports "No bisect session in progress" when none is active.</li>
-      <li><code>/bisect start [&lt;commit&gt;]</code> — begins a new bisect session, optionally marking <code>&lt;commit&gt;</code> as the first known-bad revision.</li>
-      <li><code>/bisect good [&lt;commit&gt;]</code> — marks the current (or specified) commit as good.</li>
-      <li><code>/bisect bad [&lt;commit&gt;]</code> — marks the current (or specified) commit as bad.</li>
-      <li><code>/bisect skip [&lt;commit&gt;]</code> — tells Git to skip the current (or specified) commit when it cannot be tested.</li>
-      <li><code>/bisect reset</code> — ends the bisect session and returns <code>HEAD</code> to its original position.</li>
-      <li><code>/bisect log</code> — prints the log of all good/bad markings made so far.</li>
-    </ul>
-    <p>All subcommands run plain <code>git bisect &lt;sub&gt;</code>; there is no <code>gh</code> equivalent.</p>
-    <h3>Examples</h3>
-    <pre><code>/bisect start
+<h2 id="bisect">/bisect</h2>
+<p>Runs a binary-search session to find the commit that introduced a bug.</p>
+<ul>
+<li><code>/bisect</code> or <code>/bisect status</code> — shows the current bisect state; reports "No bisect session in progress" when none is active.</li>
+<li><code>/bisect start [&lt;commit&gt;]</code> — begins a new bisect session, optionally marking <code>&lt;commit&gt;</code> as the first known-bad revision.</li>
+<li><code>/bisect good [&lt;commit&gt;]</code> — marks the current (or specified) commit as good.</li>
+<li><code>/bisect bad [&lt;commit&gt;]</code> — marks the current (or specified) commit as bad.</li>
+<li><code>/bisect skip [&lt;commit&gt;]</code> — tells Git to skip the current (or specified) commit when it cannot be tested.</li>
+<li><code>/bisect reset</code> — ends the bisect session and returns <code>HEAD</code> to its original position.</li>
+<li><code>/bisect log</code> — prints the log of all good/bad markings made so far.</li>
+</ul>
+<p>All subcommands run plain <code>git bisect &lt;sub&gt;</code>; there is no <code>gh</code> equivalent.</p>
+<h3 id="examples-12">Examples</h3>
+<pre class="text"><code>/bisect start
 /bisect bad
 /bisect good abc1234
 /bisect skip
 /bisect log
 /bisect reset</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>bisect start
+<p>Natural-language forms:</p>
+<pre class="text"><code>bisect start
 start bisect
 bisect good
 mark good
@@ -269,28 +274,27 @@ bisect reset
 reset bisect
 bisect log
 bisect</code></pre>
-
-    <!-- /branch -->
-    <h2 id="branch">/branch<a class="anchor" href="#branch">#</a></h2>
-    <p>Lists, switches, creates, renames, or deletes branches.</p>
-    <pre><code>/branch [&lt;name&gt; | -b &lt;name&gt; | -m &lt;name&gt; | -d &lt;name&gt; | -a]</code></pre>
-    <ul>
-      <li>No arguments: lists local branches</li>
-      <li><code>-a</code>: lists all branches including remote</li>
-      <li><code>&lt;name&gt;</code>: switches to an existing branch</li>
-      <li><code>-b &lt;name&gt;</code>: creates and switches to a new branch</li>
-      <li><code>-m &lt;new-name&gt;</code>: renames the current branch</li>
-      <li><code>-d &lt;name&gt;</code>: deletes the branch; blocked on <code>main</code> and <code>master</code></li>
-    </ul>
-    <h3>Examples</h3>
-    <pre><code>/branch
+<h2 id="branch">/branch</h2>
+<p>Lists, switches, creates, renames, or deletes branches.</p>
+<pre class="text"><code>/branch [&lt;name&gt; | -b &lt;name&gt; | -m &lt;name&gt; | -d &lt;name&gt; | -a]</code></pre>
+<ul>
+<li>No arguments — lists local branches (<code>git branch</code>).</li>
+<li><code>-a</code> — lists all branches including remote.</li>
+<li><code>&lt;name&gt;</code> — switches to an existing branch.</li>
+<li><code>-b &lt;name&gt;</code> — creates and switches to a new branch (<code>git checkout -b</code>).</li>
+<li><code>-m &lt;new-name&gt;</code> — renames the current branch (<code>git branch -m</code>).</li>
+<li><code>-d &lt;name&gt;</code> — deletes the branch (<code>git branch -D</code>), blocked on <code>main</code> and <code>master</code>.</li>
+</ul>
+<p>Tab completion after <code>/branch</code> offers local branch names. <code>gh</code> has no equivalent, so all operations always use plain Git.</p>
+<h3 id="examples-13">Examples</h3>
+<pre class="text"><code>/branch
 /branch -a
 /branch feature/login
 /branch -b feature/login
 /branch -m feature/auth
 /branch -d feature/old</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>branch
+<p>Natural-language forms:</p>
+<pre class="text"><code>branch
 list branches
 list all branches
 checkout main
@@ -298,133 +302,182 @@ switch to main
 create branch feature/x
 rename to new-name
 delete branch feature/old</code></pre>
-
-    <!-- /merge -->
-    <h2 id="merge">/merge<a class="anchor" href="#merge">#</a></h2>
-    <p>Merges a branch into the current branch. Uses <code>gh pr merge --merge</code> if <code>gh</code> is installed, otherwise uses <code>git merge</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/merge feature/login</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>merge feature/login
+<h2 id="fetch">/fetch</h2>
+<p>Fetches from a remote with <code>git fetch &lt;remote&gt;</code>.</p>
+<p><code>gh</code>/<code>glab</code> have no fetch that improves on Git, so it always uses plain Git. With no argument it fetches from the first configured remote (<code>origin</code> is floated to the front of <code>git remote</code>, so it is the default when present); pass a remote name to fetch from a specific one. Tab completion after <code>/fetch</code> (or the natural-language forms <code>fetch</code> / <code>git fetch</code>) offers the configured remotes, with the default offered first and previewed as the grey inline ghost, so <code>/fetch u</code> then Tab completes to <code>/fetch upstream</code>. It errors when the repository has no remotes or the named remote is unknown.</p>
+<h3 id="examples-14">Examples</h3>
+<pre class="text"><code>/fetch
+/fetch upstream</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>fetch
+fetch upstream
+git fetch
+git fetch upstream</code></pre>
+<h2 id="merge">/merge</h2>
+<p>Merges a branch into the current branch.</p>
+<p>If <code>gh</code> is installed it uses <code>gh pr merge --merge</code>; otherwise it uses <code>git merge</code>.</p>
+<h3 id="examples-15">Examples</h3>
+<pre class="text"><code>/merge feature/login</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>merge feature/login
 git merge feature/login</code></pre>
-
-    <!-- /rebase -->
-    <h2 id="rebase">/rebase<a class="anchor" href="#rebase">#</a></h2>
-    <p>Rebases the current branch against the repository default branch. Uses <code>gh</code> to detect the default branch when available, otherwise probes <code>origin/main</code> then <code>origin/master</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/rebase</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>rebase
-git rebase</code></pre>
-
-    <!-- /cherry_pick -->
-    <h2 id="cherry_pick">/cherry_pick<a class="anchor" href="#cherry_pick">#</a></h2>
-    <p>Cherry-picks a commit onto the current branch with <code>git cherry-pick</code>. Tab completion offers abbreviated commit hashes from the default branch.</p>
-    <h3>Examples</h3>
-    <pre><code>/cherry_pick abc1234</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>cherry pick abc1234
+<h2 id="rebase">/rebase</h2>
+<p>Rebases the current branch onto another branch.</p>
+<p>With no argument it rebases against the repository default branch: if <code>gh</code> is installed it queries the repository default branch, otherwise it probes <code>origin/main</code> then <code>origin/master</code>, fetches it, and rebases onto the updated <code>origin/&lt;branch&gt;</code>.</p>
+<p>A target argument rebases onto a specific branch, resolved against the configured remotes:</p>
+<ul>
+<li>A local branch (or any committish) is handed straight to <code>git rebase &lt;target&gt;</code> without contacting a remote.</li>
+<li>A remote-tracking branch such as <code>origin/main</code> — whose first segment is a configured remote — is refreshed with <code>git fetch &lt;remote&gt; &lt;branch&gt;</code> and rebased onto the updated <code>&lt;remote&gt;/&lt;branch&gt;</code>.</li>
+<li>A bare remote name such as <code>origin</code> resolves the remote's default branch (from <code>refs/remotes/&lt;remote&gt;/HEAD</code>, falling back to <code>main</code> then <code>master</code>) and rebases onto it, refreshing it first.</li>
+</ul>
+<p>Tab completion after <code>/rebase</code> (or the natural-language forms <code>rebase</code> / <code>git rebase</code>) offers, in order, local branch names (from <code>git branch</code>), then the configured remotes (from <code>git remote</code>, with <code>origin</code> floated to the front), then the remote-tracking branches (from <code>git branch --all</code>, e.g. <code>origin/main</code>). The first local branch is previewed as the grey inline ghost.</p>
+<h3 id="examples-16">Examples</h3>
+<pre class="text"><code>/rebase
+/rebase develop
+/rebase origin/main
+/rebase upstream</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>rebase
+git rebase
+rebase develop
+git rebase origin/main</code></pre>
+<h2 id="cherry_pick">/cherry_pick</h2>
+<p>Cherry-picks a commit onto the current branch with <code>git cherry-pick</code>.</p>
+<p><code>gh</code> has no equivalent, so it always uses plain Git. Tab completion offers abbreviated commit hashes from the default branch (<code>origin/main</code>, <code>origin/master</code>, <code>main</code>, or <code>master</code>, tried in that order).</p>
+<h3 id="examples-17">Examples</h3>
+<pre class="text"><code>/cherry_pick abc1234</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>cherry pick abc1234
 cherry-pick abc1234
 git cherry-pick abc1234</code></pre>
-
-    <!-- /init_repo -->
-    <h2 id="init_repo">/init_repo<a class="anchor" href="#init_repo">#</a></h2>
-    <p>Initializes a Git repository in the workspace with <code>git init</code>. Reinitializing an existing repo is safe.</p>
-    <h3>Examples</h3>
-    <pre><code>/init_repo</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>init
+<h2 id="init_repo">/init_repo</h2>
+<p>Initializes a Git repository in the workspace with <code>git init</code>.</p>
+<p>It works both inside and outside an existing Git repository — reinitializing an existing repo is safe. <code>gh</code> has no equivalent, so it always uses plain Git.</p>
+<h3 id="examples-18">Examples</h3>
+<pre class="text"><code>/init_repo</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>init
 init repo
 git init</code></pre>
-
-    <!-- /push -->
-    <h2 id="push">/push<a class="anchor" href="#push">#</a></h2>
-    <p>Pushes the current branch to <code>origin</code> with <code>git push origin &lt;branch&gt;</code>. <code>--force</code> (or <code>-f</code>) runs <code>git push -f</code> but is blocked on <code>main</code> and <code>master</code>. After a successful push it reports if the branch needs a <code>/rebase</code> or <code>/squash</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/push
+<h2 id="push">/push</h2>
+<p>Pushes the current branch to <code>origin</code> with <code>git push origin &lt;branch&gt;</code>.</p>
+<p><code>gh</code> has no equivalent, so it always uses plain Git. <code>--force</code> (or <code>-f</code>, or <code>force</code>) runs <code>git push -f origin &lt;branch&gt;</code> but is blocked on <code>main</code> and <code>master</code> to prevent accidental history rewrites. After a successful push it compares the branch against the base branch and, when the branch is behind the base or has more than one commit ahead, reports that the branch needs a <code>/rebase</code> and/or <code>/squash</code>.</p>
+<h3 id="examples-19">Examples</h3>
+<pre class="text"><code>/push
 /push --force</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>push
+<p>Natural-language forms:</p>
+<pre class="text"><code>push
 git push origin
 force push
 push --force</code></pre>
-
-    <!-- /pull -->
-    <h2 id="pull">/pull<a class="anchor" href="#pull">#</a></h2>
-    <p>Checks out a GitHub pull request on a dedicated branch. Uses <code>gh pr checkout</code> if <code>gh</code> is installed, otherwise fetches directly from <code>origin</code>. After checkout it reports if the branch needs a <code>/rebase</code> or <code>/squash</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/pull 58</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>pull 58
+<h2 id="pull">/pull</h2>
+<p>Checks out a GitHub pull request on a dedicated branch.</p>
+<pre class="text"><code>/pull &lt;number&gt;</code></pre>
+<p>If <code>gh</code> is installed it uses <code>gh pr checkout</code>; otherwise it fetches the pull request directly from <code>origin</code>. After the checkout it compares the branch against the base branch and, when the branch is behind the base or has more than one commit ahead, reports that the pull request needs a <code>/rebase</code> and/or <code>/squash</code>.</p>
+<h3 id="examples-20">Examples</h3>
+<pre class="text"><code>/pull 58</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>pull 58
 pull pr 58
 pull request 58
 pull #58</code></pre>
-
-    <!-- /pull_request -->
-    <h2 id="pull_request">/pull_request<a class="anchor" href="#pull_request">#</a></h2>
-    <p>Creates a pull request for the current branch. Requires the <code>gh</code> CLI. Runs pre-flight checks: blocks on <code>main</code>/<code>master</code>, requires at least one commit ahead of the base, and blocks when the branch is behind or has more than one commit ahead (reporting the <code>/rebase</code>/<code>/squash</code> hint). When checks pass it pushes with <code>--set-upstream origin</code> and calls <code>gh pr create</code> with the title and body from the single commit message.</p>
-    <p>Setting <code>auto_rebase = on</code> or <code>auto_squash = on</code> in <code>[orangu]</code> triggers the corresponding fix automatically before continuing.</p>
-    <h3>Examples</h3>
-    <pre><code>/pull_request</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>pull request
+<h2 id="pull_request">/pull_request</h2>
+<p>Creates a pull request for the current branch. Requires the <code>gh</code> CLI.</p>
+<p>Before creating the pull request it runs several pre-flight checks: it blocks on <code>main</code> and <code>master</code>, requires at least one commit ahead of the base branch, and blocks when the branch is behind the base and/or has more than one commit ahead — reporting the combined <code>/rebase</code> and/or <code>/squash</code> hint. When all checks pass it pushes the branch with <code>--set-upstream origin</code> and calls <code>gh pr create</code> with the title and body derived from the single commit message.</p>
+<p>The checks can be bypassed by setting <code>auto_rebase = on</code> or <code>auto_squash = on</code> in the <code>[orangu]</code> configuration section, which triggers the corresponding fix automatically before continuing.</p>
+<h3 id="examples-21">Examples</h3>
+<pre class="text"><code>/pull_request</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>pull request
 create pull request
 open pull request
 new pull request
 create pr
 open pr
 new pr</code></pre>
-
-    <!-- /comment -->
-    <h2 id="comment">/comment<a class="anchor" href="#comment">#</a></h2>
-    <p>Adds a comment to a GitHub or GitLab issue. Requires the <code>gh</code> or <code>glab</code> CLI.</p>
-    <pre><code>/comment &lt;number&gt; "&lt;comment&gt;"
+<h2 id="comment">/comment</h2>
+<p>Adds a comment to a GitHub issue or GitLab issue. Requires the <code>gh</code> or <code>glab</code> CLI.</p>
+<pre class="text"><code>/comment &lt;number&gt; &quot;&lt;comment&gt;&quot;
 /comment &lt;number&gt; &lt;file&gt;
 /comment &lt;number&gt; with review
 /comment &lt;number&gt; with auto review</code></pre>
-    <p>When the third argument is a quoted string it is used as the body directly. When it is a bare word it is treated as a filename relative to <code>~/.orangu/comments/</code>; Tab completion lists the files in that directory.</p>
-    <p><code>with review</code> posts the last <code>/review</code> summary of the session as the comment body, and <code>with auto review</code> posts the last <code>/auto_review</code> report — the same Markdown that is copied to the clipboard on exit. Each keyword is offered by completion only once the matching review has actually been run; when none has, the command points you at <code>/review</code> or <code>/auto_review</code>.</p>
-    <h3>Examples</h3>
-    <pre><code>/comment 51 "Thanks, merged."
-/comment 51 merged.md
-/comment 48 with review
+<p>It runs <code>gh issue comment &lt;number&gt; --body &lt;body&gt;</code> (or the GitLab equivalent). Without the CLI installed it reports an error, since there is no plain Git equivalent. When the third argument is a quoted string it is used as the comment body directly. When it is a bare word it is treated as a filename relative to <code>~/.orangu/comments/</code> and the file contents become the body — Tab completion after <code>/comment &lt;number&gt;</code> (without a leading <code>"</code>) lists files in that directory.</p>
+<h3 id="submitting-a-review-as-the-comment">Submitting a review as the comment</h3>
+<p><code>with review</code> posts the last <code>/review</code> summary of this session as the comment body, and <code>with auto review</code> posts the last <code>/auto_review</code> report — the same Markdown that is copied to the clipboard on exit, ready for an issue or pull request. The keywords are matched case-insensitively against the whole argument, so a template file whose name merely starts with <code>w</code> (or even <code>with</code>) is still treated as a filename; only the exact phrases are keywords. When no matching review has been run yet, the command reports an error pointing at <code>/review</code> or <code>/auto_review</code>.</p>
+<p>Tab completion (and the inline grey ghost) after <code>/comment &lt;number&gt;</code> offers the template files from <code>~/.orangu/comments/</code> first — an existing template keeps its priority — followed by the report keywords. Each keyword is only offered once the matching review has actually been run in the session: before any <code>/review</code>, <code>with review</code> is ignored by completion (and likewise <code>with auto review</code> before any <code>/auto_review</code>), so the hints never suggest a report that does not exist. Typing <code>with</code> narrows the hint to the available keywords.</p>
+<h3 id="examples-22">Examples</h3>
+<p>Inline comment body:</p>
+<pre class="text"><code>/comment 51 &quot;Thanks, merged.&quot;</code></pre>
+<p>Comment body from a Markdown file in <code>~/.orangu/comments/</code>:</p>
+<pre class="text"><code>/comment 51 merged.md</code></pre>
+<p>The last review or auto review report as the body:</p>
+<pre class="text"><code>/comment 48 with review
 /comment 48 with auto review</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>add comment on 51 "My comment"
-comment on 51 "My comment"
+<p>Natural-language forms:</p>
+<pre class="text"><code>add comment on 51 &quot;My comment&quot;
+add comment to 51 &quot;My comment&quot;
+comment on 51 &quot;My comment&quot;
 comment on 48 with review
 comment on 48 with auto review</code></pre>
-
-    <!-- /close -->
-    <h2 id="close">/close<a class="anchor" href="#close">#</a></h2>
-    <p>Closes a GitHub/GitLab issue or pull request. Requires <code>gh</code> or <code>glab</code>.</p>
-    <pre><code>/close -i &lt;number&gt;    # close an issue
-/close -p &lt;number&gt;    # close a pull request / merge request</code></pre>
-    <h3>Examples</h3>
-    <pre><code>/close -i 51
+<h2 id="close">/close</h2>
+<p>Closes a GitHub/GitLab issue or pull request. Requires the <code>gh</code> or <code>glab</code> CLI.</p>
+<pre class="text"><code>/close -i &lt;number&gt;
+/close -p &lt;number&gt;</code></pre>
+<ul>
+<li><code>-i &lt;number&gt;</code> runs <code>gh issue close &lt;number&gt;</code> (or <code>glab issue close &lt;number&gt;</code>) to close an issue.</li>
+<li><code>-p &lt;number&gt;</code> runs <code>gh pr close &lt;number&gt;</code> (or <code>glab mr close &lt;number&gt;</code>) to close a pull request or merge request.</li>
+</ul>
+<h3 id="examples-23">Examples</h3>
+<pre class="text"><code>/close -i 51
 /close -p 58</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>close issue 51
+<p>Natural-language forms:</p>
+<pre class="text"><code>close issue 51
 close pr 58</code></pre>
+<h2 id="issue">/issue</h2>
+<p>Adds a <strong>reviewer</strong>, <strong>assignee</strong>, or <strong>label</strong> to a GitHub/GitLab issue or pull/merge request. Requires the <code>gh</code> or <code>glab</code> CLI.</p>
+<pre class="text"><code>/issue &lt;reviewer|assignee|label&gt; &lt;number&gt; &lt;value&gt;</code></pre>
+<p>The three subcommands are:</p>
+<ul>
+<li><strong><code>reviewer</code></strong> — request a review from a user. Reviewers exist only on pull/merge requests, so the number must be one; an issue number is refused.</li>
+<li><strong><code>assignee</code></strong> — assign a user. Works on both issues and pull/merge requests.</li>
+<li><strong><code>label</code></strong> — add a label. Works on both, and the value may contain spaces (it is the rest of the line), so <code>needs triage</code> is a single label.</li>
+</ul>
+<p>The <code>&lt;number&gt;</code> may be an issue <strong>or</strong> a pull/merge request — orangu detects which by asking the CLI (<code>gh pr view</code> / <code>glab mr view</code> first, then the issue view) and runs the matching edit:</p>
+<ul>
+<li>GitHub — <code>gh pr edit &lt;n&gt; --add-reviewer|--add-assignee|--add-label &lt;value&gt;</code>, or <code>gh issue edit &lt;n&gt; --add-assignee|--add-label &lt;value&gt;</code>.</li>
+<li>GitLab — <code>glab mr update &lt;n&gt; --reviewer|--assignee|--label &lt;value&gt;</code>, or <code>glab issue update &lt;n&gt; --assignee|--label &lt;value&gt;</code>.</li>
+</ul>
+<h3 id="completion">Completion</h3>
+<p>Every part Tab-completes (and shows the inline ghost hint):</p>
+<ul>
+<li>the <strong>subcommand</strong> completes against <code>reviewer</code>, <code>assignee</code>, <code>label</code>;</li>
+<li>the <strong>value</strong> completes against the repository's candidates for that subcommand — collaborators for <code>reviewer</code>, assignable users for <code>assignee</code>, and label names for <code>label</code>.</li>
+</ul>
+<p>The candidate lists are fetched once at startup (via <code>gh</code>/<code>glab</code>) and cached, so completion never shells out on a keystroke. The <code>&lt;number&gt;</code> is typed directly (no completion). So <code>/issue re&lt;TAB&gt; 114 je&lt;TAB&gt;</code> expands to <code>/issue reviewer 114 jesperpedersen</code>.</p>
+<h3 id="examples-24">Examples</h3>
+<pre class="text"><code>/issue reviewer 114 jesperpedersen
+/issue assignee 51 alice
+/issue label 51 needs triage</code></pre>
+<h2 id="get_comments">/get_comments</h2>
+<p>Lists the comments on a GitHub/GitLab issue or pull request. Requires the <code>gh</code> or <code>glab</code> CLI.</p>
+<pre class="text"><code>/get_comments -i &lt;number&gt;
+/get_comments -p &lt;number&gt;</code></pre>
+<ul>
+<li><code>-i &lt;number&gt;</code> runs <code>gh api repos/{owner}/{repo}/issues/&lt;number&gt;/comments</code> (or <code>glab api projects/:id/issues/&lt;number&gt;/notes</code>) to list the comments on an issue.</li>
+<li><code>-p &lt;number&gt;</code> lists the comments on a pull request or merge request. On GitHub a pull request keeps its conversation comments and its inline review comments on separate endpoints, so both <code>gh api repos/{owner}/{repo}/issues/&lt;number&gt;/comments</code> and <code>gh api repos/{owner}/{repo}/pulls/&lt;number&gt;/comments</code> are fetched and merged chronologically. On GitLab it runs <code>glab api projects/:id/merge_requests/&lt;number&gt;/notes</code>, which already mixes discussion and inline diff notes.</li>
+</ul>
+<p>Each comment is shown as a block: a grey <code>● &lt;date&gt; &lt;author&gt;</code> header line, then the body indented two spaces. On GitLab, system notes (label changes, assignments, and so on) are skipped.</p>
+<pre class="text"><code>● 2026-06-01 12:30:45 alice
+  Looks good!
 
-    <!-- /get_comments -->
-    <h2 id="get_comments">/get_comments<a class="anchor" href="#get_comments">#</a></h2>
-    <p>Lists the comments on a GitHub/GitLab issue or pull request. Requires <code>gh</code> or <code>glab</code>.</p>
-    <pre><code>/get_comments -i &lt;number&gt;    # comments on an issue
-/get_comments -p &lt;number&gt;    # comments on a pull request / merge request</code></pre>
-    <p>For a GitHub pull request both the conversation comments and the inline review comments are fetched and merged chronologically. Each comment is shown as a block: a grey <code>● &lt;date&gt; &lt;author&gt;</code> header line, then the body indented two spaces. GitLab system notes (label changes, assignments, and so on) are skipped.</p>
-    <h3>Examples</h3>
-    <pre><code>/get_comments -i 51
+● 2026-06-02 08:00:00 bob
+  Merged.</code></pre>
+<h3 id="examples-25">Examples</h3>
+<pre class="text"><code>/get_comments -i 51
 /get_comments -p 58</code></pre>
-    <p>Natural-language forms:</p>
-    <pre><code>get comments for issue 51
+<p>Natural-language forms (after <code>get comments for</code> the inline ghost hint offers <code>issue</code> and <code>pull request</code>; Tab accepts, Shift+Tab cycles):</p>
+<pre class="text"><code>get comments for issue 51
 get comments for pull request 58</code></pre>
-
-    <div class="doc-footer-nav">
-      <a href="core-tools.html" class="prev">Core Tools</a>
-      <a href="usage-tools.html" class="next">Usage Tools</a>
-    </div>
-
   </main>
 </div>
 

@@ -37,16 +37,29 @@
     <div class="sidebar-section">
       <div class="sidebar-section-title">User Manual</div>
       <ul>
-        <li><a href="introduction.html" class="active">Introduction</a></li>
+        <li><a href="introduction.html">Introduction</a></li>
         <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="local-llm.html">Local LLM</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+      <ul>
+      <li><a href="#introduction">Introduction</a>
+      <ul>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#community">Community</a></li>
+      </ul></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -61,49 +74,36 @@
   </aside>
 
   <main class="doc-content">
-
-    <h1>Introduction</h1>
-
-    <p><strong>orangu</strong> is a local, workspace-aware, tool-driven coding environment for <strong>OpenAI-compatible</strong> servers, especially <a href="https://github.com/ggml-org/llama.cpp" target="_blank">llama.cpp</a>.</p>
-
-    <p>orangu is named after the <a href="https://en.wikipedia.org/wiki/Orangutan" target="_blank">Orangutan</a>, the smartest ape.</p>
-
-    <h2 id="features">Features<a class="anchor" href="#features">#</a></h2>
-
-    <ul>
-      <li>OpenAI-compatible chat completions with streaming output</li>
-      <li>Local file reading and editing within the workspace</li>
-      <li>URL fetching for external knowledge</li>
-      <li>Shell command execution inside the workspace</li>
-      <li>Model switching and runtime server target control</li>
-      <li>Persistent sessions with per-branch auto-resume</li>
-      <li>Shell-style editing, ghost-text hints, and context-sensitive Tab completion</li>
-      <li>Full Git workflow: commit, push, rebase, squash, review, pull request</li>
-      <li>GitHub and GitLab integration via <code>gh</code> and <code>glab</code></li>
-      <li>Markdown rendering with syntax-highlighted code blocks</li>
-      <li>Zero cloud dependencies, runs entirely on your machine</li>
-    </ul>
-
-    <h2 id="community">Community<a class="anchor" href="#community">#</a></h2>
-
-    <p>Contributions to <strong>orangu</strong> are managed on <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a>.</p>
-
-    <ul>
-      <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Ask a question</a></li>
-      <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Raise an issue</a></li>
-      <li><a href="https://github.com/mnemosyne-systems/orangu/issues/new?labels=enhancement" target="_blank">Feature request</a></li>
-      <li><a href="https://github.com/mnemosyne-systems/orangu/pulls" target="_blank">Code submission</a></li>
-    </ul>
-
-    <p>Contributions are most welcome! Please consult our <a href="https://github.com/mnemosyne-systems/orangu/blob/main/CODE_OF_CONDUCT.md" target="_blank">Code of Conduct</a> before participating.</p>
-
-    <p>Consider giving the project a <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">star on GitHub</a> if you find it useful.</p>
-
-    <div class="doc-footer-nav">
-      <span></span>
-      <a href="building.html" class="next">Building</a>
-    </div>
-
+<h1 id="introduction">Introduction</h1>
+<p>[<strong>orangu</strong>][orangu] is a local workspace-aware tool-driven coding environment for <strong>OpenAI-compatible</strong> servers - especially [<strong>llama.cpp</strong>][llama].</p>
+<p><strong>orangu</strong> is named after the <a href="https://en.wikipedia.org/wiki/Orangutan">Orangutan</a> - the smartest ape.</p>
+<figure>
+<img src="images/orangu-terminal.png" alt="orangu terminal interface" /><figcaption aria-hidden="true">orangu terminal interface</figcaption>
+</figure>
+<h2 id="features">Features</h2>
+<ul>
+<li>OpenAI-compatible chat completions, tuned for llama.cpp — fully local, no Internet connection required after setup</li>
+<li>Interactive code review (<code>/review</code>) and LLM-driven auto review (<code>/auto_review</code>) of the changes on your branch, with a category-grouped report you can export or post to an issue</li>
+<li>Local file reading and editing</li>
+<li>Workspace-aware Git and forge tools (commit, rebase, push, pull requests, comments) for the whole change-and-review loop</li>
+<li>URL fetching for external knowledge</li>
+<li>Shell command execution inside the workspace</li>
+<li>Model switching and runtime server target control</li>
+<li>PDF export of the console or a review report (<code>/export</code>)</li>
+<li>Persistent history, shell-style editing, and a terminal status banner</li>
+<li>Built-in offline manual (<code>/manual</code>) with full-text search</li>
+</ul>
+<h2 id="community">Community</h2>
+<p>Contributions to [<strong>orangu</strong>][orangu] are managed on [GitHub][orangu]</p>
+<ul>
+<li>[Ask a question][ask]</li>
+<li>[Raise an issue][issue]</li>
+<li>[Feature request][request]</li>
+<li>[Code submission][submission]</li>
+</ul>
+<p>Contributions are most welcome!</p>
+<p>Please, consult our [Code of Conduct][conduct] policies for interacting in our community.</p>
+<p>Consider giving the project a [star][star] on [GitHub][orangu] if you find it useful. And, feel free to follow the project on [X][twitter] as well.</p>
   </main>
 </div>
 
@@ -128,5 +128,6 @@
   })();
 </script>
 
+<script src="../copy-code.js"></script>
 </body>
 </html>
