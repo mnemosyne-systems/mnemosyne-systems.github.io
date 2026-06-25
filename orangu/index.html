@@ -42,7 +42,7 @@
       </h1>
 
       <p class="hero-subtitle">
-        orangu is an open-source terminal AI that reads your project, edits your files, and runs your Git workflow against any local LLM. No API keys, no telemetry, no data leaves your machine.
+        orangu is an open-source terminal AI that reads your project, edits your files, reviews your branch, and runs your whole Git workflow against any local LLM. No API keys, no telemetry, no data leaves your machine.
       </p>
 
       <div class="hero-cta">
@@ -63,8 +63,8 @@
   <div class="install-strip">
     <div class="install-pill">
       <span class="prompt">$</span>
-      <span class="cmd">curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh</span>
-      <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh');this.textContent='Copied';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
+      <span class="cmd">curl -fsSL https://mnemosyne-systems.github.io/orangu/install.sh | sh</span>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -fsSL https://mnemosyne-systems.github.io/orangu/install.sh | sh');this.textContent='Copied';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
     </div>
   </div>
 
@@ -74,37 +74,37 @@
       <div class="split">
 
         <div>
-          <span class="section-label">What is orangu</span>
+          <span class="section-label">Why orangu</span>
           <div class="sep"></div>
-          <h2 class="section-title">AI coding,<br>without the cloud.</h2>
+          <h2 class="section-title">The private,<br>Git-centric companion.</h2>
           <p class="section-body">
-            orangu runs as a terminal client against any local LLM server. It reads your project files, understands your Git history, and executes commands on your behalf. No API keys. No data transmission.
+            orangu is the lean, private, Git-centric coding companion for the terminal — built for developers who run their own models and want a tightly integrated review workflow without sending a single line of code to the cloud.
           </p>
           <div class="feature-list">
             <a href="doc/local-llm.html">
               <div class="feature-item">
                 <span class="feature-dash"></span>
                 <div>
-                  <h4>OpenAI-compatible</h4>
-                  <p>Works with llama.cpp, Ollama, LM Studio, or any server that implements the OpenAI API.</p>
+                  <h4>100% local and private</h4>
+                  <p>Zero telemetry. After the model is downloaded, no internet is needed — it runs happily in air-gapped environments.</p>
                 </div>
               </div>
             </a>
-            <a href="doc/core-tools.html">
+            <a href="doc/core-tools.html#review">
               <div class="feature-item">
                 <span class="feature-dash"></span>
                 <div>
-                  <h4>Workspace-aware tools</h4>
-                  <p>The model reads, edits, and navigates files in your project, within your workspace boundary.</p>
+                  <h4>Built-in code review</h4>
+                  <p>An interactive two-pane reviewer (<code>/review</code>) <em>and</em> a category-by-category LLM auto-reviewer (<code>/auto_review</code>). orangu's standout feature.</p>
                 </div>
               </div>
             </a>
-            <a href="doc/terminal.html#sessions">
+            <a href="doc/git-tools.html">
               <div class="feature-item">
                 <span class="feature-dash"></span>
                 <div>
-                  <h4>Persistent sessions</h4>
-                  <p>Conversations are saved per workspace and branch. Resume exactly where you left off.</p>
+                  <h4>The whole Git loop in the prompt</h4>
+                  <p>Branch, commit, rebase, squash, cherry-pick, stash, push, and GitHub/GitLab PRs, comments, and issues — all from the terminal.</p>
                 </div>
               </div>
             </a>
@@ -112,8 +112,8 @@
               <div class="feature-item">
                 <span class="feature-dash"></span>
                 <div>
-                  <h4>Built in Rust</h4>
-                  <p>Starts in milliseconds. Streams tokens live. Shows native throughput in the status bar.</p>
+                  <h4>A single fast Rust binary</h4>
+                  <p>Quick startup, no runtime to install, no GC pauses. Live tokens/second in the footer, tuned for llama.cpp.</p>
                 </div>
               </div>
             </a>
@@ -146,6 +146,100 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Code review & auto review ──────────── -->
+  <style>
+    .review-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 2.5rem; }
+    .review-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem 2rem; }
+    .review-card-cmd { font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; font-weight: 700; color: var(--amber); margin-bottom: 0.1rem; }
+    .review-card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; letter-spacing: -0.01em; }
+    .review-card-list { list-style: none; }
+    .review-card-list li { font-size: 0.85rem; color: var(--text-2); line-height: 1.6; padding-left: 1.1rem; position: relative; margin-bottom: 0.6rem; }
+    .review-card-list li:last-child { margin-bottom: 0; }
+    .review-card-list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--amber); }
+    .review-card-list strong { color: var(--text); font-weight: 600; }
+    .review-card code { font-size: 0.8rem; }
+    @media (max-width: 760px) { .review-cards { grid-template-columns: 1fr; } }
+  </style>
+  <section class="section reveal">
+    <div class="container">
+      <div>
+        <span class="section-label">Code review &amp; auto review</span>
+        <div class="sep"></div>
+        <h2 class="section-title">Your terminal is now a<br><span class="accent">code-review</span> workstation.</h2>
+        <p class="section-body" style="max-width: 640px;">
+          This is orangu's standout feature. Review the changes on your branch — committed and uncommitted, measured against the merge base with your default branch — two ways: an interactive reviewer you drive, and a fully automated one the model runs end to end. Both require an up-to-date rebase, so you never review against stale code.
+        </p>
+      </div>
+      <div class="review-cards">
+        <div class="review-card">
+          <div class="review-card-cmd">/review</div>
+          <h3>Interactive review</h3>
+          <ul class="review-card-list">
+            <li>Full-screen two-pane view — file checklist beside the selected file's diff</li>
+            <li>Mark each file <strong>approved</strong> or <strong>rejected</strong>; comment on any line under seven categories</li>
+            <li>Ask the model about a file on demand — the exchange joins your chat session</li>
+            <li>Open any file in <code>$EDITOR</code> without leaving the view</li>
+            <li>Exit writes a category-grouped report with an approve/reject conclusion, copied to your clipboard. No <code>gh</code>/<code>glab</code> needed</li>
+          </ul>
+        </div>
+        <div class="review-card">
+          <div class="review-card-cmd">/auto_review</div>
+          <h3>LLM-driven review</h3>
+          <ul class="review-card-list">
+            <li>The model reviews the whole change and each file on its own, sorting findings into seven categories</li>
+            <li>Renders a final <strong>orangu approves / rejects this patch</strong> verdict</li>
+            <li>Smart about effort — lock files and binaries auto-approve, docs get doc checks, source gets the full set</li>
+            <li>Every finding pinned to its <code>file:line</code>; requests are length-capped and tool-free to stay fast on local models</li>
+            <li>Browse the report, override any verdict, then <code>/export review</code> or post with <code>/comment</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Features ───────────────────────────── -->
+  <section class="section reveal">
+    <div class="container">
+      <div style="margin-bottom: 3rem;">
+        <span class="section-label">Features</span>
+        <div class="sep"></div>
+        <h2 class="section-title">Everything, in the terminal.</h2>
+      </div>
+      <div class="doc-grid-home">
+        <a href="doc/local-llm.html" class="doc-cell">
+          <span class="doc-cell-label">Private</span>
+          <h3>Fully local</h3>
+          <p>Talks to any OpenAI-compatible server, tuned for llama.cpp. Once models are downloaded, nothing leaves your machine.</p>
+        </a>
+        <a href="doc/core-tools.html#review" class="doc-cell">
+          <span class="doc-cell-label">Review</span>
+          <h3>Code review built in</h3>
+          <p>Interactive <code>/review</code> and automated <code>/auto_review</code> — the standout in-terminal review workflow.</p>
+        </a>
+        <a href="doc/core-tools.html" class="doc-cell">
+          <span class="doc-cell-label">Tools</span>
+          <h3>Workspace-aware</h3>
+          <p>Read, edit, list, <code>/grep</code>, fetch, and run shell commands — all scoped to your workspace.</p>
+        </a>
+        <a href="doc/terminal.html" class="doc-cell">
+          <span class="doc-cell-label">Workspaces</span>
+          <h3>Projects as tabs</h3>
+          <p>Open several projects at once, each a tab with its own session, scrollback, queue, and history.</p>
+        </a>
+        <a href="doc/core-tools.html" class="doc-cell">
+          <span class="doc-cell-label">Skills</span>
+          <h3>Agent Skills</h3>
+          <p>Drop a <code>SKILL.md</code> into your repo; orangu discloses it progressively and loads it on demand.</p>
+        </a>
+        <a href="doc/terminal.html" class="doc-cell">
+          <span class="doc-cell-label">Terminal</span>
+          <h3>Built for the prompt</h3>
+          <p>Ghost-text hints, Tab completion, live tokens/sec, queued commands, and Markdown with syntax highlighting.</p>
+        </a>
       </div>
     </div>
   </section>
@@ -278,6 +372,49 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── orangu vs. the cloud ───────────────── -->
+  <style>
+    .cmp-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .cmp-table { width: 100%; border-collapse: collapse; }
+    .cmp-table th, .cmp-table td { text-align: left; padding: 1rem 1.25rem; font-size: 0.85rem; line-height: 1.5; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .cmp-table thead th { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); font-weight: 600; }
+    .cmp-table thead th.cmp-ou { color: var(--amber); }
+    .cmp-table td:first-child, .cmp-table th:first-child { color: var(--text); font-weight: 600; width: 22%; }
+    .cmp-table td.cmp-ou { color: var(--text); background: var(--amber-soft); }
+    .cmp-table td.cmp-cloud { color: var(--text-2); }
+    @media (max-width: 700px) { .cmp-table th, .cmp-table td { padding: 0.7rem 0.75rem; font-size: 0.78rem; } }
+  </style>
+  <section class="section reveal">
+    <div class="container">
+      <div style="margin-bottom: 2.5rem;">
+        <span class="section-label">orangu vs. a cloud coding assistant</span>
+        <div class="sep"></div>
+        <h2 class="section-title">A deliberate trade.</h2>
+        <p class="section-body" style="max-width: 640px;">
+          orangu makes a deliberate trade: a focused, offline-first, Git-centric terminal experience instead of a broad cloud platform. If you run your own models and care about privacy, that trade is the whole point.
+        </p>
+      </div>
+      <div class="cmp-wrap">
+        <table class="cmp-table">
+          <thead>
+            <tr><th></th><th class="cmp-ou">orangu</th><th>Typical cloud coding assistant</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Where your code goes</td><td class="cmp-ou">Stays on your machine — zero telemetry</td><td class="cmp-cloud">Sent to a third-party provider</td></tr>
+            <tr><td>Offline use</td><td class="cmp-ou">First-class; only the initial model download needs a network</td><td class="cmp-cloud">Generally requires connectivity</td></tr>
+            <tr><td>Models</td><td class="cmp-ou">Any OpenAI-compatible server — tuned for local llama.cpp (Ollama, LM Studio, …)</td><td class="cmp-cloud">Vendor-hosted models, usually behind API keys</td></tr>
+            <tr><td>Cost</td><td class="cmp-ou">Free to run against models you host</td><td class="cmp-cloud">Per-token / subscription billing</td></tr>
+            <tr><td>Footprint</td><td class="cmp-ou">One native Rust binary, fast start, no runtime</td><td class="cmp-cloud">Editor/cloud service + account</td></tr>
+            <tr><td>Code review</td><td class="cmp-ou">Built-in interactive <strong>and</strong> LLM auto review in the terminal</td><td class="cmp-cloud">Usually delegated to the hosting platform</td></tr>
+            <tr><td>Git workflow</td><td class="cmp-ou">Full Git + GitHub/GitLab loop from the prompt</td><td class="cmp-cloud">Varies; often browser-based</td></tr>
+            <tr><td>Privacy posture</td><td class="cmp-ou">Suited to regulated / air-gapped environments</td><td class="cmp-cloud">Depends on the provider's data policy</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
