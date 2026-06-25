@@ -124,6 +124,16 @@
 <td><code>--all</code></td>
 <td>Reopen the workspace tabs that were open at the end of the last run.</td>
 </tr>
+<tr class="odd">
+<td><code>-i</code></td>
+<td><code>--init</code></td>
+<td>Interactively create <code>~/.orangu/orangu.conf</code> and exit (see the Configuration chapter).</td>
+</tr>
+<tr class="even">
+<td><code>-s</code></td>
+<td><code>--shell-completions</code></td>
+<td>Print the shell completion script for the detected shell (<code>$SHELL</code>; bash, zsh, or fish) and exit.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="header">Header</h2>
@@ -251,7 +261,7 @@ metadata   session metadata (JSON)</code></pre>
 <li>If the line starts with <code>/model</code>, complete the models available on the selected server, cycling through them. If the line starts with <code>/server</code>, complete the names of all INI sections identified as servers; selecting one switches the active server.</li>
 <li>If the line starts with <code>/open_file</code> or <code>/show_file</code>, complete workspace file paths recursively for the first positional argument. <code>/show_file</code> also completes <code>--hash</code> and <code>--author</code>. When a file path is already present, the next Tab press cycles through that file's commit history (abbreviated hashes from <code>git log --follow</code>).</li>
 <li>If the line starts with the natural-language prefixes <code>open</code>, <code>open file</code>, <code>edit</code>, or <code>edit file</code>, complete workspace file paths recursively.</li>
-<li>If the line starts with <code>/</code>, complete built-in slash commands and any discovered Agent Skills. Examples include <code>/help</code>, <code>/skills</code>, <code>/model</code>, <code>/server</code>, <code>/list_files</code>, <code>/show_file</code>, <code>/tools</code>, <code>/quit</code>, and a discovered skill such as <code>/debugging</code>.</li>
+<li>If the line starts with <code>/</code>, complete built-in slash commands and any discovered Agent Skills. Examples include <code>/help</code>, <code>/skills</code>, <code>/model</code>, <code>/server</code>, <code>/list_files</code>, <code>/show_file</code>, <code>/tools</code>, <code>/quit</code>, and a discovered skill such as <code>/debugging</code>. When the <code>drop_down</code> option is enabled in <code>orangu.conf</code> (the default), this completion is also visualized as an interactive dropdown menu that intercepts the Up/Down arrow keys.</li>
 <li>Otherwise, complete filesystem entries from the current token relative to the workspace, using the token before the cursor.</li>
 </ol>
 <p>Path-completion details:</p>

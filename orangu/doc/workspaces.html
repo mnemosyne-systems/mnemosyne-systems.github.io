@@ -58,6 +58,7 @@
       <li><a href="#workspaces">Workspaces</a>
       <ul>
       <li><a href="#workspace">/workspace</a></li>
+      <li><a href="#create-workspace-and-delete-workspace">/create workspace and /delete workspace</a></li>
       <li><a href="#key-bindings">Key bindings</a></li>
       <li><a href="#tab-placement">Tab placement</a></li>
       </ul></li>
@@ -95,6 +96,16 @@
 switch workspace
 workspace 1
 switch workspace ~/projects/orangu</code></pre>
+<h2 id="create-workspace-and-delete-workspace">/create workspace and /delete workspace</h2>
+<p><code>/create workspace &lt;dir&gt;</code> opens a new tab on an existing directory — the slash-command equivalent of <code>Alt+Insert</code> followed by <code>/workspace &lt;dir&gt;</code>. The directory must already exist; orangu resolves it, opens a tab on it (resuming the matching session there, or starting a fresh one), and switches to it. A missing or non-existent directory is reported as an error.</p>
+<p><code>/delete workspace</code> closes the active tab — the slash-command equivalent of <code>Alt+Delete</code>. The remaining tabs are renumbered and focus moves to a neighbour. The last open tab is never closed; use <code>/quit</code> to leave orangu.</p>
+<p>Both are handled locally and work regardless of server or model state.</p>
+<h3 id="examples-1">Examples</h3>
+<pre class="text"><code>/create workspace ~/projects/orangu
+/delete workspace</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>create workspace ~/projects/orangu
+delete workspace</code></pre>
 <h2 id="key-bindings">Key bindings</h2>
 <p>At the prompt, the workspace tabs are driven by these keys:</p>
 <table>
@@ -126,8 +137,8 @@ switch workspace ~/projects/orangu</code></pre>
 <p>Closing a tab renumbers the ones after it and moves focus to a neighbour. The last open tab is never closed — only <code>/quit</code> ends orangu. The keys work at the prompt and during streaming: pressing one while the model is responding parks the stream in the background and switches immediately. The response keeps running in the original tab; a blinking dot in the tab bar shows it is still active. Switching back re-attaches the live view so you can watch it complete. Press Escape twice to cancel a response whether it is running in the foreground or in the background.</p>
 <h2 id="tab-placement">Tab placement</h2>
 <p>Where the workspace tab bar is shown is set by the <code>workspaces</code> key in the <code>[orangu]</code> section of the configuration file:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">workspaces </span><span class="ot">=</span><span class="st"> top</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">workspaces </span><span class="ot">=</span><span class="st"> top</span></span></code></pre></div>
 <p>The options, matched case-insensitively, are:</p>
 <ul>
 <li><code>top</code> (the default) — a horizontal bar across the top of the screen, above the banner.</li>

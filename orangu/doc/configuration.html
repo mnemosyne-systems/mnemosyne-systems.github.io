@@ -172,34 +172,44 @@
 <td style="text-align: left;">Horizontal placement of the banner. Defaults to <code>left</code>. Options: <code>left</code>, <code>center</code>, <code>right</code></td>
 </tr>
 <tr class="even">
+<td style="text-align: left;"><code>drop_down</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Enable the autocomplete dropdown for slash commands. Defaults to <code>on</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;"><code>workspaces</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Placement of the workspace tabs. Defaults to <code>top</code>. Options: <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>. See the Workspaces chapter</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>feedback</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Show a green or red dot in the output window after each command to indicate success or failure, blink an <code>orangu ●</code> progress title and ring the terminal bell when a <code>/auto_review</code> finishes. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>auto_rebase</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Automatically rebase the branch before <code>/pull_request</code> if it is behind the base. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>auto_squash</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Automatically squash commits before <code>/pull_request</code> if more than one commit is ahead of the base. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>terminal</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Launch command used to open <code>$EDITOR</code> for terminal editors in a new window for <code>/open_file</code> (for example <code>xterm -e</code> or <code>kitty</code>). When unset, a terminal emulator is auto-detected</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>platform</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Code-hosting platform driven for <code>/pull</code>, <code>/pull_request</code>, <code>/merge</code>, and <code>/comment</code>. Defaults to <code>github</code> (uses the <code>gh</code> CLI). Options: <code>github</code>, <code>gitlab</code> (uses the <code>glab</code> CLI)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>system_prompt</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Override the base system prompt sent to the model. When empty (the default) orangu uses its built-in coding-assistant prompt. The discovered Agent Skills index is appended to whichever prompt is in effect</td>
 </tr>
 </tbody>
 </table>
