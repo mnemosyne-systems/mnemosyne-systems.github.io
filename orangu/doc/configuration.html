@@ -167,66 +167,71 @@
 <td style="text-align: left;">Response-token cap for normal chat and tool responses. Defaults to <code>0</code> (no cap)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;"><code>compile_workers</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Parallel job count <code>/build</code> passes to toolchains that support one (e.g. <code>make -j</code>, <code>meson compile -j</code>, <code>cargo --jobs</code>). Defaults to <code>0</code>, meaning unused: no job flag is passed and each toolchain falls back to its own default</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;"><code>quotes</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Quote set shown while the model is thinking. Defaults to <code>none</code>. Options: <code>none</code>, <code>star_trek</code>, <code>star_wars</code>, <code>marco_pierre_white</code>, <code>gordon_ramsay</code>, <code>calvin_and_hobbes</code>, <code>sun_tzu_mandarin</code>, <code>sun_tzu_english</code>, <code>attila_the_hun</code>, <code>all</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>width</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Virtual terminal width in characters. Controls the layout canvas for <code>/show_file</code> output. Defaults to <code>512</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>banner</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Horizontal placement of the banner. Defaults to <code>left</code>. Options: <code>left</code>, <code>center</code>, <code>right</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>drop_down</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Enable the autocomplete dropdown for slash commands. Defaults to <code>on</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>workspaces</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Placement of the workspace tabs. Defaults to <code>top</code>. Options: <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>. See the Workspaces chapter</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>feedback</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Show a green or red dot in the output window after each command to indicate success or failure, blink an <code>orangu ●</code> progress title and ring the terminal bell when a <code>/auto_review</code> finishes. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>auto_rebase</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Automatically rebase the branch before <code>/pull_request</code> if it is behind the base. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>auto_squash</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Automatically squash commits before <code>/pull_request</code> if more than one commit is ahead of the base. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>terminal</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Launch command used to open <code>$EDITOR</code> for terminal editors in a new window for <code>/open_file</code> (for example <code>xterm -e</code> or <code>kitty</code>). When unset, a terminal emulator is auto-detected</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>platform</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Code-hosting platform driven for <code>/pull</code>, <code>/pull_request</code>, <code>/merge</code>, and <code>/comment</code>. Defaults to <code>github</code> (uses the <code>gh</code> CLI). Options: <code>github</code>, <code>gitlab</code> (uses the <code>glab</code> CLI)</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>system_prompt</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Override the base system prompt sent to the model. When empty (the default) orangu uses its built-in coding-assistant prompt. The discovered Agent Skills index is appended to whichever prompt is in effect</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;"><code>model_verbosity</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Set the model's chattiness. Defaults to <code>normal</code>. Options: <code>terse</code>, <code>normal</code>, <code>verbose</code></td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;"><code>review_confidence_threshold</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Minimum confidence score (0–100) for <code>/auto_review</code> findings; findings below this threshold are silently dropped. Defaults to <code>80</code>. Set to <code>0</code> to disable filtering</td>
@@ -283,6 +288,11 @@
 <td style="text-align: left;"><code>api_key</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">API key sent as <code>Authorization: Bearer &lt;key&gt;</code> on every request to the server. Required when a llama.cpp server runs with <code>--api-key</code>, or for any authenticated OpenAI-compatible endpoint</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>role</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">A specific role this server fulfills. Valid roles are: <code>all</code> (default), <code>code</code>, <code>review</code>, <code>explorer</code>, and <code>embeddings</code>. If a specific subsystem needs a server and one is tagged with its role, it will use that server instead of the default. <code>embeddings</code> designates the server that embeds code for semantic <code>/search</code>; an <code>all</code> server also serves it, and search auto-enables when that endpoint responds at startup</td>
 </tr>
 </tbody>
 </table>

@@ -75,10 +75,13 @@
       <li><a href="#open_file">/open_file</a></li>
       <li><a href="#show_file">/show_file</a></li>
       <li><a href="#build">/build</a></li>
+      <li><a href="#shell">/shell</a></li>
       <li><a href="#review">/review</a></li>
       <li><a href="#auto_review">/auto_review</a></li>
       <li><a href="#duplicates">/duplicates</a></li>
       <li><a href="#export">/export</a></li>
+      <li><a href="#graph">/graph</a></li>
+      <li><a href="#search">/search</a></li>
       </ul></li>
       </ul>
     </div>
@@ -273,19 +276,40 @@ edit file src/main.rs</code></pre>
 <pre class="text"><code>show README.md
 show file README.md</code></pre>
 <h2 id="build">/build</h2>
-<p>Builds the workspace project, detecting the toolchain from the workspace root.</p>
-<p>Each step is reported individually and the pipeline stops on the first failure:</p>
+<p>Builds the workspace project, detecting the toolchain from the workspace root. Takes an optional profile, <code>debug</code> or <code>release</code>; the default is <code>release</code>.</p>
+<p>Each step is reported individually and the pipeline stops on the first failure. The profile is mapped onto each toolchain's own notion of a build profile:</p>
 <ul>
-<li><strong>Rust</strong> (<code>Cargo.toml</code>) — runs <code>cargo fmt</code>, <code>cargo clippy</code>, <code>cargo build</code>, and <code>cargo test</code>.</li>
-<li><strong>C</strong> (<code>CMakeLists.txt</code>) — runs <code>clang-format.sh</code> (if present), creates a <code>build/</code> directory if needed, runs <code>cmake ..</code> on the first build, then <code>make</code>.</li>
-<li><strong>Java</strong> (<code>pom.xml</code>) — installs frontend dependencies with <code>npm ci</code> when outdated, runs <code>npm run fix</code> and <code>npm run check</code> for the frontend (if <code>src/frontend/</code> exists), then <code>mvn package</code>.</li>
+<li><strong>Rust</strong> (<code>Cargo.toml</code>) — runs <code>cargo fmt</code>, <code>cargo clippy</code>, then <code>cargo build</code> and <code>cargo test</code>, adding <code>--release</code> for the release profile (omitted for debug) and <code>--jobs &lt;compile_workers&gt;</code> when it is nonzero.</li>
+<li><strong>C/C++, CMake</strong> (<code>CMakeLists.txt</code>) — runs <code>clang-format.sh</code> (if present), then configures and builds in a single reused <code>build/</code> directory, then <code>make</code>, adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero. The first build runs <code>cmake .. -DCMAKE_BUILD_TYPE=Debug</code> (or <code>Release</code>); later builds skip straight to <code>make</code> when the directory is already configured for the requested profile, and reconfigure with the new <code>-DCMAKE_BUILD_TYPE</code> (which <code>cmake</code> applies in place) when it isn't — so switching between <code>/build debug</code> and <code>/build release</code> reconfigures the same directory rather than building each profile separately.</li>
+<li><strong>C/C++, Autotools</strong> (<code>configure</code>, checked when there is no <code>CMakeLists.txt</code>; takes priority over Meson when a project has both, e.g. PostgreSQL mid-migration) — runs <code>clang-format.sh</code> (if present), then builds in place, like a plain <code>./configure &amp;&amp; make</code>. If the workspace root already has a <code>config.status</code>/<code>GNUmakefile</code> (an existing configuration, from a previous <code>/build</code> or a manual run), it runs <code>make distclean</code> first — autotools has no separate build-type flag, and an out-of-tree VPATH build does not mix safely with an in-tree one, so any previous configuration is wiped rather than built alongside. Then it runs <code>sh ./configure CFLAGS=... CXXFLAGS=...</code> (<code>-g -O0</code> for debug, <code>-O2</code> for release) and <code>make</code>, adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero.</li>
+<li><strong>C/C++, Meson</strong> (<code>meson.build</code>, checked when there is no <code>CMakeLists.txt</code> or <code>configure</code>) — runs <code>clang-format.sh</code> (if present), cleans up a stale in-tree Autotools configuration the same way as above if one is found, then builds in a single reused <code>build/</code> directory (Meson refuses to build in place). The first build runs <code>meson setup build --buildtype=debug|release</code>; later builds run <code>meson configure build --buildtype=...</code> instead — a cheap no-op if the profile is unchanged, and a correct incremental rebuild if it isn't — then <code>meson compile -C build</code>, adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero.</li>
+<li><strong>Java</strong> (<code>pom.xml</code>) — installs frontend dependencies with <code>npm ci</code> when outdated, runs <code>npm run fix</code> and <code>npm run check</code> for the frontend (if <code>src/frontend/</code> exists), then <code>mvn package</code> for debug, or <code>mvn -P release package</code> for release (this assumes the project defines a Maven profile named <code>release</code> in its <code>pom.xml</code>; Maven has no built-in debug/release axis).</li>
+<li><strong>Python</strong> (<code>pyproject.toml</code>, <code>setup.py</code>, or <code>setup.cfg</code>, checked in that order) — runs <code>pip install -e .</code>. There is no separate debug/release artifact, so the profile is accepted but has no effect.</li>
+<li><strong>Go</strong> (<code>go.mod</code>, checked when none of the above are found) — runs <code>go build ./...</code>, adding <code>-p &lt;compile_workers&gt;</code> when it is nonzero. Go has no separate debug/release artifact either; debug instead adds <code>-gcflags="all=-N -l"</code>, disabling optimizations and inlining (mirroring the C backends' <code>-O0</code>) so a debugger such as delve can step through unoptimized code. Release passes no extra flags.</li>
 </ul>
+<p><code>&lt;compile_workers&gt;</code> is the <code>[orangu].compile_workers</code> value. It defaults to <code>0</code>, which means unused: no job flag is passed at all, and each toolchain falls back to its own default (Cargo's own automatic parallelism, a bare serial <code>make</code>, <code>meson compile</code>'s ninja default, <code>go build</code>'s own <code>-p</code> default). Setting it above <code>0</code> passes an explicit job count to every backend above — Rust, the C/C++ backends, and Go. Java and Python are unaffected: Maven and <code>pip</code> have no directly equivalent per-compile job flag.</p>
 <h3 id="examples-13">Examples</h3>
-<pre class="text"><code>/build</code></pre>
+<pre class="text"><code>/build
+/build debug
+/build release</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>build
 build project
-run build</code></pre>
+run build
+build debug
+debug build
+build release
+release build</code></pre>
+<h2 id="shell">/shell</h2>
+<p>Runs a shell command in the workspace, streaming its output to the output window line by line as it is produced — long-running commands (a test suite, a script that tails a log) show output live rather than all at once when they finish.</p>
+<pre class="text"><code>/shell &lt;command&gt;</code></pre>
+<p>The command line runs through <code>bash -lc</code>, exactly like the model-facing <code>run_shell_command</code> tool (see the Tools chapter), so it supports everything a login shell does: pipes, redirects, globs, and any executable on <code>$PATH</code>, not a fixed allow-list. It runs with the workspace as its current directory. <code>/shell</code> requires a command — a bare <code>/shell</code> reports usage instead of doing nothing quietly.</p>
+<p>The command exits non-zero the same way it would at a real terminal — <code>/shell</code> reports the failure but the output already streamed stays in the output window.</p>
+<p>Tab completion after <code>/shell</code> completes the token being typed against files in the workspace, one path segment at a time, exactly like a real shell: <code>/shell ./te</code> offers <code>./test/</code>, and once inside that directory <code>/shell ./test/c</code> offers <code>./test/check.sh</code>. Only the last word of the command line completes this way — the program name and any earlier arguments are left alone. The inline ghost hint previews the same completion.</p>
+<h3 id="examples-14">Examples</h3>
+<pre class="text"><code>/shell ls -la
+/shell cargo test
+/shell ./test/check.sh</code></pre>
 <h2 id="review">/review</h2>
 <p><code>/review</code> opens a full-screen, two-pane view for reviewing the changes on the current branch before sharing them, with the status bar and input window kept at the bottom so you can ask the model for help. It is available inside a Git repository and has no <code>gh</code> dependency.</p>
 <p>Enter it with the <code>/review</code> command, or the natural-language forms <code>review</code>, <code>review changes</code>, <code>code review</code>, or <code>review branch</code>.</p>
@@ -396,7 +420,7 @@ run build</code></pre>
 <li><code>Tab</code> completes an <code>/open_file &lt;path&gt;</code> / <code>open &lt;path&gt;</code> line against the workspace files (<code>Shift+Tab</code> cycles the ghost preview)</li>
 </ul>
 <p>The review status marks and line comments are kept for the duration of the review session and are not persisted after exit.</p>
-<h3 id="examples-14">Examples</h3>
+<h3 id="examples-15">Examples</h3>
 <pre class="text"><code>/review</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>review
@@ -603,7 +627,7 @@ review branch</code></pre>
 </tr>
 </tbody>
 </table>
-<h3 id="examples-15">Examples</h3>
+<h3 id="examples-16">Examples</h3>
 <pre class="text"><code>/auto_review</code></pre>
 <p>Review a single file (Tab-completes on the file name):</p>
 <pre class="text"><code>/auto_review src/tui.rs</code></pre>
@@ -635,7 +659,7 @@ auto review src/tui.rs</code></pre>
 <td>C</td>
 <td><code>.c</code>, <code>.h</code></td>
 <td>OCaml</td>
-<td><code>.ml</code></td>
+<td><code>.ml</code>, <code>.mli</code></td>
 </tr>
 <tr class="odd">
 <td>C++</td>
@@ -683,7 +707,7 @@ auto review src/tui.rs</code></pre>
 <td>TSX</td>
 <td><code>.tsx</code></td>
 <td>Erlang</td>
-<td><code>.erl</code></td>
+<td><code>.erl</code>, <code>.hrl</code></td>
 </tr>
 <tr class="odd">
 <td>Ruby</td>
@@ -712,7 +736,7 @@ auto review src/tui.rs</code></pre>
 <p>So on a branch the report answers <em>"does my branch duplicate code that already exists?"</em> — every reported pair has the new or changed function first. On the default branch (or outside a Git repository) the whole project is compared against itself as usual. If the branch <strong>adds nothing</strong> — for example it has been rebased onto the base with no commits of its own and a clean working tree — there is nothing branch-specific to analyse, so the whole-project report runs instead. The summary line and the PDF's first page state which mode ran, the base it compared against, and how many new/changed functions were analysed.</p>
 <h3 id="output">Output</h3>
 <p>The output window prints a summary (files scanned, functions analysed, the threshold, and the number of candidate pairs) followed by each pair: its similarity percentage, the two function names, and for each function its <code>path:start–end</code> location. To save the same report as a PDF, use <code>/export duplicates</code> (see the <code>/export</code> tool).</p>
-<h3 id="examples-16">Examples</h3>
+<h3 id="examples-17">Examples</h3>
 <p>Scan with the default 80% threshold:</p>
 <pre class="text"><code>/duplicates</code></pre>
 <p>Only report pairs that are at least 90% similar:</p>
@@ -728,9 +752,10 @@ find duplicate code</code></pre>
 <li><code>/export review</code> — the <strong>review buffer</strong>: the Markdown of the last <code>/review</code> (or, if none, the last <code>/auto_review</code>) report from this session. If no review has been run yet, the command reports that there is nothing to export.</li>
 <li><code>/export auto review</code> — the <strong>auto-review buffer</strong> specifically: the Markdown of the last <code>/auto_review</code> report. If no auto review has been run yet, the command reports that there is nothing to export.</li>
 <li><code>/export duplicates</code> — a <strong>duplicate-code report</strong>: the report from the most recent <code>/duplicates</code> run in this tab, rendered to a PDF. The report is cached when <code>/duplicates</code> runs, so the export reuses it directly — including that run's threshold (run <code>/duplicates 0.8</code> and <code>/export duplicates</code> writes an 80% report) — without scanning the workspace a second time. If <code>/duplicates</code> has not been run this session, the export scans once at the default 80% threshold and caches the result, so it still works with no prior command.</li>
+<li><code>/export pr</code> — a <strong>pull request report</strong>: every open pull/merge request in the repository, fetched from the forge (<code>gh</code>/<code>glab</code>) at export time, one page per pull request with as much detail as the forge returns.</li>
 </ul>
-<p>The argument <strong>Tab-completes</strong> (and shows the inline ghost hint): pressing Tab after <code>/export</code> offers <code>console</code>, <code>review</code>, <code>auto review</code>, and <code>duplicates</code>, and the multi-word <code>auto review</code> completes from as little as <code>a</code> (so <code>export a</code> → <code>export auto review</code>). The natural-language <code>export &lt;target&gt;</code> form (without the leading slash) completes the same way.</p>
-<p>The file is saved in the workspace root as <code>{repository}-{branch}-console.pdf</code>, <code>{repository}-{branch}-review.pdf</code>, or <code>{repository}-{branch}-duplicates.pdf</code>, where <code>{repository}</code> is the Git repository (or workspace) directory name and <code>{branch}</code> is the current branch (<code>nobranch</code> when not on one); both are sanitized for use in a filename, so a branch such as <code>feature/x</code> becomes <code>feature-x</code>. An existing file with the same name is overwritten. On success the saved path is printed to the output window.</p>
+<p>The argument <strong>Tab-completes</strong> (and shows the inline ghost hint): pressing Tab after <code>/export</code> offers <code>console</code>, <code>review</code>, <code>auto review</code>, <code>duplicates</code>, and <code>pr</code>, and the multi-word <code>auto review</code> completes from as little as <code>a</code> (so <code>export a</code> → <code>export auto review</code>). The natural-language <code>export &lt;target&gt;</code> form (without the leading slash) completes the same way.</p>
+<p>The file is saved in the workspace root as <code>{repository}-{branch}-console.pdf</code>, <code>{repository}-{branch}-review.pdf</code>, or <code>{repository}-{branch}-duplicates.pdf</code>, where <code>{repository}</code> is the Git repository (or workspace) directory name and <code>{branch}</code> is the current branch (<code>nobranch</code> when not on one); both are sanitized for use in a filename, so a branch such as <code>feature/x</code> becomes <code>feature-x</code>. The <code>pr</code> export is saved as <code>{repository}-pr.pdf</code> instead — no branch, since the report covers every open pull request in the repository, not one branch. An existing file with the same name is overwritten. On success the saved path is printed to the output window.</p>
 <p>Every page carries a <strong>header band</strong> centered on <code>{repository}-{branch}</code> and a <strong>footer band</strong> centered on <code>orangu {version} ({model})</code> (the active model), both in white on the orangu brand colour to match the terminal banner; in the footer the word <code>orangu</code> links to the project site.</p>
 <p>The PDF keeps the Markdown formatting as much as a self-contained file can. Text is set in <strong>Red Hat Text</strong>, embedded into the binary (SIL Open Font License), so no system fonts are needed; if for any reason the embedded font cannot be loaded the export falls back to the closest built-in face, Helvetica. Headings use the orangu brand colour. Long lines wrap to the page width using the font's real glyph metrics — prose on word boundaries, code lines hard at the margin — and the content flows across as many pages as needed.</p>
 <p>The <strong>console</strong> export preserves the output window line for line (terminal colours removed).</p>
@@ -747,7 +772,13 @@ find duplicate code</code></pre>
 <li><strong>Page 3 onward — the report.</strong> Each category (<code>Overall</code>, <code>Code</code>, <code>Security</code>, <code>Memory</code>, <code>Performance</code>, <code>Test Suite</code>, <code>Documentation</code>, then <code>Conclusion</code>) starts on its own page, rendered from the report's Markdown with brand-coloured headings, <strong>bold</strong> and <em>italic</em> emphasis, ordered and unordered (including nested) lists, fenced code blocks, block quotes, and tables. So <code>Overall</code> opens on page 3.</li>
 <li><strong>Appendix.</strong> Both the <code>/review</code> and <code>/auto_review</code> exports add a <strong>source appendix</strong> following the categories on its own page: grouped by category, each finding (or comment) is listed with the <strong>source code around its line</strong> — the <code>/show_file</code> view, 3 lines before and after, with line numbers. Only the finding's <strong>recorded line(s)</strong> are <strong>syntax-highlighted and drawn in bold</strong>; the surrounding context lines are shown plain, so the line the finding points at stands out. (For <code>/review</code>, the comment's diff position is mapped to its real source line so the appendix matches the file.)</li>
 </ul>
-<h3 id="examples-17">Examples</h3>
+<p>The <strong>pr</strong> export is organized like the review and duplicates exports:</p>
+<ul>
+<li><strong>Page 1 — pull request status.</strong> A single table: the repository name, generation date/time, the open pull requests broken down by status — <strong>Open</strong> (the total), <strong>Ready</strong> (not a draft), and <strong>Conflicts</strong> (reported as having a merge conflict) — then <strong>Oldest</strong> and <strong>Newest</strong>, each a clickable link to that pull request followed by its creation date. With no open pull requests both read <code>N/A</code>; with exactly one, <strong>Oldest</strong> is left empty rather than repeating the same entry as <strong>Newest</strong>.</li>
+<li><strong>Page 2 — table of contents.</strong> One entry per open pull request, <code>#N Title</code>, <strong>clickable links</strong> that jump to their page. Each entry ends with a status icon: a <strong>green checkmark</strong> when the pull request is neither a draft nor conflicting, otherwise a <strong>red "X"</strong>.</li>
+<li><strong>Page 3 onward — one page per pull request</strong> (more when it changes many files or has a long last comment). The title <strong>links to the pull/merge request's home page on the forge</strong>, followed by a table (spanning the full page width) of author, a <strong>Link</strong> row with the pull request's full URL (also clickable), created/updated dates, the branch, draft status, merge-conflict status, comment count, assignees, reviewers, and labels — whatever the forge returned. The <strong>Draft</strong> and <strong>Conflicts</strong> values are shown in <strong>bold</strong> when they are <code>Yes</code>, so an unfinished or blocked pull request catches the eye. Each <strong>reviewer</strong> is shown as their name followed by a status icon rather than the review state spelled out: a <strong>green checkmark</strong> for an approval, a <strong>red "X"</strong> for a change request (or, on GitLab, a still-outstanding review request — its merge-request list does not carry per-reviewer approval state at all), and a <strong>"?"</strong> for anything else that isn't a clear verdict (a comment, a still-pending GitHub review request, or a dismissed review). Below the table, the <strong>changed files</strong>: one line per file, its <strong>full path</strong> followed by its added-line count in <strong>green</strong> and removed-line count in <strong>red</strong> (GitLab's merge-request list carries no diff, so this section is empty there). Finally a <strong>Last comment</strong> table (also full width): a header spanning both columns, then one row with the comment's <strong>author</strong> (left) and its <strong>text</strong> (right, word-wrapped and truncated if very long); a pull request with no comments — or, on GitLab, whose comment bodies the list endpoint does not carry — shows <code>N/A</code> in both columns. (A repository with no open pull requests is the status page followed by a short note instead.)</li>
+</ul>
+<h3 id="examples-18">Examples</h3>
 <p>Export the output window (the default):</p>
 <pre class="text"><code>/export
 /export console</code></pre>
@@ -756,12 +787,43 @@ find duplicate code</code></pre>
 /export auto review</code></pre>
 <p>Export a fresh duplicate-code report:</p>
 <pre class="text"><code>/export duplicates</code></pre>
+<p>Export a pull request report:</p>
+<pre class="text"><code>/export pr</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>export
 export console
 export review
 export auto review
-export duplicates</code></pre>
+export duplicates
+export pr</code></pre>
+<h2 id="graph">/graph</h2>
+<p>Generates an interactive, standalone HTML visualization of the workspace's Knowledge Graph.</p>
+<p>Orangu incrementally extracts a semantic graph of the codebase in the background using Tree-sitter. This command takes that internal graph and writes it out to <code>&lt;repository&gt;-&lt;branch&gt;-graph.html</code> (for example, <code>orangu-knowledge-graph-graph.html</code> when in the <code>orangu</code> repo on the <code>knowledge-graph</code> branch) using the <code>vis-network</code> JavaScript library.</p>
+<p>The generated HTML file is fully self-contained (all data and scripts are embedded). You can open it directly in your web browser (e.g. <code>file:///path/to/project/orangu-main-graph.html</code>).</p>
+<p>Inside the visualization you can: - <strong>Search</strong>: Use the sidebar to quickly locate specific functions, classes, or types. - <strong>Inspect</strong>: Click on any node (function or class) to see its full location and a list of all callers (Incoming) and callees (Outgoing). - <strong>Filter</strong>: Toggle specific files on and off in the legend to unclutter the graph. - <strong>Jump</strong>: Click on any related node in the info panel to instantly jump to it and see its connections.</p>
+<p>Nodes are automatically clustered and color-coded based on the file they belong to, helping you easily visualize architectural boundaries and module dependencies.</p>
+<h3 id="examples-19">Examples</h3>
+<pre class="text"><code>/graph</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>graph
+show graph
+generate graph
+visualize codebase</code></pre>
+<h2 id="search">/search</h2>
+<p>Semantic code search. Where <code>/grep</code> matches text and the Knowledge Graph matches symbol names and structure, <code>/search</code> matches <em>meaning</em>: a query like <code>where is rate-limiting handled?</code> can surface a <code>throttle_requests</code> function whose name shares no words with the query.</p>
+<pre class="text"><code>/search &lt;query&gt;</code></pre>
+<p>The first time it runs, orangu embeds every extractable symbol in the workspace and stores the vectors under <code>~/.orangu/embeddings/workspace/&lt;hash&gt;/</code>, keyed by a hash of the workspace path so the cache is shared across sessions without cluttering the workspace tree. The directory holds <code>chunks.json</code> (one embedded chunk per line), a small <code>meta.json</code> (version and per-file hashes), and a <code>processed.log</code> recording each file's path and the time it was embedded. Every subsequent search re-embeds only the files whose contents changed and drops chunks for files that no longer exist — the same incremental sha256 approach the Knowledge Graph cache uses — so the cache is always consistent with the current workspace and stays cheap to keep current. Everything is computed locally through the server's OpenAI-compatible <code>/v1/embeddings</code> endpoint — nothing leaves the machine.</p>
+<p>That first indexing pass can take a while on a large codebase with a local embedding model. It runs in two phases, each half of the progress bar. The first half (0–50%) does all the local work up front: it parses every file into chunks in parallel — across <code>compile_workers</code> threads, or every CPU thread when it is <code>0</code> — logs each to <code>processed.log</code>, and writes the full <code>meta.json</code> when done, so the on-disk state lists every file before anything is uploaded. The second half (50–100%) uploads: it embeds the parsed chunks, keeping several requests in flight at once so the embedding server — the real bottleneck — stays busy rather than idling between round-trips (a llama-server started with <code>-np N</code> embeds them in parallel). Each request stays within a conservative token budget — chunks are grouped so a request comfortably fits under a stock llama.cpp server's default physical batch size (<code>-b</code>/<code>--batch-size 512</code>), so <code>/search</code> works out of the box without needing that flag raised. The status bar shows the percentage and an estimate of the time remaining that counts down (<code>Working (57%) (4m10s, ~3m left)</code>); on completion it reports the total (<code>Searched 2000 symbols in 3m12s.</code>).</p>
+<p>Vectors are appended to <code>chunks.json</code> as each file finishes — the existing vectors are never rewritten — so persistence stays cheap no matter how large the index grows, and the work on disk builds up as the pass proceeds, surviving even a hard kill. The pass can also be stopped with a double-<code>Esc</code>, which aborts the in-flight requests at once; either way the files embedded so far are kept, and the next <code>/search</code> resumes from where it left off rather than starting over.</p>
+<p>Ranking is hybrid. The query is embedded and scored against every chunk by cosine similarity; the strongest matches are then expanded along the Knowledge Graph's call edges — a semantic seed followed by structural expansion — so a relevant function pulls in its callers and callees. Each result is anchored to its <code>file:line</code> for quick navigation, and results expanded from a semantic hit are marked <code>(via &lt;symbol&gt;)</code>.</p>
+<p>Semantic search enables itself automatically. At startup orangu probes the <code>/v1/embeddings</code> endpoint of the server that serves the <code>embeddings</code> role — a server with <code>role = embeddings</code>, or the default <code>all</code> server — and turns <code>/search</code> on when it responds. To dedicate a server to embeddings, give its section <code>role = embeddings</code> (see the Configuration chapter). When no server serves embeddings, <code>/search</code> explains how to enable it and existing retrieval (<code>/grep</code>, the Knowledge Graph) is unaffected.</p>
+<h3 id="examples-20">Examples</h3>
+<pre class="text"><code>/search where is the retry backoff computed
+/search session persistence</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>search for where the config is parsed
+search rate limiting
+semantic search token budget</code></pre>
   </main>
 </div>
 
