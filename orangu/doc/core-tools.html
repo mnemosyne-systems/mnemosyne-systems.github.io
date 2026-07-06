@@ -66,6 +66,7 @@
       <li><a href="#tools">/tools</a></li>
       <li><a href="#model">/model</a></li>
       <li><a href="#server">/server</a></li>
+      <li><a href="#information">/information</a></li>
       <li><a href="#disconnect">/disconnect</a></li>
       <li><a href="#reload">/reload</a></li>
       <li><a href="#restart">/restart</a></li>
@@ -164,17 +165,49 @@ select model llama3.1:8b</code></pre>
 switch server to local-llama
 set server to local-llama
 select server local-llama</code></pre>
+<h2 id="information">/information</h2>
+<p>Reports everything <code>orangu</code> can learn about the active server: every OpenAI-compatible endpoint orangu itself talks to (<code>/v1/models</code>, <code>/v1/chat/completions</code>, <code>/v1/embeddings</code>), plus whatever llama.cpp-native endpoints it exposes. It is handled entirely locally, needs no arguments, and never sends anything to the model.</p>
+<p><code>/information</code> probes each capability independently — a plain OpenAI-compatible server (which has no llama.cpp-native endpoints) still gets a full report, just with those rows marked unavailable rather than the whole command failing. The result is a table, one row per capability, with a green dot for a capability that is available and enabled and a red dot for one that is not:</p>
+<p>Most probes are side-effect-free <code>GET</code> requests, so they run unconditionally. <code>/v1/chat/completions</code> is the one exception — it only accepts real generation requests — so it is only actually sent on a local llama.cpp server; on a hosted API it is not sent, to avoid a needless (potentially billed) request (see the <code>/v1/chat/completions</code> row below).</p>
+<pre class="text"><code>Server  main-server
+Model   ggml-org/gemma-4-E4B-it-GGUF
+
+STATUS  API        ENDPOINT              DETAILS
+●       OpenAI     /v1/models            ggml-org/gemma-4-E4B-it-GGUF
+●       OpenAI     /v1/chat/completions  Ok
+✗       OpenAI     /v1/embeddings        Not available
+●       llama.cpp  /health               Ok
+●       llama.cpp  /props                n_ctx=32768 n_predict=-1 total_slots=1 temperature=0.8 top_k=40 top_p=0.95 model_path=/models/gemma.gguf bos_token=&lt;bos&gt; eos_token=&lt;eos&gt; build=b4200-abc1234 chat_template=yes
+✗       llama.cpp  /slots                Not available
+✗       llama.cpp  /metrics              Not available</code></pre>
+<p>Each row:</p>
+<ul>
+<li><strong><code>/v1/models</code></strong> — the standard OpenAI model listing, the same request <code>/model</code> and startup detection use; the details column lists every advertised model id, comma-separated (a single advertised model is shown bare, with no count prefix).</li>
+<li><strong><code>/v1/chat/completions</code></strong> — the endpoint every prompt and tool round-trip actually goes through. On a local llama.cpp server (<code>provider = llama.cpp</code>) a real generation costs nothing worth avoiding, so <code>/information</code> actually sends one: a minimal, non-streaming request capped at a single response token (<code>ggml-org/gemma-4-E4B-it-GGUF</code>'s row above shows this). On any other provider — potentially a hosted, billed API — it is not sent a real request; its availability is instead inferred from <code>/v1/models</code>, since any server that speaks the OpenAI protocol well enough to list models is expected to serve chat completions too.</li>
+<li><strong><code>/v1/embeddings</code></strong> — likewise never sent a real request; this row reflects whether the active server is the one <code>orangu</code> already detected at startup as embeddings-capable (the same detection <code>/search</code> relies on — see the <code>role = embeddings</code> configuration option).</li>
+<li><strong><code>/health</code></strong> — a llama.cpp health check; the details column shows the server's reported <code>status</code> (<code>Ok</code>, <code>Loading model</code>, …, capitalized) when present.</li>
+<li><strong><code>/props</code></strong> — the closest thing llama.cpp exposes over HTTP to <em>how the server was started</em>: the context size (<code>--ctx-size</code>), the default max response length (<code>--n-predict</code>), the parallel slot count (<code>--parallel</code>), the sampling defaults (<code>--temp</code>, <code>--top-k</code>, <code>--top-p</code>), the loaded model's path and tokenizer boundary tokens, the build version, and whether a chat template is configured. The details column reads back whichever of these the server's response actually included (the schema is not identical across llama.cpp versions, so fields it omits are simply left out rather than reported as an error). llama.cpp does not expose hardware-only startup flags — thread count, GPU layer count, batch size — through any HTTP endpoint, so <code>/information</code> cannot report those; they only ever appear in the server's own startup log.</li>
+<li><strong><code>/slots</code></strong> and <strong><code>/metrics</code></strong> — llama.cpp diagnostics endpoints that a server operator can disable at startup; a red dot here usually means the corresponding llama.cpp flag (<code>--no-slots</code>, <code>--metrics</code>) was not passed, not that something is broken. Their JSON body isn't worth summarizing field by field, so a reachable <code>/slots</code> simply reads <code>Ok</code> and a reachable <code>/metrics</code> reads <code>reachable</code>; either one, when unavailable, reads a flat <code>Not available</code> regardless of the underlying reason (disabled, not implemented, unreachable, …).</li>
+</ul>
+<p>A llama.cpp-native endpoint outside <code>/slots</code>/<code>/metrics</code> that is unreachable (connection refused, timeout) or answers with an unexpected status is reported the same way as one the server never implemented — <code>/information</code> only distinguishes "the server told us it's disabled" (<code>HTTP 501</code>) from "the server doesn't know this path" (<code>HTTP 404</code>) from any other response, shown as its raw HTTP status.</p>
+<h3 id="examples-5">Examples</h3>
+<pre class="text"><code>/information</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>information
+show information
+server information
+llm information</code></pre>
 <h2 id="disconnect">/disconnect</h2>
 <p>Disconnects from the current server.</p>
 <p>After disconnecting, the server status in the header turns red and free-form prompts are blocked, but every local command in this manual continues to work. Use <code>/server</code> or <code>/reload</code> to reconnect.</p>
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 <pre class="text"><code>/disconnect</code></pre>
 <p>Natural-language form:</p>
 <pre class="text"><code>disconnect</code></pre>
 <h2 id="reload">/reload</h2>
 <p>Restores the configured model and server from the configuration file, undoing any <code>/model</code> or <code>/server</code> switches made during the session.</p>
 <p><code>/reload</code> also clears the in-memory conversation history, so it doubles as a way to start a clean exchange while returning to the configured defaults.</p>
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 <pre class="text"><code>/reload</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>reload
@@ -184,7 +217,7 @@ reset session</code></pre>
 <p>Restarts <code>orangu</code> in place, resuming the same workspace and session.</p>
 <p>The current session is saved first, then the running process is replaced via <code>exec</code> with the same binary, passing <code>--workspace</code>, <code>--config</code>, and <code>--resume &lt;session-id&gt;</code> so the new process picks up exactly where the old one left off. This is the recommended way to pick up a freshly built binary or an edited configuration file without losing conversation context.</p>
 <p>When the binary was rebuilt while running, the original on-disk path may be reported as deleted; <code>/restart</code> resolves the real path so it relaunches the freshly built binary. Only if that path is gone entirely does it fall back to staging a runnable copy under <code>~/.orangu/last</code>, a scratch directory that is cleared on every startup.</p>
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 <pre class="text"><code>/restart</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>restart
@@ -193,7 +226,7 @@ restart orangu</code></pre>
 <p>Deletes session directories from <code>~/.orangu/sessions/</code>. The active session is never deleted regardless of strategy.</p>
 <p>With a UUID it deletes that single session. With <code>all</code> it deletes every session except the active one. With <code>--workspace &lt;path&gt;</code> (or <code>-w &lt;path&gt;</code>) it deletes all sessions whose recorded workspace path contains <code>&lt;path&gt;</code>. With <code>--older-than &lt;days&gt;</code> (or <code>-o &lt;days&gt;</code>) it deletes all sessions whose <code>last_updated_at</code> timestamp is more than <code>&lt;days&gt;</code> days in the past.</p>
 <p>Tab completion after <code>/prune</code> cycles through session UUIDs newest-first.</p>
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 <p>Delete a single session by UUID:</p>
 <pre class="text"><code>/prune 550e8400-e29b-41d4-a716-446655440000</code></pre>
 <p>Delete all sessions except the active one:</p>
@@ -220,7 +253,7 @@ a1b2c3d4-e5f6-7890-abcd-ef1234567890  202605210830  202605210831     3  -       
 <li>If none match but the argument resolves to a real directory on disk (a leading <code>~</code>/<code>~/</code> is expanded), it opens that directory as a new workspace, auto-resuming any existing session for it or starting a fresh one.</li>
 </ul>
 <p>Tab completion after <code>/session</code> (with a trailing space) cycles through all session UUIDs newest first, then the distinct workspace paths recorded across sessions; when the typed text matches neither, it falls back to filesystem directory completion so a new workspace can be navigated to one segment at a time (<code>/session ~/co&lt;Tab&gt;/pr&lt;Tab&gt;</code>).</p>
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 <p>List every session:</p>
 <pre class="text"><code>/session</code></pre>
 <p>Narrow to sessions whose workspace path contains a string (switches straight to it when exactly one matches):</p>
@@ -238,7 +271,7 @@ show sessions</code></pre>
 <h2 id="list_files">/list_files</h2>
 <p>Lists the workspace files as a tree.</p>
 <p>This is a local convenience command for quickly orienting yourself in the workspace; it is separate from the model-facing <code>list_directory</code> tool that the model uses to explore files on its own.</p>
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-11">Examples</h3>
 <pre class="text"><code>/list_files</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>list files
@@ -250,7 +283,7 @@ show workspace files</code></pre>
 <p>The command is workspace-scoped — paths outside the workspace are rejected. It launches <code>$EDITOR</code> on the file in a separate window so <code>orangu</code> stays usable, and it never waits for the editor to close.</p>
 <p>Tab completion after <code>/open_file</code> searches the workspace recursively for file paths, and quoted paths such as <code>/open_file "..."</code> are supported.</p>
 <p>The same <code>/open_file &lt;path&gt;</code> (and <code>open &lt;path&gt;</code>) form also works inside the <code>/review</code> and <code>/auto_review</code> split views, where it opens any project file — not only the changed ones — in your editor, with the same whole-workspace <code>Tab</code> completion. In <code>/review</code> it is available the whole time; in <code>/auto_review</code> it works once the run has finished. See the <code>/review</code> and <code>/auto_review</code> tools for the details.</p>
-<h3 id="examples-11">Examples</h3>
+<h3 id="examples-12">Examples</h3>
 <pre class="text"><code>/open_file README.md
 /open_file src/main.rs</code></pre>
 <p>Natural-language forms:</p>
@@ -265,7 +298,7 @@ edit file src/main.rs</code></pre>
 <p><code>--hash</code> and <code>--author</code> add per-line blame columns sourced from <code>git blame</code>, using the same ref when one is provided.</p>
 <p>Tab completion for the first positional argument offers workspace file paths recursively; once a file path is present, the next <code>Tab</code> press cycles through that file's commit history (abbreviated hashes from <code>git log --follow</code>). <code>--hash</code> and <code>--author</code> are completed as well.</p>
 <p>Because source lines may be wider than the terminal, <code>/show_file</code> output is laid out on the full virtual canvas and can be panned horizontally with <code>Alt+Left</code>/<code>Alt+Right</code> without reflowing.</p>
-<h3 id="examples-12">Examples</h3>
+<h3 id="examples-13">Examples</h3>
 <p>Show the current file:</p>
 <pre class="text"><code>/show_file src/main.rs</code></pre>
 <p>Show the file with blame columns:</p>
@@ -288,7 +321,7 @@ show file README.md</code></pre>
 <li><strong>Go</strong> (<code>go.mod</code>, checked when none of the above are found) — runs <code>go build ./...</code>, adding <code>-p &lt;compile_workers&gt;</code> when it is nonzero. Go has no separate debug/release artifact either; debug instead adds <code>-gcflags="all=-N -l"</code>, disabling optimizations and inlining (mirroring the C backends' <code>-O0</code>) so a debugger such as delve can step through unoptimized code. Release passes no extra flags.</li>
 </ul>
 <p><code>&lt;compile_workers&gt;</code> is the <code>[orangu].compile_workers</code> value. It defaults to <code>0</code>, which means unused: no job flag is passed at all, and each toolchain falls back to its own default (Cargo's own automatic parallelism, a bare serial <code>make</code>, <code>meson compile</code>'s ninja default, <code>go build</code>'s own <code>-p</code> default). Setting it above <code>0</code> passes an explicit job count to every backend above — Rust, the C/C++ backends, and Go. Java and Python are unaffected: Maven and <code>pip</code> have no directly equivalent per-compile job flag.</p>
-<h3 id="examples-13">Examples</h3>
+<h3 id="examples-14">Examples</h3>
 <pre class="text"><code>/build
 /build debug
 /build release</code></pre>
@@ -306,7 +339,7 @@ release build</code></pre>
 <p>The command line runs through <code>bash -lc</code>, exactly like the model-facing <code>run_shell_command</code> tool (see the Tools chapter), so it supports everything a login shell does: pipes, redirects, globs, and any executable on <code>$PATH</code>, not a fixed allow-list. It runs with the workspace as its current directory. <code>/shell</code> requires a command — a bare <code>/shell</code> reports usage instead of doing nothing quietly.</p>
 <p>The command exits non-zero the same way it would at a real terminal — <code>/shell</code> reports the failure but the output already streamed stays in the output window.</p>
 <p>Tab completion after <code>/shell</code> completes the token being typed against files in the workspace, one path segment at a time, exactly like a real shell: <code>/shell ./te</code> offers <code>./test/</code>, and once inside that directory <code>/shell ./test/c</code> offers <code>./test/check.sh</code>. Only the last word of the command line completes this way — the program name and any earlier arguments are left alone. The inline ghost hint previews the same completion.</p>
-<h3 id="examples-14">Examples</h3>
+<h3 id="examples-15">Examples</h3>
 <pre class="text"><code>/shell ls -la
 /shell cargo test
 /shell ./test/check.sh</code></pre>
@@ -420,7 +453,7 @@ release build</code></pre>
 <li><code>Tab</code> completes an <code>/open_file &lt;path&gt;</code> / <code>open &lt;path&gt;</code> line against the workspace files (<code>Shift+Tab</code> cycles the ghost preview)</li>
 </ul>
 <p>The review status marks and line comments are kept for the duration of the review session and are not persisted after exit.</p>
-<h3 id="examples-15">Examples</h3>
+<h3 id="examples-16">Examples</h3>
 <pre class="text"><code>/review</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>review
@@ -627,7 +660,7 @@ review branch</code></pre>
 </tr>
 </tbody>
 </table>
-<h3 id="examples-16">Examples</h3>
+<h3 id="examples-17">Examples</h3>
 <pre class="text"><code>/auto_review</code></pre>
 <p>Review a single file (Tab-completes on the file name):</p>
 <pre class="text"><code>/auto_review src/tui.rs</code></pre>
@@ -736,7 +769,7 @@ auto review src/tui.rs</code></pre>
 <p>So on a branch the report answers <em>"does my branch duplicate code that already exists?"</em> — every reported pair has the new or changed function first. On the default branch (or outside a Git repository) the whole project is compared against itself as usual. If the branch <strong>adds nothing</strong> — for example it has been rebased onto the base with no commits of its own and a clean working tree — there is nothing branch-specific to analyse, so the whole-project report runs instead. The summary line and the PDF's first page state which mode ran, the base it compared against, and how many new/changed functions were analysed.</p>
 <h3 id="output">Output</h3>
 <p>The output window prints a summary (files scanned, functions analysed, the threshold, and the number of candidate pairs) followed by each pair: its similarity percentage, the two function names, and for each function its <code>path:start–end</code> location. To save the same report as a PDF, use <code>/export duplicates</code> (see the <code>/export</code> tool).</p>
-<h3 id="examples-17">Examples</h3>
+<h3 id="examples-18">Examples</h3>
 <p>Scan with the default 80% threshold:</p>
 <pre class="text"><code>/duplicates</code></pre>
 <p>Only report pairs that are at least 90% similar:</p>
@@ -778,7 +811,7 @@ find duplicate code</code></pre>
 <li><strong>Page 2 — table of contents.</strong> One entry per open pull request, <code>#N Title</code>, <strong>clickable links</strong> that jump to their page. Each entry ends with a status icon: a <strong>green checkmark</strong> when the pull request is neither a draft nor conflicting, otherwise a <strong>red "X"</strong>.</li>
 <li><strong>Page 3 onward — one page per pull request</strong> (more when it changes many files or has a long last comment). The title <strong>links to the pull/merge request's home page on the forge</strong>, followed by a table (spanning the full page width) of author, a <strong>Link</strong> row with the pull request's full URL (also clickable), created/updated dates, the branch, draft status, merge-conflict status, comment count, assignees, reviewers, and labels — whatever the forge returned. The <strong>Draft</strong> and <strong>Conflicts</strong> values are shown in <strong>bold</strong> when they are <code>Yes</code>, so an unfinished or blocked pull request catches the eye. Each <strong>reviewer</strong> is shown as their name followed by a status icon rather than the review state spelled out: a <strong>green checkmark</strong> for an approval, a <strong>red "X"</strong> for a change request (or, on GitLab, a still-outstanding review request — its merge-request list does not carry per-reviewer approval state at all), and a <strong>"?"</strong> for anything else that isn't a clear verdict (a comment, a still-pending GitHub review request, or a dismissed review). Below the table, the <strong>changed files</strong>: one line per file, its <strong>full path</strong> followed by its added-line count in <strong>green</strong> and removed-line count in <strong>red</strong> (GitLab's merge-request list carries no diff, so this section is empty there). Finally a <strong>Last comment</strong> table (also full width): a header spanning both columns, then one row with the comment's <strong>author</strong> (left) and its <strong>text</strong> (right, word-wrapped and truncated if very long); a pull request with no comments — or, on GitLab, whose comment bodies the list endpoint does not carry — shows <code>N/A</code> in both columns. (A repository with no open pull requests is the status page followed by a short note instead.)</li>
 </ul>
-<h3 id="examples-18">Examples</h3>
+<h3 id="examples-19">Examples</h3>
 <p>Export the output window (the default):</p>
 <pre class="text"><code>/export
 /export console</code></pre>
@@ -802,7 +835,7 @@ export pr</code></pre>
 <p>The generated HTML file is fully self-contained (all data and scripts are embedded). You can open it directly in your web browser (e.g. <code>file:///path/to/project/orangu-main-graph.html</code>).</p>
 <p>Inside the visualization you can: - <strong>Search</strong>: Use the sidebar to quickly locate specific functions, classes, or types. - <strong>Inspect</strong>: Click on any node (function or class) to see its full location and a list of all callers (Incoming) and callees (Outgoing). - <strong>Filter</strong>: Toggle specific files on and off in the legend to unclutter the graph. - <strong>Jump</strong>: Click on any related node in the info panel to instantly jump to it and see its connections.</p>
 <p>Nodes are automatically clustered and color-coded based on the file they belong to, helping you easily visualize architectural boundaries and module dependencies.</p>
-<h3 id="examples-19">Examples</h3>
+<h3 id="examples-20">Examples</h3>
 <pre class="text"><code>/graph</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>graph
@@ -817,7 +850,7 @@ visualize codebase</code></pre>
 <p>Vectors are appended to <code>chunks.json</code> as each file finishes — the existing vectors are never rewritten — so persistence stays cheap no matter how large the index grows, and the work on disk builds up as the pass proceeds, surviving even a hard kill. The pass can also be stopped with a double-<code>Esc</code>, which aborts the in-flight requests at once; either way the files embedded so far are kept, and the next <code>/search</code> resumes from where it left off rather than starting over.</p>
 <p>Ranking is hybrid. The query is embedded and scored against every chunk by cosine similarity; the strongest matches are then expanded along the Knowledge Graph's call edges — a semantic seed followed by structural expansion — so a relevant function pulls in its callers and callees. Each result is anchored to its <code>file:line</code> for quick navigation, and results expanded from a semantic hit are marked <code>(via &lt;symbol&gt;)</code>.</p>
 <p>Semantic search enables itself automatically. At startup orangu probes the <code>/v1/embeddings</code> endpoint of the server that serves the <code>embeddings</code> role — a server with <code>role = embeddings</code>, or the default <code>all</code> server — and turns <code>/search</code> on when it responds. To dedicate a server to embeddings, give its section <code>role = embeddings</code> (see the Configuration chapter). When no server serves embeddings, <code>/search</code> explains how to enable it and existing retrieval (<code>/grep</code>, the Knowledge Graph) is unaffected.</p>
-<h3 id="examples-20">Examples</h3>
+<h3 id="examples-21">Examples</h3>
 <pre class="text"><code>/search where is the retry backoff computed
 /search session persistence</code></pre>
 <p>Natural-language forms:</p>
