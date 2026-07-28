@@ -48,7 +48,7 @@
       <div class="grid-3">
         <div class="g-cell">
           <h3>Fully local and private</h3>
-          <p>Talks to any OpenAI-compatible server, tuned for llama.cpp. Once the server and models are downloaded, nothing leaves your machine and no internet is required. Zero telemetry.</p>
+          <p>Runs on the bundled <code>orangu-server</code>, or any other OpenAI-compatible server. Once the server and models are downloaded, nothing leaves your machine and no internet is required. Zero telemetry.</p>
         </div>
         <div class="g-cell">
           <h3>Code review built in</h3>
@@ -79,8 +79,8 @@
           <p>Even the built-in manual (<code>/manual</code>) is embedded in the binary, with full-text search. The docs are there with no network.</p>
         </div>
         <div class="g-cell">
-          <h3>A single fast Rust binary</h3>
-          <p>Quick startup, no runtime to install, no GC pauses, and a small download. Live tokens/second in the footer for llama.cpp.</p>
+          <h3>Pure Rust, top to bottom</h3>
+          <p>Quick startup, no runtime to install, no GC pauses, and a small download. Live tokens/second in the footer, and no llama.cpp, ggml, or Python anywhere in the stack.</p>
         </div>
       </div>
     </div>
@@ -234,7 +234,7 @@
           <tbody>
             <tr><td>Where your code goes</td><td class="cmp-ou">Stays on your machine — zero telemetry</td><td class="cmp-cloud">Sent to a third-party provider</td></tr>
             <tr><td>Offline use</td><td class="cmp-ou">First-class; only the initial model download needs a network</td><td class="cmp-cloud">Generally requires connectivity</td></tr>
-            <tr><td>Models</td><td class="cmp-ou">Any OpenAI-compatible server — tuned for local llama.cpp (Ollama, LM Studio, …)</td><td class="cmp-cloud">Vendor-hosted models, usually behind API keys</td></tr>
+            <tr><td>Models</td><td class="cmp-ou">GGUF models you own, served by the bundled <code>orangu-server</code> — or any other OpenAI-compatible server</td><td class="cmp-cloud">Vendor-hosted models, usually behind API keys</td></tr>
             <tr><td>Cost</td><td class="cmp-ou">Free to run against models you host</td><td class="cmp-cloud">Per-token / subscription billing</td></tr>
             <tr><td>Footprint</td><td class="cmp-ou">One native Rust binary, fast start, no runtime</td><td class="cmp-cloud">Editor/cloud service + account</td></tr>
             <tr><td>Code review</td><td class="cmp-ou">Built-in interactive <strong>and</strong> LLM auto review in the terminal</td><td class="cmp-cloud">Usually delegated to the hosting platform</td></tr>

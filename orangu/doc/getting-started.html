@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting Started — orangu</title>
   <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
   <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
 </head>
 <body>
 
-<!-- ─── Top nav ─────────────────────────────── -->
 <nav class="doc-nav">
   <a class="doc-nav-logo" href="../index.html">ORANGU</a>
   <ul class="doc-nav-links">
@@ -34,30 +37,64 @@
 </nav>
 
 <div class="doc-shell">
-
-  <!-- ─── Sidebar ─────────────────────────── -->
   <aside class="doc-sidebar">
     <div class="sidebar-section">
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html" class="active">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
-        <li><a href="terminal.html">Terminal Interface</a>
-          <ul>
-            <li><a href="terminal.html#startup">Startup</a></li>
-            <li><a href="terminal.html#sessions">Sessions</a></li>
-            <li><a href="terminal.html#completion">Tab completion</a></li>
-            <li><a href="terminal.html#shortcuts">Shortcuts &amp; keys</a></li>
-          </ul>
-        </li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
       </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#getting-started" id="toc-getting-started">Getting
+started</a>
+<ul>
+<li><a href="#start-orangu-server" id="toc-start-orangu-server">1. Start
+orangu-server</a></li>
+<li><a href="#create-a-client-configuration"
+id="toc-create-a-client-configuration">2. Create a client
+configuration</a></li>
+<li><a href="#run-the-client" id="toc-run-the-client">3. Run the
+client</a></li>
+<li><a href="#try-a-few-commands" id="toc-try-a-few-commands">4. Try a
+few commands</a></li>
+</ul></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -70,108 +107,109 @@
     </div>
   </aside>
 
-  <!-- ─── Content ─────────────────────────── -->
   <main class="doc-content">
-
-    <h1>Getting Started</h1>
-
-    <h2 id="step1">1. Start llama.cpp<a class="anchor" href="#step1">#</a></h2>
-
-    <p>Run a local <code>llama-server</code> instance with an OpenAI-compatible endpoint:</p>
-
-    <pre><code>llama-server \
-  --model /path/to/model.gguf \
-  --port 8100 \
-  --ctx-size 8192</code></pre>
-
-    <p><strong>orangu</strong> expects an OpenAI-compatible endpoint such as:</p>
-
-    <pre><code>http://localhost:8100/v1</code></pre>
-
-    <p>Any OpenAI-compatible server works: <a href="https://github.com/ggml-org/llama.cpp" target="_blank">llama.cpp</a>, <a href="https://ollama.com" target="_blank">Ollama</a>, LM Studio, or a hosted endpoint.</p>
-
-    <h2 id="step2">2. Create a configuration<a class="anchor" href="#step2">#</a></h2>
-
-    <p>The quickest path is the interactive wizard. It asks for the LLM URL, auto-detects a model the server advertises, walks every option showing its default, and writes <code>~/.orangu/orangu.conf</code> after a confirmation:</p>
-
-    <pre><code>orangu --init</code></pre>
-
-    <p>With an uninstalled build:</p>
-
-    <pre><code>cargo run --bin orangu -- --init</code></pre>
-
-    <p>Alternatively, copy the sample file and adjust the model name and endpoint:</p>
-
-    <pre><code>cp doc/etc/orangu.conf ./orangu.conf</code></pre>
-
-    <p>See the <a href="configuration.html">Configuration</a> chapter for all available options.</p>
-
-    <h2 id="step3">3. Run the client<a class="anchor" href="#step3">#</a></h2>
-
-    <p>If you used <code>orangu --init</code>, the configuration lives at <code>~/.orangu/orangu.conf</code> (a default lookup location), so just run:</p>
-
-    <pre><code>orangu</code></pre>
-
-    <p>Otherwise point the client at your configuration file:</p>
-
-    <pre><code>orangu --config ./orangu.conf</code></pre>
-
-    <p>With an uninstalled build:</p>
-
-    <pre><code>cargo run --bin orangu -- --config ./orangu.conf</code></pre>
-
-    <h2 id="step4">4. Try a few commands<a class="anchor" href="#step4">#</a></h2>
-
-    <p>Start with these slash commands to explore what orangu can do:</p>
-
-    <pre><code>/help
-/server
-/disconnect
-/reload
-/tools
-/model
-/session
-/list_files
-/open_file README.md
-/show_file README.md
-/build
-/add_file README.md
-/amend &lt;message&gt;
-/branch main
-/branch -b feature/new
-/branch -m new-name
-/branch -d feature/old
-/cherry_pick &lt;commit&gt;
-/comment 51 "My comment"
-/close -i 51
-/commit &lt;message&gt;
-/restore README.md
-/diff
-/init_repo
-/log
-/log 5
-/merge feature/foo
-/move_file old.rs new.rs
-/pull 42
-/push
-/push --force
-/rebase
-/remove_file README.md
-/review
-/squash
-/status
-/usage
-/clear
-/quit</code></pre>
-
-    <h2 id="natural-language">Natural-language input<a class="anchor" href="#natural-language">#</a></h2>
-
-    <p>You can also type plain language instead of slash commands. orangu recognizes these natural-language aliases for all built-in commands:</p>
-
-    <pre><code>list files
-open README.md
+<h1 id="getting-started">Getting started</h1>
+<h2 id="start-orangu-server">1. Start orangu-server</h2>
+<p>Run a local <code>orangu-server</code> instance; it serves an
+OpenAI-compatible endpoint (API port <code>8100</code> by default).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--all</span> /path/to/model.gguf</span></code></pre></div>
+<h2 id="create-a-client-configuration">2. Create a client
+configuration</h2>
+<p>The quickest way is the interactive wizard, which asks for the LLM
+URL, auto-detects a model the server advertises, walks every option
+showing its default, writes <code>~/.orangu/orangu.conf</code> after a
+confirmation, and installs any bundled skills into
+<code>~/.orangu/skills/</code> if they are not already present:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--init</span></span></code></pre></div>
+<p>Or, with an uninstalled build:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> orangu <span class="at">--</span> <span class="at">--init</span></span></code></pre></div>
+<p>Alternatively, start from the sample file and adjust the model name
+and endpoint if needed:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> doc/etc/orangu.conf ./orangu.conf</span></code></pre></div>
+<h2 id="run-the-client">3. Run the client</h2>
+<p>If you used <code>orangu --init</code>, the configuration already
+lives at <code>~/.orangu/orangu.conf</code> (a default lookup location),
+so just run:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span></span></code></pre></div>
+<p>Otherwise point the client at your configuration file:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> orangu <span class="at">--</span> <span class="at">--config</span> ./orangu.conf</span></code></pre></div>
+<p>Or with an installed binary:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--config</span> ./orangu.conf</span></code></pre></div>
+<h2 id="try-a-few-commands">4. Try a few commands</h2>
+<ul>
+<li><code>/help</code></li>
+<li><code>/skills</code></li>
+<li><code>/server</code></li>
+<li><code>/disconnect</code></li>
+<li><code>/reload</code></li>
+<li><code>/tools</code></li>
+<li><code>/model</code></li>
+<li><code>/session</code></li>
+<li><code>/list_files</code></li>
+<li><code>/open_file README.md</code></li>
+<li><code>/show_file README.md</code></li>
+<li><code>/debugging reproduce the failing request path</code></li>
+<li><code>/build</code></li>
+<li><code>/shell ls -la</code></li>
+<li><code>/create_file README.md</code></li>
+<li><code>/auto_review</code></li>
+<li><code>/amend &lt;message&gt;</code></li>
+<li><code>/branch main</code></li>
+<li><code>/branch -b feature/new</code></li>
+<li><code>/branch -m new-name</code></li>
+<li><code>/branch -d feature/old</code></li>
+<li><code>/cherry_pick &lt;commit&gt;</code></li>
+<li><code>/comment 51 "My comment"</code></li>
+<li><code>/close -i 51</code></li>
+<li><code>/get_comments -i 51</code></li>
+<li><code>/commit &lt;message&gt;</code></li>
+<li><code>/restore README.md</code></li>
+<li><code>/diff</code></li>
+<li><code>/fetch</code></li>
+<li><code>/fetch upstream</code></li>
+<li><code>/init_repo</code></li>
+<li><code>/log</code></li>
+<li><code>/log 5</code></li>
+<li><code>/show</code></li>
+<li><code>/show aafd1cb</code></li>
+<li><code>/merge feature/foo</code></li>
+<li><code>/move_file old.rs new.rs</code></li>
+<li><code>/pull 42</code></li>
+<li><code>/push</code></li>
+<li><code>/push --force</code></li>
+<li><code>/rebase</code></li>
+<li><code>/rebase develop</code></li>
+<li><code>/rebase origin/main</code></li>
+<li><code>/delete_file README.md</code></li>
+<li><code>/review</code></li>
+<li><code>/squash</code></li>
+<li><code>/status</code></li>
+<li><code>/usage</code></li>
+<li><code>/clear</code></li>
+<li><code>/quit</code></li>
+</ul>
+<p>Then try a natural-language request such as:</p>
+<pre class="text"><code>list files</code></pre>
+<p>You can also create or copy Agent Skills. orangu discovers skills
+from:</p>
+<ul>
+<li><code>~/.orangu/skills/</code></li>
+<li><code>~/.agents/skills/</code></li>
+<li><code>&lt;workspace&gt;/.orangu/skills/</code></li>
+<li><code>&lt;workspace&gt;/.agents/skills/</code></li>
+</ul>
+<p>Each skill lives in its own directory and must contain a
+<code>SKILL.md</code> file. List the discovered skills with:</p>
+<pre class="text"><code>/skills</code></pre>
+<p>Invoke one directly with its directory or frontmatter name:</p>
+<pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
+<p>Built-in commands also accept natural-language forms, for
+example:</p>
+<pre class="text"><code>open README.md
 show README.md
 list models
+list files
+pull 42
 log
 status
 rebase
@@ -181,26 +219,18 @@ add README.md
 remove README.md
 move old.rs new.rs
 cherry pick abc1234
-commit "[#42] My feature"
-amend "[#42] My feature"
+commit &quot;[#42] My feature&quot;
+amend &quot;[#42] My feature&quot;
 push
 force push
 init repo
 squash
 delete feature/foo
 show help</code></pre>
-
-    <div class="callout">
-      <strong>Comment syntax:</strong> Lines whose first non-whitespace character is <code>#</code> stay local and are never sent to the model. Lines whose first non-whitespace character is <code>\</code> are ignored entirely.
-    </div>
-
-    <div class="doc-footer-nav">
-      <a href="building.html" class="prev">Building</a>
-      <a href="quickstart.html" class="next">Quick Start</a>
-    </div>
-
+<p>Lines whose first non-whitespace character is <code>#</code> stay
+local and are not sent to the model. Lines whose first non-whitespace
+character is <code>\</code> are ignored.</p>
   </main>
-
 </div>
 
 <footer class="doc-site-footer">

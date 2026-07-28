@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coordinator — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html" class="active">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#coordinator" id="toc-coordinator">Coordinator</a>
+<ul>
+<li><a href="#why-use-it" id="toc-why-use-it">Why use it</a></li>
+<li><a href="#quick-start" id="toc-quick-start">Quick start</a></li>
+<li><a href="#flags" id="toc-flags">Flags</a></li>
+<li><a href="#pointing-orangu.conf-at-it"
+id="toc-pointing-orangu.conf-at-it">Pointing orangu.conf at it</a></li>
+<li><a href="#how-it-decides-which-model-to-use"
+id="toc-how-it-decides-which-model-to-use">How it decides which model to
+use</a></li>
+<li><a href="#file-operations-through-the-coordinator"
+id="toc-file-operations-through-the-coordinator">File operations through
+the coordinator</a></li>
+<li><a href="#things-to-know-while-using-it"
+id="toc-things-to-know-while-using-it">Things to know while using
+it</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="coordinator">Coordinator</h1>
+<p><code>orangu-coordinator</code> is a small companion HTTP proxy for
+people who run local models but only have the resources to keep
+<strong>one</strong> <code>orangu-server</code> process resident at a
+time.</p>
+<p>Instead of hand-starting <code>orangu-server</code> yourself before
+every <code>orangu</code> session — and picking exactly one role to work
+in for that session — point <code>orangu.conf</code> at the coordinator
+instead. It starts and stops <code>orangu-server</code> on demand,
+swapping to whichever model a request actually needs, so
+<code>/review</code>, the explorer subagent, semantic
+<code>/search</code>, and ordinary chat can each use a different model
+without you ever running more than one <code>orangu-server</code> at
+once.</p>
+<p>This is purely optional. If you have enough VRAM to keep every role’s
+model loaded simultaneously, plain <code>orangu.conf</code> with one
+server section per role (see the Configuration chapter) works exactly as
+before and needs no coordinator.</p>
+<h2 id="why-use-it">Why use it</h2>
+<p>Without a coordinator, using a different model per role means either
+running several <code>orangu-server</code> processes side by side (one
+per port) — which most single-GPU setups can’t afford — or manually
+stopping and restarting <code>orangu-server</code> yourself every time
+you switch tasks.</p>
+<p><code>orangu-coordinator</code> automates that: it owns exactly one
+<code>orangu-server</code> child process, and swaps it out for a
+different model the moment a request needs one, entirely transparently
+to orangu.</p>
+<p>The trade-off is latency, not capability: swapping pays the cost of a
+fresh model load, so this suits a single-GPU/single-model machine well,
+but isn’t the right choice if you want every role to stay warm and
+instantly responsive at the same time.</p>
+<h2 id="quick-start">Quick start</h2>
+<p>Generate a configuration interactively:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-coordinator</span> <span class="at">--init</span></span></code></pre></div>
+<p>This walks every <code>[orangu-coordinator]</code> setting (including
+the shared <code>models</code> directory every profile’s
+<code>orangu-server</code> uses), then asks for a model, host, and port
+role by role — <code>all</code> is mandatory,
+<code>code</code>/<code>review</code>/
+<code>explorer</code>/<code>embeddings</code> are optional (leave the
+model prompt blank to skip one). It’s written to
+<code>~/.orangu/orangu-coordinator.conf</code> — tersely: only
+<code>host</code>/<code>port</code> and each profile’s
+<code>model</code> are always present, every other answer left at its
+default is simply omitted.</p>
+<p>Both the <code>models</code> prompt and every role’s
+<code>model</code> prompt offer inline ghost-text suggestions and TAB
+completion: <code>models</code> completes real filesystem paths, and
+each <code>model</code> prompt (once <code>models</code> is set)
+completes over every installed model’s user-facing label — the same
+label <code>orangu-server list</code> prints in its <code>MODEL</code>
+column, not a raw filename or its <code>NR</code> shorthand (a
+coordinator profile’s <code>model</code> is written once and read back
+indefinitely, so only the stable label is offered). Nothing offered is
+required — typing anything else (a path, an undownloaded Hugging Face
+spec) works too.</p>
+<p>A minimal hand-written configuration looks like this:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-coordinator]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> 127.0.0.1</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">9000</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> /srv/models</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">startup_timeout </span><span class="ot">=</span><span class="st"> </span><span class="dv">180</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[main]</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">[explorer]</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> explorer</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF</span></span></code></pre></div>
+<p>Neither profile sets <code>host</code>/<code>port</code> here — both
+default to <code>127.0.0.1:8100</code>, which is fine even though
+they’re identical: only one profile’s <code>orangu-server</code> is ever
+active at a time, and swapping always fully stops the old one before
+starting the new one, so there’s never a real conflict over the
+port.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Key</th>
+<th style="text-align: left;">Section</th>
+<th style="text-align: left;">Required</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>host</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Host the proxy listens on. Defaults to
+<code>127.0.0.1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>port</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Port the proxy listens on. Defaults to
+<code>9000</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>models</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Models directory forwarded to every
+profile’s own <code>orangu-server</code>
+(<code>[orangu-server].models</code>) — one shared directory across
+every profile</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>startup_timeout</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Seconds to wait for a newly started
+<code>orangu-server</code> to answer <code>GET /v1/models</code> before
+giving up. Defaults to <code>180</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>max_body_bytes</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Request/response body size cap in bytes.
+Defaults to <code>67108864</code> (64 MiB)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>idle_timeout</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Seconds of inactivity before automatically
+unloading the active model to free system resources (RAM/VRAM). Disabled
+by default.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>shutdown_token</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Shared secret that enables the
+<code>GET /v1/coordinator/shutdown</code> endpoint. The caller must pass
+<code>?token=&lt;value&gt;</code> and connect from localhost. Disabled
+by default when absent.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>role</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Same roles as <code>orangu.conf</code>:
+<code>all</code> (default), <code>code</code>, <code>review</code>,
+<code>explorer</code>, <code>embeddings</code>. At least one profile
+must resolve to <code>all</code> — it’s the fallback profile. Maps to
+<code>orangu-server</code>’s own
+<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>
+flag</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>model</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">A model spec — local <code>.gguf</code>
+path, <code>NR</code>/<code>MODEL</code> label, or
+<code>&lt;user&gt;/&lt;model&gt;[:quant]</code> Hugging Face repo — the
+same shape <code>orangu-server</code>’s own positional
+<code>MODEL</code> argument accepts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>host</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Host this profile’s
+<code>orangu-server</code> listens on. Defaults to
+<code>127.0.0.1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>port</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Port this profile’s
+<code>orangu-server</code> listens on. Defaults to <code>8100</code> —
+the same default <code>orangu-server</code> itself uses</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>backend</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Forwarded to this profile’s
+<code>orangu-server</code> as <code>[orangu-server].backend</code>
+(<code>auto</code>/<code>cpu</code>/<code>vulkan</code>/<code>cuda</code>/<code>opencl</code>/<code>rocm</code>)
+when set</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>slots</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Forwarded to this profile’s
+<code>orangu-server</code> as <code>[orangu-server].slots</code> when
+set</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>web</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Forwarded to this profile’s
+<code>orangu-server</code> as <code>[orangu-server].web</code> when set,
+exposing that profile’s own web UI while it’s active</td>
+</tr>
+</tbody>
+</table>
+<p>Run it with:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-coordinator</span> <span class="at">--config</span> ./orangu-coordinator.conf</span></code></pre></div>
+<p>Like <code>orangu.conf</code>, the config file defaults to
+<code>./orangu-coordinator.conf</code>, then
+<code>~/.orangu/orangu-coordinator.conf</code>, so <code>--config</code>
+can usually be omitted once it’s in place.</p>
+<h2 id="flags">Flags</h2>
+<ul>
+<li><code>-q</code>/<code>--quiet</code> suppresses the startup banner,
+profile list, and shutdown message — useful when running it under a
+supervisor that captures stdout. Errors (a bad config, a port already in
+use, …) still go to stderr regardless.</li>
+<li><code>-d</code>/<code>--daemon</code> detaches from the terminal and
+runs in the background (Unix-only). It always implies
+<code>--quiet</code>. The config is loaded and the listen address is
+bound <em>before</em> detaching, so a bad config or a port already in
+use is still reported to your terminal rather than failing silently.
+There is no PID file: find the process with
+<code>pgrep -f orangu-coordinator</code> and stop it with
+<code>kill -INT &lt;pid&gt;</code> for the same graceful shutdown
+<code>Ctrl+C</code> triggers in the foreground.</li>
+</ul>
+<p>Running in the foreground (not <code>--daemon</code>) sets the
+terminal window/tab title to <code>orangu-coordinator</code> for the
+life of the process, same as <code>orangu</code> itself.</p>
+<p><code>orangu-coordinator</code> spawns a sibling
+<code>orangu-server</code> next to its own executable by default,
+falling back to <code>orangu-server</code> resolved via
+<code>PATH</code> if no sibling exists. Set
+<code>ORANGU_COORDINATOR_SERVER_BIN</code> to point it at a specific
+<code>orangu-server</code> executable instead.</p>
+<h2 id="pointing-orangu.conf-at-it">Pointing orangu.conf at it</h2>
+<p>Once orangu confirms an endpoint is a coordinator, it alone decides
+which model backs every role — a single, ordinary server section is
+enough:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">server </span><span class="ot">=</span><span class="st"> main-server</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:9000/</span></span></code></pre></div>
+<p>No
+<code>role = explorer</code>/<code>review</code>/<code>embeddings</code>
+sections are needed: <code>/review</code>, <code>/auto_review</code>,
+the explorer subagent, and semantic <code>/search</code> all reuse this
+same connection automatically, and the coordinator routes each to
+whatever real model actually backs that role. <code>/model</code> and
+<code>/server</code> keep working exactly as before.</p>
+<h2 id="how-it-decides-which-model-to-use">How it decides which model to
+use</h2>
+<p>Every request orangu sends already says what it’s for —
+<code>/review</code> and <code>/auto_review</code> ask for the
+<code>review</code> role, the explorer subagent asks for
+<code>explorer</code>, semantic <code>/search</code> asks for
+<code>embeddings</code>, and ordinary chat asks for <code>code</code>
+(or <code>all</code> if you haven’t configured a dedicated
+<code>code</code> profile). The coordinator reads that and starts (or
+keeps running) whichever <code>orangu-server</code> actually backs the
+requested role, stopping anything else that happens to be running first.
+You never pick a model yourself when a coordinator is in charge — that’s
+the whole point.</p>
+<p>If a role you’re using has no dedicated profile in
+<code>orangu-coordinator.conf</code>, the coordinator falls back to the
+<code>all</code> profile instead, so nothing errors out; it just means
+that role doesn’t get its own specialized model.</p>
+<h2 id="file-operations-through-the-coordinator">File operations through
+the coordinator</h2>
+<p><code>orangu-server</code>’s file-lifecycle endpoints
+(<code>/v1/create_file</code>, <code>/v1/modify_file</code>,
+<code>/v1/move_file</code>, <code>/v1/delete_file</code>,
+<code>/v1/show_file</code>, <code>/v1/create_directory</code>,
+<code>/v1/move_directory</code>, <code>/v1/delete_directory</code>) work
+through the coordinator like everything else, because the coordinator is
+an HTTP proxy: it forwards the request untouched and streams the reply
+back.</p>
+<p>The coordinator has no workspace of its own and no
+<code>-w</code>/<code>--workspace</code> flag — the file operation
+happens in the workspace of the <code>orangu-server</code> that receives
+it. For a backend the coordinator started, that is the directory the
+coordinator itself was started in, since the child inherits it. So start
+the coordinator in the tree you want operated on.</p>
+<p>These requests carry no <code>model</code>, so they resolve like any
+model-less request: the currently active profile, then <code>all</code>.
+If nothing is running, the first one pays the same cold start as any
+other request.</p>
+<h2 id="things-to-know-while-using-it">Things to know while using
+it</h2>
+<ul>
+<li>The first request after a swap waits for the new model to finish
+loading — swapping to a role you haven’t used yet in this session pays a
+real cold-load cost, same as starting <code>orangu-server</code>
+fresh.</li>
+<li>Once connected to a coordinator, orangu shows “Automatic” for the
+model everywhere in the UI (the header banner, the status line,
+<code>/review</code> and <code>/auto_review</code>) instead of a
+specific model id, since the coordinator — not you — decides which model
+is actually loaded at any moment.</li>
+<li>If you use semantic <code>/search</code>, give your server section’s
+<code>timeout</code> in <code>orangu.conf</code> enough headroom for a
+full cold load, not just a quick health check — otherwise
+<code>/search</code> may report itself unavailable simply because the
+very first detection attempt gave up too early.</li>
+<li><strong>Dynamic Hot-Reloading</strong>: The coordinator watches
+<code>orangu-coordinator.conf</code> and hot-reloads changes
+automatically (polled every ~5 seconds) without needing a restart.</li>
+<li><strong>Fallback Routing</strong>: If a requested profile fails to
+load (e.g. out of memory), the coordinator automatically falls back to
+starting the <code>all</code>-role profile rather than failing the
+request entirely.</li>
+<li>On shutdown (<code>Ctrl+C</code> or the internal
+<code>GET /v1/coordinator/shutdown</code> API), the coordinator
+gracefully stops whatever <code>orangu-server</code> process is
+currently active — or still starting up — so nothing is left running in
+the background.</li>
+</ul>
+<p>See the Developer information chapter for the exact routing
+algorithm, the <code>/v1/coordinator</code> protocol, and how model
+swapping works internally.</p>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

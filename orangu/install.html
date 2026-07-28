@@ -170,13 +170,13 @@
           <h3>Start a local LLM server</h3>
         </div>
         <div class="step-body">
-          <p>orangu works with any OpenAI-compatible server. The recommended options are <a href="https://github.com/ggml-org/llama.cpp" style="color:var(--amber);text-decoration:none" target="_blank">llama.cpp</a> or <a href="https://ollama.com" style="color:var(--amber);text-decoration:none" target="_blank">Ollama</a>.</p>
+          <p>The installer ships <code>orangu-server</code>, the project's own pure-Rust GGUF engine. Download a model and serve it on the default API port <code>8100</code>.</p>
           <div class="terminal-block">
-            <div><span class="dim"># Ollama example</span></div>
-            <div><span class="p">ollama serve</span></div>
-            <div><span class="p">ollama pull</span> <span class="k">qwen2.5-coder:7b</span></div>
+            <div><span class="dim"># fetch a model, then serve it</span></div>
+            <div><span class="p">orangu-server download</span> <span class="k">unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M</span></div>
+            <div><span class="p">orangu-server</span> <span class="k">--all</span> <span class="k">/path/to/model.gguf</span></div>
           </div>
-          <p class="step-note">For llama.cpp, pass <code>--jinja --chat-template chatml</code> and point orangu at <code>http://127.0.0.1:8080</code>.</p>
+          <p class="step-note">orangu also talks to any other OpenAI-compatible server — see <a href="doc/local-llm.html" style="color:var(--amber);text-decoration:none">Serving models per role</a>.</p>
         </div>
       </div>
 

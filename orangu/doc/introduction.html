@@ -41,30 +41,54 @@
     <div class="sidebar-section">
       <div class="sidebar-section-title">User Manual</div>
       <ul>
-        <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
+        <li><a href="introduction.html" class="active">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="workspaces.html">Workspaces</a></li>
-        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
-      <ul>
-      <li><a href="#introduction">Introduction</a>
-      <ul>
-      <li><a href="#features">Features</a></li>
-      <li><a href="#community">Community</a></li>
-      </ul></li>
-      </ul>
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a>
+<ul>
+<li><a href="#features" id="toc-features">Features</a></li>
+<li><a href="#a-complete-stack" id="toc-a-complete-stack">A complete
+stack</a></li>
+<li><a href="#community" id="toc-community">Community</a></li>
+</ul></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -79,35 +103,125 @@
 
   <main class="doc-content">
 <h1 id="introduction">Introduction</h1>
-<p><a href="https://github.com/mnemosyne-systems/orangu"><strong>orangu</strong></a> is a local workspace-aware tool-driven coding environment for <strong>OpenAI-compatible</strong> servers - especially <a href="https://github.com/ggml-org/llama.cpp"><strong>llama.cpp</strong></a>.</p>
-<p><strong>orangu</strong> is named after the <a href="https://en.wikipedia.org/wiki/Orangutan">Orangutan</a> - the smartest ape.</p>
+<p>[<strong>orangu</strong>][orangu] is a local, workspace-aware,
+tool-driven coding environment.</p>
+<p>More than a client, <strong>orangu is a complete, self-contained AI
+coding stack</strong> — three cooperating programs written end to end in
+Rust: the coding environment (<code>orangu</code>), an on-demand model
+manager (<code>orangu-coordinator</code>, see the <em>Coordinator</em>
+chapter), and a native, pure-Rust GGUF inference server
+(<code>orangu-server</code>, see the <em>Inference server</em> chapter)
+that implements the transformer forward pass itself, with no dependency
+on llama.cpp/ggml’s compiled code and no Python. Every layer speaks the
+OpenAI-compatible API. See <em>A complete stack</em> below.</p>
+<p><strong>orangu</strong> is named after the <a
+href="https://en.wikipedia.org/wiki/Orangutan">Orangutan</a> - the
+smartest ape.</p>
 <figure>
-<img src="images/orangu-terminal.png" alt="orangu terminal interface" /><figcaption aria-hidden="true">orangu terminal interface</figcaption>
+<img src="images/orangu-terminal.png" alt="orangu terminal interface" />
+<figcaption aria-hidden="true">orangu terminal interface</figcaption>
 </figure>
 <h2 id="features">Features</h2>
 <ul>
-<li>OpenAI-compatible chat completions, tuned for llama.cpp — fully local, no Internet connection required after setup</li>
-<li>Interactive code review (<code>/review</code>) and LLM-driven auto review (<code>/auto_review</code>) of the changes on your branch, with a category-grouped report you can export or post to an issue</li>
-<li>Local file reading and editing</li>
-<li>Workspace-aware Git and forge tools (commit, rebase, push, pull requests, comments) for the whole change-and-review loop</li>
+<li>A complete Rust stack — the <code>orangu</code> editor, the
+<code>orangu-coordinator</code> model manager, and the native
+<code>orangu-server</code> GGUF inference engine, with no llama.cpp,
+ggml, or Python dependency</li>
+<li>OpenAI-compatible chat completions served by the built-in
+<code>orangu-server</code> — fully local, no Internet connection
+required after setup</li>
+<li>Interactive code review (<code>/review</code>) and LLM-driven auto
+review (<code>/auto_review</code>) of the changes on your branch, with a
+category-grouped report you can export or post to an issue</li>
+<li>Workspace-scoped file tools — show, create, modify, move, and delete
+files and directories, staged through Git as the change is made</li>
+<li>Workspace-aware Git and forge tools (commit, rebase, push, pull
+requests, issues, comments) for the whole change-and-review loop</li>
+<li>Several projects open at once as workspace tabs, each with its own
+session, scrollback, and history</li>
+<li>Knowledge graph of the codebase (<code>/graph</code>), semantic
+search by meaning (<code>/search</code>), and duplicate-code detection
+across more than 20 languages (<code>/duplicates</code>)</li>
+<li>Context compression — AST-aware downsampling, a diff engine, secret
+redaction, and transcript compaction to protect the context window</li>
+<li>Agent Skills (<code>SKILL.md</code>) and workspace memory
+(<code>AGENTS.md</code>) merged into the model’s context</li>
+<li>Project builds with toolchain detection (<code>/build</code>) —
+Cargo, CMake, Autotools, Meson, make, Maven, Python, and Go</li>
 <li>URL fetching for external knowledge</li>
-<li>Shell command execution inside the workspace</li>
-<li>Model switching and runtime server target control</li>
-<li>PDF export of the console or a review report (<code>/export</code>)</li>
-<li>Persistent history, shell-style editing, and a terminal status banner</li>
-<li>Built-in offline manual (<code>/manual</code>) with full-text search</li>
+<li>Shell command execution inside the workspace, streamed live
+(<code>/shell</code>)</li>
+<li>Model switching, runtime server target control, and a server
+capability report (<code>/information</code>)</li>
+<li>Persistent, resumable sessions (<code>/session</code>,
+<code>-r</code>, <code>-l</code>) and per-workspace activity statistics
+(<code>/statistics</code>)</li>
+<li>One-shot, scriptable runs (<code>-p</code>, <code>-q</code>) and a
+cron-style scheduler for unattended commands
+(<code>/schedule</code>)</li>
+<li>PDF export of the console, a review report, a pull-request summary,
+the statistics, or a duplicate-code report (<code>/export</code>)</li>
+<li>Themeable terminal interface (<code>/theme</code>, <code>-t</code>),
+persistent history, shell-style editing, Tab completion, and a status
+banner</li>
+<li>Built-in offline manual (<code>/manual</code>) with full-text
+search</li>
 </ul>
-<h2 id="community">Community</h2>
-<p>Contributions to <a href="https://github.com/mnemosyne-systems/orangu"><strong>orangu</strong></a> are managed on <a href="https://github.com/mnemosyne-systems/orangu">GitHub</a></p>
+<h2 id="a-complete-stack">A complete stack</h2>
+<p>Most local-AI setups are a patchwork: one tool for the editor, a
+separate engine for inference, and glue to manage which model is loaded.
+orangu is the whole stack in one project — three cooperating programs,
+each speaking the OpenAI-compatible API to the next:</p>
+<figure>
+<img src="images/orangu-architecture.png"
+alt="The orangu stack: orangu → orangu-coordinator → orangu-server" />
+<figcaption aria-hidden="true">The orangu stack: orangu →
+orangu-coordinator → orangu-server</figcaption>
+</figure>
 <ul>
-<li><a href="https://github.com/mnemosyne-systems/orangu/discussions">Ask a question</a></li>
-<li><a href="https://github.com/mnemosyne-systems/orangu/issues">Raise an issue</a></li>
-<li><a href="https://github.com/mnemosyne-systems/orangu/issues">Feature request</a></li>
-<li><a href="https://github.com/mnemosyne-systems/orangu/pulls">Code submission</a></li>
+<li><strong><code>orangu</code></strong> — the workspace-aware coding
+environment you drive (this manual’s main subject): the terminal UI,
+local and Git/forge tools, <code>/review</code> and
+<code>/auto_review</code>, the knowledge graph, semantic
+<code>/search</code>, and the context-compression engine.</li>
+<li><strong><code>orangu-coordinator</code></strong> — an optional
+companion HTTP proxy that starts and stops <code>orangu-server</code> on
+demand and swaps to whichever model each request needs, so a single-GPU
+machine can use a different model per role without ever running more
+than one server at once. See the <em>Coordinator</em> chapter.</li>
+<li><strong><code>orangu-server</code></strong> — <em>is</em> the
+inference engine: GGUF loading, tokenization, the transformer forward
+pass, sampling, and request scheduling implemented directly in Rust with
+no dependency on llama.cpp/ggml’s compiled code, running on CPU or GPU
+(Vulkan, CUDA, ROCm, OpenCL). Besides the OpenAI-compatible and native
+endpoints it offers a workspace-scoped file API and an optional browser
+chat console, and it serves as the machine’s GGUF inventory — listing,
+downloading, and deleting models, and reporting the hardware they have
+to run on. See the <em>Inference server</em> chapter.</li>
+</ul>
+<p>A fourth binary, <code>orangu-bench</code>, is a developer tool
+rather than part of the stack: it measures decode and prefill throughput
+of any OpenAI-compatible server over HTTP and charts it over time. See
+the <em>Benchmarking</em> chapter.</p>
+<p>Because every layer talks to the next over the OpenAI-compatible API,
+the pieces stay cleanly separated, yet they ship and run as one. The
+result is a fully local, fully private, single-language AI coding stack
+— no Python, no llama.cpp, no cloud.</p>
+<h2 id="community">Community</h2>
+<p>Contributions to [<strong>orangu</strong>][orangu] are managed on
+[GitHub][orangu]</p>
+<ul>
+<li>[Ask a question][ask]</li>
+<li>[Raise an issue][issue]</li>
+<li>[Feature request][request]</li>
+<li>[Code submission][submission]</li>
 </ul>
 <p>Contributions are most welcome!</p>
-<p>Please, consult our <a href="https://github.com/mnemosyne-systems/orangu/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a> policies for interacting in our community.</p>
-<p>Consider giving the project a <a href="https://github.com/mnemosyne-systems/orangu/stargazers">star</a> on <a href="https://github.com/mnemosyne-systems/orangu">GitHub</a> if you find it useful. And, feel free to follow the project on <a href="https://x.com/mnemosyne_sys">X</a> as well.</p>
+<p>Please, consult our [Code of Conduct][conduct] policies for
+interacting in our community.</p>
+<p>Consider giving the project a [star][star] on [GitHub][orangu] if you
+find it useful. And, feel free to follow the project on [X][twitter] as
+well.</p>
   </main>
 </div>
 

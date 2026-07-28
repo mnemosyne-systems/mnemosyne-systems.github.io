@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>External Tools — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html" class="active">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#optional-external-tools"
+id="toc-optional-external-tools">Optional external tools</a></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1>External Tools</h1>
+<h2 id="optional-external-tools">Optional external tools</h2>
+<p><strong>orangu</strong> integrates with several optional command-line
+tools. None of them are required, but when present they improve the
+output of the corresponding commands. The sections below describe each
+tool and, importantly, <strong>how it is configured to be used</strong>
+— installing a tool is not always enough; some must also be wired into
+your Git configuration.</p>
+<p>The interactive setup wizard (<code>orangu --init</code>, short form
+<code>-i</code>) reports the state of each tool just before writing the
+configuration:</p>
+<ul>
+<li><code>No</code> — the tool is not installed.</li>
+<li><code>Yes (Used)</code> — the tool is installed <strong>and</strong>
+configured so orangu will use it.</li>
+<li><code>Yes (Not used)</code> — the tool is installed but not
+configured to be used; for example <code>delta</code> is on your
+<code>PATH</code> but is not set as your Git diff pager.</li>
+</ul>
+<p>What “configured to be used” means for each tool:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Tool</th>
+<th style="text-align: left;">Used when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>git lg</code></td>
+<td style="text-align: left;">the <code>lg</code> alias is set in
+<code>~/.gitconfig</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>delta</code></td>
+<td style="text-align: left;">it is installed and resolves as the Git
+diff pager (<code>pager.diff</code>, then <code>core.pager</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bat</code></td>
+<td style="text-align: left;">it is installed (no further configuration
+needed)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>gh</code></td>
+<td style="text-align: left;">it is installed and
+<code>[orangu].platform</code> is <code>github</code> (the default)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>glab</code></td>
+<td style="text-align: left;">it is installed and
+<code>[orangu].platform</code> is <code>gitlab</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="git-lg">git lg</h3>
+<p><code>git lg</code> is a compact, graph-formatted commit log alias
+for Git. When it is configured in <code>~/.gitconfig</code>,
+<strong>orangu</strong> will use it automatically for <code>/log</code>
+output instead of the plain <code>git log</code> fallback.</p>
+<p><strong>Setup</strong></p>
+<p>Add the alias to your global Git configuration:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> config <span class="at">--global</span> alias.lg <span class="st">&quot;log --color --graph --pretty=format:&#39;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#39; --abbrev-commit&quot;</span></span></code></pre></div>
+<p>This adds the following entry to <code>~/.gitconfig</code>:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[alias]</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">    lg </span><span class="ot">=</span><span class="st"> log --color --graph --pretty=format:&#39;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&lt;%an&gt;%Creset&#39; --abbrev-commit</span></span></code></pre></div>
+<p>The alias produces a compact, colored, graph-annotated log that shows
+abbreviated commit hashes in red, branch and tag decorations in yellow,
+commit subjects, relative timestamps in green, and author names in bold
+blue.</p>
+<p>Once the alias is present, <code>/log</code> picks it up
+automatically — no further configuration is needed.</p>
+<h3 id="delta">delta</h3>
+<p><a
+href="https://github.com/dandavison/delta"><strong>delta</strong></a> is
+an optional pager and syntax-highlighted diff viewer for Git.</p>
+<p>If it is installed and configured in your Git setup,
+<strong>orangu</strong> will use it for <code>/diff</code> output inside
+Git repositories.</p>
+<p><strong>Installation</strong></p>
+<p>Install <code>delta</code> using your platform package manager or one
+of the installation methods described in the upstream project.</p>
+<p>On Fedora, for example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install git-delta</span></code></pre></div>
+<p>Then configure Git in <code>~/.gitconfig</code> to use it. A minimal
+setup is:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[core]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">  pager </span><span class="ot">=</span><span class="st"> delta</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[interactive]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">  diffFilter </span><span class="ot">=</span><span class="st"> delta --color-only</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[delta]</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">  navigate </span><span class="ot">=</span><span class="st"> true     # use n and N to move between diff sections</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">  dark </span><span class="ot">=</span><span class="st"> true         # or light = true, or omit for auto-detection</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">  side-by-side </span><span class="ot">=</span><span class="st"> </span><span class="kw">true</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">  line-numbers </span><span class="ot">=</span><span class="st"> </span><span class="kw">true</span></span></code></pre></div>
+<p>Please refer to the upstream documentation for full installation and
+configuration details:</p>
+<p><a href="https://github.com/dandavison/delta"
+class="uri">https://github.com/dandavison/delta</a></p>
+<h3 id="bat">bat</h3>
+<p><a href="https://github.com/sharkdp/bat/"><strong>bat</strong></a> is
+an optional <code>cat</code> clone with syntax highlighting and Git
+integration.</p>
+<p>If it is installed, <strong>orangu</strong> will use it for plain
+<code>/show_file</code> output. No further configuration is required —
+installing <code>bat</code> is enough for it to be used.</p>
+<p><strong>Installation</strong></p>
+<p>Install <code>bat</code> using your platform package manager or one
+of the installation methods described in the upstream project.</p>
+<p>On Fedora, for example:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install bat</span></code></pre></div>
+<p>Please refer to the upstream documentation for full installation and
+configuration details:</p>
+<p><a href="https://github.com/sharkdp/bat/"
+class="uri">https://github.com/sharkdp/bat/</a></p>
+<h3 id="gh">gh</h3>
+<p><a href="https://cli.github.com/"><strong>gh</strong></a> is the
+official GitHub CLI. It provides commands such as
+<code>gh repo clone</code>, <code>gh pr create</code>, and
+<code>gh issue list</code> for interacting with GitHub repositories
+directly from the terminal.</p>
+<p><strong>orangu</strong> selects the CLI based on the
+<code>[orangu].platform</code> setting: <code>github</code> (the
+default) uses <code>gh</code>, and <code>gitlab</code> uses
+<code>glab</code> (see <a href="#glab">GitLab CLI</a> below). The
+descriptions here apply to <code>gh</code>; the GitLab equivalents are
+described in the next section.</p>
+<p>If it is installed, <strong>orangu</strong> will use it for
+<code>/pull</code> to check out pull requests, for <code>/rebase</code>
+to determine the default branch, for <code>/merge</code> to merge pull
+requests, and to detect the default branch for the startup sync (see
+below). Without it, <strong>orangu</strong> falls back to plain Git for
+all of these. The <code>/comment</code> command requires <code>gh</code>
+and runs <code>gh issue comment</code> to add a comment to a GitHub
+issue; there is no plain Git fallback for it. The
+<code>/pull_request</code> command also requires <code>gh</code> and
+runs <code>gh pr create</code> to open a pull request from the current
+branch; there is no plain Git fallback for it. The <code>/issue</code>
+command likewise requires <code>gh</code> and runs
+<code>gh pr edit</code> / <code>gh issue edit</code> to add a reviewer,
+assignee, or label; there is no plain Git fallback for it.</p>
+<p><strong>Installation</strong></p>
+<p><code>gh</code> is not available in the default Fedora repositories.
+Add the official GitHub CLI repository first, then install the
+package:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://cli.github.com/packages/rpm/gh-cli.repo <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/yum.repos.d/github-cli.repo</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install gh</span></code></pre></div>
+<p>After installation, authenticate with your GitHub account:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gh</span> auth login</span></code></pre></div>
+<p>Please refer to the upstream documentation for full installation and
+configuration details:</p>
+<p><a href="https://cli.github.com/manual/"
+class="uri">https://cli.github.com/manual/</a></p>
+<h3 id="glab">glab</h3>
+<p><a href="https://gitlab.com/gitlab-org/cli"><strong>glab</strong></a>
+is the official GitLab CLI. It provides commands such as
+<code>glab mr create</code>, <code>glab mr merge</code>, and
+<code>glab issue note</code> for interacting with GitLab projects
+directly from the terminal.</p>
+<p>Set <code>platform = gitlab</code> in the <code>[orangu]</code>
+section to drive <code>glab</code> instead of <code>gh</code>. The
+behaviour mirrors the GitHub integration, mapping each command to its
+GitLab equivalent:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">orangu command</th>
+<th style="text-align: left;">GitLab command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>/pull &lt;number&gt;</code></td>
+<td
+style="text-align: left;"><code>glab mr checkout &lt;number&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/pull_request</code></td>
+<td
+style="text-align: left;"><code>glab mr create --title … --description … --source-branch … --target-branch … --yes</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>/merge &lt;branch&gt;</code></td>
+<td
+style="text-align: left;"><code>glab mr merge &lt;branch&gt; --yes</code></td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>/comment &lt;number&gt; "…"</code></td>
+<td
+style="text-align: left;"><code>glab issue note &lt;number&gt; --message "…"</code></td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>/issue reviewer &lt;n&gt; &lt;user&gt;</code></td>
+<td
+style="text-align: left;"><code>glab mr update &lt;n&gt; --reviewer &lt;user&gt;</code></td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>/issue assignee &lt;n&gt; &lt;user&gt;</code></td>
+<td
+style="text-align: left;"><code>glab mr update &lt;n&gt; --assignee &lt;user&gt;</code>
+/ <code>glab issue update &lt;n&gt; --assignee &lt;user&gt;</code></td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>/issue label &lt;n&gt; &lt;label&gt;</code></td>
+<td
+style="text-align: left;"><code>glab mr update &lt;n&gt; --label &lt;label&gt;</code>
+/ <code>glab issue update &lt;n&gt; --label &lt;label&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>As with <code>gh</code>, <code>/pull</code> and <code>/merge</code>
+fall back to plain Git when <code>glab</code> is not installed, while
+<code>/comment</code>, <code>/issue</code>, and
+<code>/pull_request</code> require it. The default branch used by
+<code>/rebase</code> and the startup sync is detected through Git
+(<code>origin/HEAD</code>, then <code>main</code>/<code>master</code>)
+when running against GitLab.</p>
+<p><strong>Installation</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install glab</span></code></pre></div>
+<p>After installation, authenticate with your GitLab account:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">glab</span> auth login</span></code></pre></div>
+<p>Please refer to the upstream documentation for full installation and
+configuration details:</p>
+<p><a href="https://gitlab.com/gitlab-org/cli"
+class="uri">https://gitlab.com/gitlab-org/cli</a></p>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

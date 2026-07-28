@@ -42,33 +42,62 @@
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
-        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="configuration.html" class="active">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="workspaces.html">Workspaces</a></li>
-        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
-      <ul>
-      <li><a href="#configuration">Configuration</a>
-      <ul>
-      <li><a href="#interactive-setup---init">Interactive setup (<code>--init</code>)</a></li>
-      <li><a href="#agent-skills">Agent Skills</a></li>
-      <li><a href="#per-session-server-and-model">Per-session server and model</a></li>
-      <li><a href="#orangu"><code>[orangu]</code></a></li>
-      <li><a href="#server-sections">Server sections</a></li>
-      <li><a href="#sample-file">Sample file</a></li>
-      </ul></li>
-      </ul>
+<ul>
+<li><a href="#configuration" id="toc-configuration">Configuration</a>
+<ul>
+<li><a href="#interactive-setup---init"
+id="toc-interactive-setup---init">Interactive setup
+(<code>--init</code>)</a></li>
+<li><a href="#agent-skills" id="toc-agent-skills">Agent Skills</a></li>
+<li><a href="#startup-connectivity"
+id="toc-startup-connectivity">Startup connectivity</a></li>
+<li><a href="#per-session-server-and-model"
+id="toc-per-session-server-and-model">Per-session server and
+model</a></li>
+<li><a href="#orangu" id="toc-orangu"><code>[orangu]</code></a></li>
+<li><a href="#server-sections" id="toc-server-sections">Server
+sections</a></li>
+<li><a href="#sample-file" id="toc-sample-file">Sample file</a></li>
+</ul></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -84,44 +113,101 @@
   <main class="doc-content">
 <h1 id="configuration">Configuration</h1>
 <p><code>orangu</code> uses an INI configuration file.</p>
-<h2 id="interactive-setup---init">Interactive setup (<code>--init</code>)</h2>
-<p>Run <code>orangu --init</code> (short form <code>-i</code>) to generate the configuration interactively instead of editing the file by hand:</p>
+<h2 id="interactive-setup---init">Interactive setup
+(<code>--init</code>)</h2>
+<p>Run <code>orangu --init</code> (short form <code>-i</code>) to
+generate the configuration interactively instead of editing the file by
+hand:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--init</span></span></code></pre></div>
 <p>The wizard:</p>
 <ol type="1">
-<li>Asks for the <strong>LLM URL</strong> (the server <code>endpoint</code>).</li>
-<li>Queries the server's <code>/v1/models</code> endpoint and pre-fills the first advertised model as the <strong>Model</strong> value; if no model can be detected, you enter one manually.</li>
-<li>Walks every <code>[orangu]</code> and server option, showing its default in <code>[brackets]</code>. Press Enter to keep the default. Boolean options accept <code>Yes</code>/<code>Y</code>/<code>No</code>/<code>N</code> (case-insensitive).</li>
-<li>Reports which <a href="#optional-external-tools">optional external tools</a> it detects (<code>git lg</code>, <code>delta</code>, <code>bat</code>, <code>gh</code>, and <code>glab</code>). Each is shown as <code>No</code> when the tool is absent, <code>Yes (Used)</code> when it is installed and configured to be used, or <code>Yes (Not used)</code> when it is installed but not yet wired up — for example <code>delta</code> installed but not set as your Git diff pager. See <a href="#optional-external-tools">Optional external tools</a> for how each one is activated.</li>
-<li>Installs bundled skills into <code>~/.orangu/skills/</code> when they are not already present. At the moment this includes <code>debugging</code>.</li>
-<li>Shows the resulting configuration and asks for confirmation before writing.</li>
+<li>Asks for the <strong>LLM URL</strong> (the server
+<code>endpoint</code>).</li>
+<li>Queries the server’s <code>/v1/models</code> endpoint and pre-fills
+the first advertised model as the <strong>Model</strong> value; if no
+model can be detected, you enter one manually.</li>
+<li>Walks every <code>[orangu]</code> and server option, showing its
+default in <code>[brackets]</code>. Press Enter to keep the default.
+Boolean options accept
+<code>Yes</code>/<code>Y</code>/<code>No</code>/<code>N</code>
+(case-insensitive).</li>
+<li>Reports which <a href="extra.html#optional-external-tools">optional external
+tools</a> it detects (<code>git lg</code>, <code>delta</code>,
+<code>bat</code>, <code>gh</code>, and <code>glab</code>). Each is shown
+as <code>No</code> when the tool is absent, <code>Yes (Used)</code> when
+it is installed and configured to be used, or
+<code>Yes (Not used)</code> when it is installed but not yet wired up —
+for example <code>delta</code> installed but not set as your Git diff
+pager. See <a href="extra.html#optional-external-tools">Optional external
+tools</a> for how each one is activated.</li>
+<li>Installs bundled skills into <code>~/.orangu/skills/</code> when
+they are not already present. At the moment this includes
+<code>debugging</code>.</li>
+<li>Shows the resulting configuration and asks for confirmation before
+writing.</li>
 </ol>
-<p>The provider is assumed to be <code>llama.cpp</code>. Only values that differ from their default are written, so the generated file stays minimal. It is written to <code>~/.orangu/orangu.conf</code>, creating <code>~/.orangu/</code> if needed and overwriting any existing file. Bundled skills are written to <code>~/.orangu/skills/&lt;skill&gt;/SKILL.md</code> and are left untouched when the file already exists.</p>
+<p>The server is <code>orangu-server</code>. Only values that differ
+from their default are written, so the generated file stays minimal. It
+is written to <code>~/.orangu/orangu.conf</code>, creating
+<code>~/.orangu/</code> if needed and overwriting any existing file.
+Bundled skills are written to
+<code>~/.orangu/skills/&lt;skill&gt;/SKILL.md</code> and are left
+untouched when the file already exists.</p>
 <h2 id="agent-skills">Agent Skills</h2>
-<p>orangu supports Agent Skills: directories containing a <code>SKILL.md</code> file with YAML frontmatter and markdown instructions. Skills are discovered from four locations:</p>
+<p>orangu supports Agent Skills: directories containing a
+<code>SKILL.md</code> file with YAML frontmatter and markdown
+instructions. Skills are discovered from four locations:</p>
 <ol type="1">
 <li><code>~/.orangu/skills/</code></li>
 <li><code>~/.agents/skills/</code></li>
 <li><code>&lt;workspace&gt;/.orangu/skills/</code></li>
 <li><code>&lt;workspace&gt;/.agents/skills/</code></li>
 </ol>
-<p>Project skills override user skills with the same name. The <code>/skills</code> command lists the discovered skills. A skill can be invoked explicitly with <code>/skill-name</code>; for example, the bundled <code>debugging</code> skill is typically available after <code>--init</code>:</p>
+<p>Project skills override user skills with the same name. The
+<code>/skills</code> command lists the discovered skills. A skill can be
+invoked explicitly with <code>/skill-name</code>; for example, the
+bundled <code>debugging</code> skill is typically available after
+<code>--init</code>:</p>
 <pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
-<p>See the Skills chapter for how to write instruction-only skills, skills with helper files, and skills that compile helper code.</p>
+<p>See the Skills chapter for how to write instruction-only skills,
+skills with helper files, and skills that compile helper code.</p>
+<h2 id="startup-connectivity">Startup connectivity</h2>
+<p>The terminal UI renders immediately on launch — it never waits on a
+network check first. The header’s <code>Server</code>/<code>Model</code>
+rows show a white dot while connectivity is still being resolved in the
+background, turning green or red within a moment.</p>
+<p>If the default server (<code>[orangu] server = ...</code>) doesn’t
+respond, orangu automatically tries the other configured server sections
+in turn and switches to the first one that does, printing “Switched to
+server: <code>&lt;name&gt;</code>” to the output window. If none of them
+respond either, it stays on the default (which then shows red, as
+usual). This happens once, at startup; <code>/server</code> still
+switches on demand exactly as before.</p>
 <h2 id="per-session-server-and-model">Per-session server and model</h2>
-<p>Each workspace tab keeps its own active server, model, and endpoint. A <code>/server</code> or <code>/model</code> command in one tab does not affect any other tab, and switching tabs restores the server and model that were active there.</p>
-<p>These choices are persisted automatically. When you run <code>/server</code> or <code>/model</code>, the selected values are written to the session's settings file:</p>
+<p>Each workspace tab keeps its own active server, model, and endpoint.
+A <code>/server</code> or <code>/model</code> command in one tab does
+not affect any other tab, and switching tabs restores the server and
+model that were active there.</p>
+<p>These choices are persisted automatically. When you run
+<code>/server</code> or <code>/model</code>, the selected values are
+written to the session’s settings file:</p>
 <pre><code>~/.orangu/sessions/&lt;UUID&gt;/settings</code></pre>
-<p>The next time that session is resumed — whether in a new run or after a tab switch away and back — orangu restores the server and model from there. No manual config files are needed.</p>
+<p>The next time that session is resumed — whether in a new run or after
+a tab switch away and back — orangu restores the server and model from
+there. No manual config files are needed.</p>
 <h2 id="orangu"><code>[orangu]</code></h2>
-<p>The main section selects the default server and client-wide limits. The <code>server</code> key names the server section that holds the host information:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<p>The main section selects the default server and client-wide limits.
+The <code>server</code> key names the server section that holds the host
+information:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">server </span><span class="ot">=</span><span class="st"> main-server</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma</span><span class="dv">-4</span><span class="st">-E4B-it-GGUF</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">timeout </span><span class="ot">=</span><span class="st"> </span><span class="dv">1800</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">max_tool_rounds </span><span class="ot">=</span><span class="st"> </span><span class="dv">10</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">review_max_tokens </span><span class="ot">=</span><span class="st"> </span><span class="dv">512</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">code_max_tokens </span><span class="ot">=</span><span class="st"> </span><span class="dv">0</span></span></code></pre></div>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">code_max_tokens </span><span class="ot">=</span><span class="st"> </span><span class="dv">0</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">theme </span><span class="ot">=</span><span class="st"> classic</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -129,132 +215,326 @@
 <col style="width: 33%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Key</th>
 <th style="text-align: left;">Required</th>
 <th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>server</code></td>
 <td style="text-align: left;">Yes, if multiple servers exist</td>
 <td style="text-align: left;">Name of the default server section</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>model</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">General default model name. Used unless the selected server defines its own <code>model</code>, which takes precedence</td>
+<td style="text-align: left;">General default model name. Used unless
+the selected server defines its own <code>model</code>, which takes
+precedence</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>timeout</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Request timeout in seconds. The default is <code>1800</code></td>
+<td style="text-align: left;">Request timeout in seconds. The default is
+<code>1800</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>max_tool_rounds</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Maximum tool-calling turns before the client aborts the prompt</td>
+<td style="text-align: left;">Maximum tool-calling turns before the
+client aborts the prompt</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>review_max_tokens</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Response-token cap for each <code>/auto_review</code> request. Defaults to <code>512</code>; <code>0</code> disables the cap. Raise it (e.g. <code>2048</code>) when the review model thinks before answering</td>
+<td style="text-align: left;">Response-token cap for each
+<code>/auto_review</code> request. Defaults to <code>512</code>;
+<code>0</code> disables the cap. Raise it (e.g. <code>2048</code>) when
+the review model thinks before answering</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>code_max_tokens</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Response-token cap for normal chat and tool responses. Defaults to <code>0</code> (no cap)</td>
+<td style="text-align: left;">Response-token cap for normal chat and
+tool responses. Defaults to <code>0</code> (no cap)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>compile_workers</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Parallel job count <code>/build</code> passes to toolchains that support one (e.g. <code>make -j</code>, <code>meson compile -j</code>, <code>cargo --jobs</code>). Defaults to <code>0</code>, meaning unused: no job flag is passed and each toolchain falls back to its own default</td>
+<td style="text-align: left;">Parallel job count <code>/build</code>
+passes to toolchains that support one (e.g. <code>make -j</code>,
+<code>meson compile -j</code>, <code>cargo --jobs</code>). Defaults to
+<code>0</code>, meaning unused: no job flag is passed and each toolchain
+falls back to its own default</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>quotes</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Quote set shown while the model is thinking. Defaults to <code>none</code>. Options: <code>none</code>, <code>star_trek</code>, <code>star_wars</code>, <code>marco_pierre_white</code>, <code>gordon_ramsay</code>, <code>calvin_and_hobbes</code>, <code>sun_tzu_mandarin</code>, <code>sun_tzu_english</code>, <code>attila_the_hun</code>, <code>all</code></td>
+<td style="text-align: left;">Quote set shown while the model is
+thinking. Defaults to <code>none</code>. Options: <code>none</code>,
+<code>star_trek</code>, <code>star_wars</code>,
+<code>marco_pierre_white</code>, <code>gordon_ramsay</code>,
+<code>calvin_and_hobbes</code>, <code>sun_tzu_mandarin</code>,
+<code>sun_tzu_english</code>, <code>attila_the_hun</code>,
+<code>all</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>width</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Virtual terminal width in characters. Controls the layout canvas for <code>/show_file</code> output. Defaults to <code>512</code></td>
+<td style="text-align: left;">Virtual terminal width in characters.
+Controls the layout canvas for <code>/show_file</code> output. Defaults
+to <code>512</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>banner</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Horizontal placement of the banner. Defaults to <code>left</code>. Options: <code>left</code>, <code>center</code>, <code>right</code></td>
+<td style="text-align: left;">Horizontal placement of the banner.
+Defaults to <code>left</code>. Options: <code>left</code>,
+<code>center</code>, <code>right</code></td>
 </tr>
-<tr class="odd">
+<tr>
+<td style="text-align: left;"><code>theme</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Global default UI theme. Defaults to
+<code>classic</code>. Built-ins are <code>classic</code>,
+<code>modern_dark</code>, <code>modern_light</code>,
+<code>oranguday</code>, <code>tokyonight</code>, and
+<code>rosepine-moon</code>; <code>random</code> draws one of the
+available themes at each launch. User themes are loaded from
+<code>~/.orangu/themes/*.theme</code></td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>drop_down</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Enable the autocomplete dropdown for slash commands. Defaults to <code>on</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
+<td style="text-align: left;">Enable the autocomplete dropdown for slash
+commands. Defaults to <code>on</code>. Options: <code>on</code>,
+<code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
 </tr>
-<tr class="even">
+<tr>
+<td style="text-align: left;"><code>mouse</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Enable mouse capture in the terminal. When
+<code>true</code> (the default), the TUI handles mouse scroll and
+double-click. Hold <strong>Shift</strong> while clicking/dragging to do
+native text selection and copy. Set to <code>false</code> to disable all
+mouse handling</td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>workspaces</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Placement of the workspace tabs. Defaults to <code>top</code>. Options: <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>. See the Workspaces chapter</td>
+<td style="text-align: left;">Placement of the workspace tabs. Defaults
+to <code>top</code>. Options: <code>top</code>, <code>bottom</code>,
+<code>left</code>, <code>right</code>. See the Workspaces chapter</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>feedback</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Show a green or red dot in the output window after each command to indicate success or failure, blink an <code>orangu ●</code> progress title and ring the terminal bell when a <code>/auto_review</code> finishes. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
+<td style="text-align: left;">Show a green or red dot in the output
+window after each command to indicate success or failure, blink an
+<code>orangu ●</code> progress title and ring the terminal bell when a
+<code>/auto_review</code> finishes. Defaults to <code>off</code>.
+Options: <code>on</code>, <code>true</code>, <code>1</code>,
+<code>off</code>, <code>false</code>, <code>0</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>auto_rebase</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Automatically rebase the branch before <code>/pull_request</code> if it is behind the base. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
+<td style="text-align: left;">Automatically rebase the branch before
+<code>/pull_request</code> if it is behind the base. Defaults to
+<code>off</code>. Options: <code>on</code>, <code>true</code>,
+<code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>auto_squash</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Automatically squash commits before <code>/pull_request</code> if more than one commit is ahead of the base. Defaults to <code>off</code>. Options: <code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>, <code>0</code></td>
+<td style="text-align: left;">Automatically squash commits before
+<code>/pull_request</code> if more than one commit is ahead of the base.
+Defaults to <code>off</code>. Options: <code>on</code>,
+<code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>terminal</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Launch command used to open <code>$EDITOR</code> for terminal editors in a new window for <code>/open_file</code> (for example <code>xterm -e</code> or <code>kitty</code>). When unset, a terminal emulator is auto-detected</td>
+<td style="text-align: left;">Launch command used to open
+<code>$EDITOR</code> for terminal editors in a new window for
+<code>/open_file</code> (for example <code>xterm -e</code> or
+<code>kitty</code>). When unset, a terminal emulator is
+auto-detected</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>platform</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Code-hosting platform driven for <code>/pull</code>, <code>/pull_request</code>, <code>/merge</code>, and <code>/comment</code>. Defaults to <code>github</code> (uses the <code>gh</code> CLI). Options: <code>github</code>, <code>gitlab</code> (uses the <code>glab</code> CLI)</td>
+<td style="text-align: left;">Code-hosting platform driven for
+<code>/pull</code>, <code>/pull_request</code>, <code>/merge</code>, and
+<code>/comment</code>. Defaults to <code>github</code> (uses the
+<code>gh</code> CLI). Options: <code>github</code>, <code>gitlab</code>
+(uses the <code>glab</code> CLI)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>system_prompt</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Override the base system prompt sent to the model. When empty (the default) orangu uses its built-in coding-assistant prompt. The discovered Agent Skills index is appended to whichever prompt is in effect</td>
+<td style="text-align: left;">Override the base system prompt sent to
+the model. When empty (the default) orangu uses its built-in
+coding-assistant prompt. The discovered Agent Skills index is appended
+to whichever prompt is in effect</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>model_verbosity</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Set the model's chattiness. Defaults to <code>normal</code>. Options: <code>terse</code>, <code>normal</code>, <code>verbose</code></td>
+<td style="text-align: left;">Set the model’s chattiness. Defaults to
+<code>normal</code>. Options: <code>terse</code>, <code>normal</code>,
+<code>verbose</code></td>
 </tr>
-<tr class="even">
-<td style="text-align: left;"><code>review_confidence_threshold</code></td>
+<tr>
+<td
+style="text-align: left;"><code>review_confidence_threshold</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Minimum confidence score (0–100) for <code>/auto_review</code> findings; findings below this threshold are silently dropped. Defaults to <code>80</code>. Set to <code>0</code> to disable filtering</td>
+<td style="text-align: left;">Minimum confidence score (0–100) for
+<code>/auto_review</code> findings; findings below this threshold are
+silently dropped. Defaults to <code>80</code>. Set to <code>0</code> to
+disable filtering</td>
 </tr>
 </tbody>
 </table>
 <h3 id="response-token-caps">Response-token caps</h3>
-<p><code>review_max_tokens</code> and <code>code_max_tokens</code> bound how long a model response may get. Each is sent to the server as the <code>max_tokens</code> field of the chat completion request, so the server stops generating when the cap is reached — the request does not fail, the response is simply cut off at that point. A value of <code>0</code> disables the cap entirely: no <code>max_tokens</code> field is sent and the server's own default applies. Like <code>timeout</code> and <code>max_tool_rounds</code>, both keys are client-wide and apply to every configured server.</p>
+<p><code>review_max_tokens</code> and <code>code_max_tokens</code> bound
+how long a model response may get. Each is sent to the server as the
+<code>max_tokens</code> field of the chat completion request, so the
+server stops generating when the cap is reached — the request does not
+fail, the response is simply cut off at that point. A value of
+<code>0</code> disables the cap entirely: no <code>max_tokens</code>
+field is sent and the server’s own default applies. Like
+<code>timeout</code> and <code>max_tool_rounds</code>, both keys are
+client-wide and apply to every configured server.</p>
 <p>The two caps cover the two kinds of request the client makes:</p>
 <ul>
-<li><strong><code>review_max_tokens</code></strong> applies to every <code>/auto_review</code> request — the per-file category reviews and the final whole-change pass. The default of <code>512</code> fits the requested format (a verdict plus at most five one-line findings) comfortably, and exists so a review can never generate unbounded output: a runaway or endlessly deliberating model is cut off rather than stalling the run.</li>
-<li><strong><code>code_max_tokens</code></strong> applies to the normal conversation — prompts typed at the input window, including tool-calling turns. It defaults to <code>0</code> (no cap) because coding answers are open-ended: explanations, diffs, and file contents can legitimately be long. Set it only when a model tends to ramble or you want a hard latency bound per response.</li>
+<li><strong><code>review_max_tokens</code></strong> applies to every
+<code>/auto_review</code> request — the per-file category reviews and
+the final whole-change pass. The default of <code>512</code> fits the
+requested format (a verdict plus at most five one-line findings)
+comfortably, and exists so a review can never generate unbounded output:
+a runaway or endlessly deliberating model is cut off rather than
+stalling the run.</li>
+<li><strong><code>code_max_tokens</code></strong> applies to the normal
+conversation — prompts typed at the input window, including tool-calling
+turns. It defaults to <code>0</code> (no cap) because coding answers are
+open-ended: explanations, diffs, and file contents can legitimately be
+long. Set it only when a model tends to ramble or you want a hard
+latency bound per response.</li>
 </ul>
-<p><strong>Reasoning ("thinking") models need a larger review cap.</strong> A model's hidden thinking tokens count against <code>max_tokens</code>, so with the default <code>512</code> a model that deliberates at length can be cut off before it emits its verdict. Such a truncated review is handled safely — a response with no verdict and no findings is recorded under <strong>Overall</strong> as a failed category review and the file keeps its white (unreviewed) box, so a truncation can never silently approve a file — but the review is wasted. When reviewing with thinking enabled, raise the cap so the answer survives the thinking:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<p><strong>Reasoning (“thinking”) models need a larger review
+cap.</strong> A model’s hidden thinking tokens count against
+<code>max_tokens</code>, so with the default <code>512</code> a model
+that deliberates at length can be cut off before it emits its verdict.
+Such a truncated review is handled safely — a response with no verdict
+and no findings is recorded under <strong>Overall</strong> as a failed
+category review and the file keeps its white (unreviewed) box, so a
+truncation can never silently approve a file — but the review is wasted.
+When reviewing with thinking enabled, raise the cap so the answer
+survives the thinking:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">review_max_tokens </span><span class="ot">=</span><span class="st"> </span><span class="dv">2048</span></span></code></pre></div>
-<p>Conversely, for the fastest reviews disable thinking on the server (for llama.cpp: <code>--reasoning-budget 0</code> together with <code>--chat-template-kwargs '{"enable_thinking": false}'</code>) and keep the default <code>512</code> — the cap then almost never binds and only guards against runaways.</p>
+<p>Conversely, for the fastest reviews disable thinking on the server
+(<code>orangu-server --reasoning-budget 0</code> together with
+<code>--chat-template-kwargs '{"enable_thinking": false}'</code>) and
+keep the default <code>512</code> — the cap then almost never binds and
+only guards against runaways.</p>
+<h3 id="themes">Themes</h3>
+<p>The global default theme is configured in <code>[orangu]</code>:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">theme </span><span class="ot">=</span><span class="st"> classic</span></span></code></pre></div>
+<p>Built-in themes are shipped inside the binary: <code>classic</code>,
+<code>modern_dark</code>, <code>modern_light</code>,
+<code>oranguday</code>, <code>tokyonight</code>, and
+<code>rosepine-moon</code>. <code>modern</code> is accepted as a short
+name for <code>modern_dark</code>.</p>
+<p><code>random</code> is not a palette of its own: it draws one of the
+available themes — the shipped ones plus anything in
+<code>~/.orangu/themes</code> — when it is applied, and holds it for the
+rest of the run, so the UI never reshuffles mid-session. The
+configuration or session value stays <code>random</code>, so the next
+launch draws again.</p>
+<p>A theme selects both a palette and a <em>chrome</em> — the screen
+furniture around the content:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>chrome</code></th>
+<th style="text-align: left;">Frame</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>classic</code> (the default)</td>
+<td style="text-align: left;">The boxed ORANGU banner pinned to the top
+of the screen, placed by the <code>banner</code> key; the output window
+directly below it at full width; and full-width separators above and
+below the input window</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>modern</code></td>
+<td style="text-align: left;">The banner only on the empty landing
+screen; an inset output window; code blocks drawn in a box; and a
+rounded input box</td>
+</tr>
+</tbody>
+</table>
+<p>Both frames share the rest: the input window carries a bare
+<code>&gt;</code> prompt, and closes with the same status line, which
+shows the branch on the left, a centered <code>Graph:</code> /
+<code>Pending:</code> group, and the model name flush right.</p>
+<p><code>classic</code> and the <code>modern_*</code> themes differ only
+in this: they are the same UI in the two frames, so
+<code>theme = modern_dark</code> is the way to keep the Ratatui-native
+look while <code>theme = classic</code> reproduces the original one.</p>
+<p>Custom themes live in:</p>
+<pre class="text"><code>~/.orangu/themes/&lt;name&gt;.theme</code></pre>
+<p>A theme file is <code>key = value</code> lines. Colours are
+<code>#RRGGBB</code>, or <code>default</code> to leave the terminal’s
+own colour in place; styles accept <code>fg:</code>/<code>bg:</code>
+colours plus <code>bold</code>, <code>italic</code>,
+<code>underlined</code> and <code>reversed</code>. The
+<code>chrome</code> key takes <code>classic</code> or
+<code>modern</code>.</p>
+<p><strong>Every key is optional, and <code>classic</code> is the
+base.</strong> Whatever a file leaves out keeps its classic value, so a
+theme that only wants a different link colour is one line long:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">highlight </span><span class="ot">=</span><span class="st"> fg:#66b2ff</span></span></code></pre></div>
+<p>That also means a palette-only theme never changes the layout by
+accident, and that adding a key in a later release never invalidates the
+theme files already on disk. A key that isn’t recognized is an error
+rather than a silent no-op, so a typo can’t quietly fall back to the
+classic value.</p>
+<p>You can switch the current session with
+<code>/theme &lt;name&gt;</code>. That writes a session override to:</p>
+<pre class="text"><code>~/.orangu/sessions/&lt;UUID&gt;/theme</code></pre>
+<p>Naming the theme <code>orangu.conf</code> already asks for drops the
+session override instead of pinning a copy of it, so the session goes
+back to following the global <code>[orangu].theme</code>. The command
+completes built-in themes and user theme files. The startup option
+<code>-t</code>/<code>--theme &lt;name-or-path&gt;</code> applies a
+theme only for that process and takes precedence over the global and
+session settings.</p>
 <h2 id="server-sections">Server sections</h2>
-<p>Each server is a named section. The section name is what <code>[orangu].server</code> points to, and it carries the host information for that server:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">provider </span><span class="ot">=</span><span class="st"> llama.cpp</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://</span><span class="kw">localhost</span><span class="st">:</span><span class="dv">8100</span><span class="st">/v1</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma</span><span class="dv">-4</span><span class="st">-E4B-it-GGUF</span></span></code></pre></div>
+<p>Each server is a named section. The section name is what
+<code>[orangu].server</code> points to, and it carries the host
+information for that server:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:8100/v1</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -262,53 +542,77 @@
 <col style="width: 33%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Key</th>
 <th style="text-align: left;">Required</th>
 <th style="text-align: left;">Description</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td style="text-align: left;"><code>provider</code></td>
-<td style="text-align: left;">Yes</td>
-<td style="text-align: left;"><code>llama.cpp</code> or <code>openai</code></td>
-</tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>endpoint</code></td>
 <td style="text-align: left;">Yes</td>
-<td style="text-align: left;">OpenAI-compatible API URL</td>
+<td style="text-align: left;"><code>orangu-server</code> URL (its
+OpenAI-compatible API)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>model</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Model identifier used in chat completion requests. Overrides the general <code>[orangu].model</code> when set</td>
+<td style="text-align: left;">Model identifier used in chat completion
+requests. Overrides the general <code>[orangu].model</code> when
+set</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>api_key</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">API key sent as <code>Authorization: Bearer &lt;key&gt;</code> on every request to the server. Required when a llama.cpp server runs with <code>--api-key</code>, or for any authenticated OpenAI-compatible endpoint</td>
+<td style="text-align: left;">API key sent as
+<code>Authorization: Bearer &lt;key&gt;</code> on every request to the
+server. Required when <code>orangu-server</code> runs with
+<code>--api-key</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>role</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">A specific role this server fulfills. Valid roles are: <code>all</code> (default), <code>code</code>, <code>review</code>, <code>explorer</code>, and <code>embeddings</code>. If a specific subsystem needs a server and one is tagged with its role, it will use that server instead of the default. <code>embeddings</code> designates the server that embeds code for semantic <code>/search</code>; an <code>all</code> server also serves it, and search auto-enables when that endpoint responds at startup</td>
+<td style="text-align: left;">A specific role this server fulfills.
+Valid roles are: <code>all</code> (default), <code>code</code>,
+<code>review</code>, <code>explorer</code>, and <code>embeddings</code>.
+If a specific subsystem needs a server and one is tagged with its role,
+it will use that server instead of the default. <code>embeddings</code>
+designates the server that embeds code for semantic
+<code>/search</code>; an <code>all</code> server also serves it, and
+search auto-enables when that endpoint responds at startup. Ignored
+behind a confirmed orangu-coordinator — it alone decides which model
+backs each role, so a single server section is enough there</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li>At least one of <code>[orangu].model</code> or a server's own <code>model</code> must be set, so every server resolves to a non-empty model</li>
-<li>The endpoint may be configured either with or without <code>/v1</code></li>
-<li>The client normalizes the endpoint internally before calling <code>/v1/chat/completions</code></li>
-<li>Set <code>api_key</code> when the server requires authentication, for example a llama.cpp server started with <code>llama-server --api-key &lt;key&gt;</code>. The key is sent as a bearer token on every request, including the <code>/v1/models</code> probe</li>
-<li>Each server section must use a unique <code>endpoint</code>; <code>http://x</code> and <code>http://x/v1</code> are treated as the same host</li>
-<li>Use <code>/server</code> to switch between the configured servers at runtime; Tab completion lists every server section</li>
-<li>Set <code>feedback = on</code> in <code>[orangu]</code> to show a green or red dot in the output window after each command completes, and to blink an <code>orangu ●</code> title and ring the terminal bell while/when a <code>/auto_review</code> runs and finishes</li>
+<li>At least one of <code>[orangu].model</code> or a server’s own
+<code>model</code> must be set, so every server resolves to a non-empty
+model</li>
+<li>The endpoint may be configured either with or without
+<code>/v1</code></li>
+<li>The client normalizes the endpoint internally before calling
+<code>/v1/chat/completions</code></li>
+<li>Set <code>api_key</code> when the server requires authentication,
+for example <code>orangu-server --api-key &lt;key&gt;</code>. The key is
+sent as a bearer token on every request, including the
+<code>/v1/models</code> probe</li>
+<li>Each server section must use a unique <code>endpoint</code>;
+<code>http://x</code> and <code>http://x/v1</code> are treated as the
+same host</li>
+<li>Use <code>/server</code> to switch between the configured servers at
+runtime; Tab completion lists every server section</li>
+<li>Set <code>feedback = on</code> in <code>[orangu]</code> to show a
+green or red dot in the output window after each command completes, and
+to blink an <code>orangu ●</code> title and ring the terminal bell
+while/when a <code>/auto_review</code> runs and finishes</li>
 </ul>
 <h2 id="sample-file">Sample file</h2>
 <p>The distributed sample lives at:</p>
 <pre class="text"><code>doc/etc/orangu.conf</code></pre>
-<p>It ships with llama.cpp-style servers and a 30-minute timeout suitable for local tool-calling workloads.</p>
+<p>It ships with <code>orangu-server</code> sections and a 30-minute
+timeout suitable for local tool-calling workloads.</p>
   </main>
 </div>
 

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tools — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html" class="active">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#tools" id="toc-tools">Tools</a>
+<ul>
+<li><a href="#available-tools" id="toc-available-tools">Available
+tools</a></li>
+<li><a href="#workspace-restrictions"
+id="toc-workspace-restrictions">Workspace restrictions</a></li>
+<li><a href="#show_file"
+id="toc-show_file"><code>show_file</code></a></li>
+<li><a href="#modify_file"
+id="toc-modify_file"><code>modify_file</code></a></li>
+<li><a href="#list_directory"
+id="toc-list_directory"><code>list_directory</code></a></li>
+<li><a href="#fetch_url"
+id="toc-fetch_url"><code>fetch_url</code></a></li>
+<li><a href="#expand_context"
+id="toc-expand_context"><code>expand_context</code></a></li>
+<li><a href="#run_shell_command"
+id="toc-run_shell_command"><code>run_shell_command</code></a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="tools">Tools</h1>
+<p><code>orangu</code> exposes local workspace tools to the active
+model.</p>
+<h2 id="available-tools">Available tools</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Tool</th>
+<th style="text-align: left;">Purpose</th>
+<th style="text-align: left;">Key arguments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>show_file</code></td>
+<td style="text-align: left;">Show a text file from the workspace</td>
+<td style="text-align: left;"><code>path</code>, optional
+<code>start_line</code>, optional <code>end_line</code>, optional
+<code>mode</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>create_file</code></td>
+<td style="text-align: left;">Create a file with content, optionally
+with its permissions</td>
+<td style="text-align: left;"><code>path</code>, optional
+<code>content</code>, <code>mode</code>, <code>overwrite</code>,
+<code>parents</code>, <code>git</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>modify_file</code></td>
+<td style="text-align: left;">Modify a file, by text replacement or by
+line ranges</td>
+<td style="text-align: left;"><code>path</code>, either
+<code>old_text</code>/<code>new_text</code> (+ <code>replace_all</code>)
+or <code>edits</code>, optional <code>git</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>move_file</code></td>
+<td style="text-align: left;">Move or rename a file</td>
+<td style="text-align: left;"><code>from</code>, <code>to</code>,
+optional <code>mode</code>, <code>overwrite</code>,
+<code>parents</code>, <code>git</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>delete_file</code></td>
+<td style="text-align: left;">Delete a file</td>
+<td style="text-align: left;"><code>path</code>, optional
+<code>git</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>create_directory</code></td>
+<td style="text-align: left;">Create one directory</td>
+<td style="text-align: left;"><code>path</code>, optional
+<code>mode</code>, <code>parents</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>move_directory</code></td>
+<td style="text-align: left;">Move a directory and everything under
+it</td>
+<td style="text-align: left;"><code>from</code>, <code>to</code>,
+optional <code>mode</code>, <code>parents</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>delete_directory</code></td>
+<td style="text-align: left;">Delete an empty directory</td>
+<td style="text-align: left;"><code>path</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>list_directory</code></td>
+<td style="text-align: left;">List files and directories below the
+workspace</td>
+<td style="text-align: left;">optional <code>path</code>, optional
+<code>max_depth</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fetch_url</code></td>
+<td style="text-align: left;">Fetch an external URL and return readable
+text</td>
+<td style="text-align: left;"><code>url</code>, optional
+<code>max_chars</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>run_shell_command</code></td>
+<td style="text-align: left;">Run a shell command inside the
+workspace</td>
+<td style="text-align: left;"><code>command</code>, optional
+<code>cwd</code>, optional <code>timeout_seconds</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>expand_context</code></td>
+<td style="text-align: left;">Retrieve previously compressed/truncated
+output using its hash ID</td>
+<td style="text-align: left;"><code>id</code></td>
+</tr>
+</tbody>
+</table>
+<p>The eight file-lifecycle tools are the same operations
+<code>orangu-server</code> serves over HTTP as
+<code>/v1/create_file</code>, <code>/v1/modify_file</code> and so on —
+one shared implementation (<code>orangu::files</code>), so a tool call,
+a typed command and an API request behave identically. Their full
+field-by-field schemas are in the Inference server internals chapter,
+under <strong>File-lifecycle API</strong>.</p>
+<p>They replace the earlier <code>read_file</code> and
+<code>edit_file</code>: <code>read_file</code> is now
+<code>show_file</code> with the same arguments, and
+<code>edit_file</code> is now <code>modify_file</code>, which still
+takes <code>old_text</code>/<code>new_text</code> and additionally
+accepts the server’s <code>edits</code> line ranges. The typed
+<code>/add_file</code> is obsolete for the same reason — it was
+<code>/create_file</code> without content (see the Git commands
+chapter). An existing path is overwritten on every surface — tool, typed
+command and HTTP endpoint alike; pass <code>"overwrite": false</code>
+for create-if-absent.</p>
+<p><strong>Git.</strong> In a Git repository these tools make their
+change <em>with</em> the Git command —
+<code>create_file</code>/<code>modify_file</code> stage with
+<code>git add</code>, <code>move_file</code> moves with
+<code>git mv</code>, <code>delete_file</code> deletes with
+<code>git rm</code> — so work is staged as it happens. <strong>Nothing
+is ever committed</strong>; that stays your decision
+(<code>/commit</code>). Pass <code>"git": false</code> on a call for a
+plain filesystem change.</p>
+<h2 id="workspace-restrictions">Workspace restrictions</h2>
+<p>The tools are rooted in the active workspace. By default this is the
+current directory, unless <code>orangu</code> was started with
+<code>--workspace /path/to/project</code>.</p>
+<p>Paths that attempt to escape the workspace are rejected.</p>
+<p>Absolute paths are allowed only when they still resolve inside the
+workspace after normalization.</p>
+<h2 id="show_file"><code>show_file</code></h2>
+<p><code>show_file</code> returns text content with line numbers:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src/main.rs&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;start_line&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;end_line&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mode&quot;</span><span class="fu">:</span> <span class="st">&quot;full&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Behavior:</p>
+<ul>
+<li><code>path</code> is required</li>
+<li><code>start_line</code> defaults to line 1</li>
+<li><code>end_line</code> defaults to the end of the file</li>
+<li><code>mode</code> defaults to <code>full</code>. Valid modes are
+<code>full</code> (read actual content), <code>signatures</code>
+(extract only public interfaces), or <code>map</code> (extract top-level
+item declarations for an overview).</li>
+<li>Each returned line is prefixed as <code>N. text</code> (only applies
+to <code>full</code> mode)</li>
+<li>Repeated unchanged whole-file reads in the same conversation may
+return a cache stub instead of resending the entire file</li>
+<li>The cache stub means the model should reuse the earlier full content
+already in context; use <code>start_line</code> and
+<code>end_line</code> to request a fresh focused excerpt when
+needed</li>
+</ul>
+<h2 id="modify_file"><code>modify_file</code></h2>
+<p><code>modify_file</code> performs a targeted replacement inside a
+workspace file:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src/main.rs&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;old_text&quot;</span><span class="fu">:</span> <span class="st">&quot;fn old_name()&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;new_text&quot;</span><span class="fu">:</span> <span class="st">&quot;fn new_name()&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Optional flags:</p>
+<ul>
+<li><code>replace_all</code> replaces every match instead of only the
+first one</li>
+</ul>
+<p>Important details:</p>
+<ul>
+<li><code>path</code>, <code>old_text</code>, and <code>new_text</code>
+are required by the tool schema</li>
+<li>If the file does not exist, it is created (mode <code>0644</code>)
+with <code>new_text</code> as its contents</li>
+<li>If <code>old_text</code> is empty, the file content is replaced with
+<code>new_text</code></li>
+<li>If <code>old_text</code> is not found in an existing file, the tool
+returns an error</li>
+<li>Successful edits return JSON with <code>path</code>,
+<code>created</code>, <code>updated</code>, <code>original_bytes</code>,
+<code>new_bytes</code>, <code>mode</code>, and <code>git</code></li>
+<li>Instead of <code>old_text</code>/<code>new_text</code>,
+<code>edits</code> may be given — an array of
+<code>{start_line, end_line, replacement}</code> line ranges, exactly as
+<code>orangu-server</code>’s <code>/v1/modify_file</code> takes them.
+<code>edits</code> wins if both are supplied</li>
+<li>In a Git repository the change is staged with <code>git add</code>;
+pass <code>"git": false</code> to leave the index alone</li>
+</ul>
+<h2 id="list_directory"><code>list_directory</code></h2>
+<p><code>list_directory</code> is a workspace-scoped directory listing
+tool:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;max_depth&quot;</span><span class="fu">:</span> <span class="dv">3</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Behavior:</p>
+<ul>
+<li><code>path</code> defaults to <code>.</code></li>
+<li><code>max_depth</code> defaults to <code>2</code></li>
+<li>Each result line is formatted as
+<code>kind&lt;TAB&gt;path</code></li>
+<li><code>kind</code> is either <code>dir</code> or
+<code>file</code></li>
+<li>Paths are shown relative to the workspace when possible</li>
+</ul>
+<h2 id="fetch_url"><code>fetch_url</code></h2>
+<p><code>fetch_url</code> retrieves external documentation or reference
+material:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://example.com/docs&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;max_chars&quot;</span><span class="fu">:</span> <span class="dv">12000</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Behavior:</p>
+<ul>
+<li><code>url</code> is required</li>
+<li><code>max_chars</code> defaults to <code>20000</code></li>
+<li>HTML responses are converted into readable text</li>
+<li>Non-HTML responses are returned as plain text</li>
+<li>Long responses are truncated and end with
+<code>[truncated]</code></li>
+</ul>
+<h2 id="expand_context"><code>expand_context</code></h2>
+<p><code>expand_context</code> retrieves massive text blobs (like large
+file diffs or lengthy command outputs) that <code>orangu</code>
+automatically truncated before they reached your context window to save
+tokens.</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;abc1234567&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Behavior:</p>
+<ul>
+<li><code>id</code> is required and must be a 10-character cache
+ID.</li>
+<li>You will find these IDs injected into your context as markers
+(e.g. <code>[Note: Output truncated. Run expand_context(id="abc1234567")]</code>).</li>
+<li>The tool returns the full, uncompressed, raw text of the original
+output.</li>
+<li>The cache ID is a SHA-256 hash prefix of the content, meaning it is
+mathematically guaranteed to perfectly match the truncated payload.</li>
+<li>Cache files are strictly scoped to the active session and
+automatically deleted when the session ends.</li>
+</ul>
+<h2 id="run_shell_command"><code>run_shell_command</code></h2>
+<p><code>run_shell_command</code> executes a Bash command inside the
+workspace:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;cargo test --quiet&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cwd&quot;</span><span class="fu">:</span> <span class="st">&quot;crates/core&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeout_seconds&quot;</span><span class="fu">:</span> <span class="dv">60</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Behavior:</p>
+<ul>
+<li><code>command</code> is required</li>
+<li><code>cwd</code> defaults to the workspace root</li>
+<li><code>timeout_seconds</code> defaults to <code>30</code></li>
+<li>The command runs through the platform’s shell: <code>bash -lc</code>
+on Linux and macOS,
+<code>powershell -NoLogo -NonInteractive -Command</code> on Windows. It
+is passed verbatim and never translated between them, so anything beyond
+the simplest command is written for one or the other</li>
+<li>Output is intercepted and compressed before being sent to the LLM to
+prevent flooding the context window. Native slash commands (like
+<code>/diff</code>, <code>/log</code>, <code>/build</code>) execute
+locally and display their full output to the user, but when this output
+is injected into the model’s context, it is compressed and tracked via a
+cache identifier to ensure it is only transmitted once if
+unchanged.</li>
+<li>Output is returned as pretty-printed JSON with
+<code>exit_code</code>, <code>stdout</code>, and
+<code>stderr</code></li>
+<li><code>stdout</code> and <code>stderr</code> are each truncated to at
+most 20,000 characters</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

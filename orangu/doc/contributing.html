@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage Tools — orangu</title>
+  <title>Contributing — orangu</title>
   <link rel="stylesheet" href="doc.css" />
   <style>
     .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
@@ -49,7 +49,7 @@
         <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
-        <li><a href="usage-tools.html" class="active">Usage Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="workspaces.html">Workspaces</a></li>
         <li><a href="skills.html">Skills</a></li>
         <li><a href="extra.html">External Tools</a></li>
@@ -74,20 +74,16 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
-        <li><a href="contributing.html">Contributing</a></li>
+        <li><a href="contributing.html" class="active">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
 <ul>
-<li><a href="#usage-tools" id="toc-usage-tools">Usage tools</a>
-<ul>
-<li><a href="#manual" id="toc-manual">/manual</a></li>
-<li><a href="#usage" id="toc-usage">/usage</a></li>
-<li><a href="#clear" id="toc-clear">/clear</a></li>
-<li><a href="#quit" id="toc-quit">/quit</a></li>
-</ul></li>
+<li><a href="#rust-programming" id="toc-rust-programming">Rust
+programming</a></li>
+<li><a href="#git-guide" id="toc-git-guide">Git guide</a></li>
 </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -102,80 +98,80 @@
   </aside>
 
   <main class="doc-content">
-<h1 id="usage-tools">Usage tools</h1>
-<p>The usage tools cover the session-level housekeeping commands:
-reading the built-in manual, inspecting how much the current session has
-used, clearing the conversation, and leaving the client. Like the other
-local commands, they are handled locally and keep working even when the
-server or model status in the header is red.</p>
-<h2 id="manual">/manual</h2>
-<p>Opens this manual in a full-screen, two-pane viewer: the text of the
-selected section in the left pane and the table of contents in the right
-pane. The manual text is embedded into the binary at compile time, so it
-is always available — no external files are read. Pressing
-<code>Alt+S</code> opens a search window that searches the entire manual
-(<code>Enter</code> jumps to the next match, <code>Esc</code> closes
-it).</p>
-<p>The viewer, its layout, and its key bindings are described in the
-Built-in manual section of the Terminal interface chapter.</p>
-<p>It is handled locally and works regardless of server or model
-state.</p>
-<h3 id="examples">Examples</h3>
-<pre class="text"><code>/manual</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>manual
-show manual
-open manual</code></pre>
-<h2 id="usage">/usage</h2>
-<p>Shows usage statistics for the current session.</p>
-<p>The report covers:</p>
+<h1>Contributing</h1>
+<h2 id="rust-programming">Rust programming</h2>
+<p><a
+href="https://github.com/mnemosyne-systems/orangu"><strong>orangu</strong></a>
+is developed using the <a
+href="https://en.wikipedia.org/wiki/Rust_(programming_language)">Rust
+programming language</a> so it is a good idea to have some knowledge
+about the language before you begin to make changes.</p>
+<p>There are books like,</p>
 <ul>
-<li>total application time,</li>
-<li>total time spent waiting for LLM responses,</li>
-<li>total tool execution time,</li>
-<li>total tokens generated (counted with the bundled tokenizer),</li>
-<li>average tokens per second,</li>
-<li>context cache statistics (reads, hits, misses, rate, bytes
-saved),</li>
-<li>context compression statistics (lines saved, patterns applied),</li>
-<li>tool invocation statistics (counts, percentages), and</li>
-<li>skill invocation statistics (counts, percentages).</li>
+<li><a href="https://doc.rust-lang.org/book/">The Rust Programming
+Language</a></li>
 </ul>
-<h3 id="examples-1">Examples</h3>
-<pre class="text"><code>/usage</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>usage
-show usage</code></pre>
-<h2 id="clear">/clear</h2>
-<p>Clears the current conversation.</p>
-<p>The in-memory conversation history is dropped so the next prompt
-starts a fresh exchange. The session itself is preserved — only the
-conversation context is cleared. (To also return to the configured model
-and server, use <code>/reload</code>.)</p>
-<h3 id="examples-2">Examples</h3>
-<pre class="text"><code>/clear</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>clear
-clear conversation
-reset conversation</code></pre>
-<h2 id="quit">/quit</h2>
-<p>Exits the client.</p>
-<p><code>/quit</code> exits immediately, whereas <code>Ctrl+C</code>
-uses a two-step confirmation (press it once to arm quit mode, then again
-within two seconds to exit). On exit the full resume command is printed
-— for example:</p>
-<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
-<p>so you can return to exactly this session later. The resume command
-is not printed when the session had no LLM interaction (zero tokens
-generated) and was on <code>main</code>, <code>master</code>, or outside
-a Git repository; in that case the session directory is deleted
-silently. See the Sessions section of the Terminal interface chapter for
-the full cleanup rules.</p>
-<h3 id="examples-3">Examples</h3>
-<pre class="text"><code>/quit</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>quit
-exit</code></pre>
+<p>that can help you</p>
+<h2 id="git-guide">Git guide</h2>
+<p>Here are some links that will help you</p>
+<ul>
+<li>[How to Squash Commits in Git][git_squash]</li>
+<li>[ProGit book][progit]</li>
+</ul>
+<h3 id="basic-steps">Basic steps</h3>
+<p><strong>Start by forking the repository</strong></p>
+<p>This is done by the “Fork” button on GitHub.</p>
+<p><strong>Clone your repository locally</strong></p>
+<p>This is done by</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone git@github.com:<span class="op">&lt;</span>username<span class="op">&gt;</span>/orangu.git</span></code></pre></div>
+<p><strong>Add upstream</strong></p>
+<p>Do</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> orangu</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> remote add upstream https://github.com/mnemosyne-systems/orangu.git</span></code></pre></div>
+<p><strong>Do a work branch</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">-b</span> mywork main</span></code></pre></div>
+<p><strong>Make the changes</strong></p>
+<p>Remember to verify the compile and execution of the code.</p>
+<p>Use</p>
+<pre><code>[#xyz] Description</code></pre>
+<p>as the commit message where <code>[#xyz]</code> is the issue number
+for the work, and <code>Description</code> is a short description of the
+issue in the first line</p>
+<p><strong>Multiple commits</strong></p>
+<p>If you have multiple commits on your branch then squash them</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rebase <span class="at">-i</span> HEAD~2</span></code></pre></div>
+<p>for example. It is <code>p</code> for the first one, then
+<code>s</code> for the rest</p>
+<p><strong>Rebase</strong></p>
+<p>Always rebase</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> fetch upstream</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> rebase <span class="at">-i</span> upstream/main</span></code></pre></div>
+<p><strong>Force push</strong></p>
+<p>When you are done with your changes force push your branch</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> push <span class="at">-f</span> origin mywork</span></code></pre></div>
+<p>and then create a pull request for it</p>
+<p><strong>Format source code</strong></p>
+<p>Use</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> fmt</span></code></pre></div>
+<p>to format the source code.</p>
+<p><strong>Repeat</strong></p>
+<p>Based on feedback keep making changes, squashing, rebasing and force
+pushing</p>
+<p><strong>PTAL</strong></p>
+<p>When you are working on a change put it into Draft mode, so we know
+that you are not happy with it yet.</p>
+<p>Please, send a PTAL to the Committer that were assigned to you once
+you think that your change is complete. And, of course, take it out of
+Draft mode.</p>
+<p><strong>Undo</strong></p>
+<p>Normally you can reset to an earlier commit using
+<code>git reset &lt;commit hash&gt; --hard</code>.</p>
+<p>But if you accidentally squashed two or more commits, and you want to
+undo that, you need to know where to reset to, and the commit seems to
+have lost after you rebased.</p>
+<p>But they are not actually lost - using <code>git reflog</code>, you
+can find every commit the HEAD pointer has ever pointed to. Find the
+commit you want to reset to, and do <code>git reset --hard</code>.</p>
   </main>
 </div>
 

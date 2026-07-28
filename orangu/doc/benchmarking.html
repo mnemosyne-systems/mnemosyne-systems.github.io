@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Benchmarking — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html" class="active">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#benchmarking-throughput-orangu-bench"
+id="toc-benchmarking-throughput-orangu-bench">Benchmarking throughput
+(<code>orangu-bench</code>)</a></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1>Benchmarking</h1>
+<h2 id="benchmarking-throughput-orangu-bench">Benchmarking throughput
+(<code>orangu-bench</code>)</h2>
+<p><code>orangu-bench</code> (<code>src/bin/orangu-bench/</code>) is a
+<strong>developer tool</strong> — a fourth binary in the same Cargo
+package as <code>orangu</code>, <code>orangu-coordinator</code>, and
+<code>orangu-server</code>. It is not part of the served product and has
+no bearing on running a model in production; it exists to answer one
+question during performance work: <em>how fast does token generation
+(decode) run, how does that rate change as the context grows, and how
+fast is prompt processing (prefill)?</em></p>
+<p>It is the HTTP-client analogue of <code>llama.cpp</code>’s
+<code>llama-bench -n</code> (its <code>tg</code>, token-generation,
+test). Rather than embedding an inference engine, it points at a
+<strong>running OpenAI-compatible server</strong> over HTTP and measures
+the tokens per second it streams back. Because both
+<code>orangu-server</code> and <code>llama-server</code> speak
+<code>POST /v1/completions</code> with SSE streaming, the <em>same</em>
+tool measures both through the <em>same</em> path — the only way to get
+a genuinely apples-to-apples comparison (in-process
+<code>llama-bench</code> numbers and an ad-hoc <code>curl</code> of
+orangu are not comparable).</p>
+<h3 id="what-it-measures">What it measures</h3>
+<p>For each run, <code>orangu-bench</code> sends one streaming
+completion and times the window <strong>from the first streamed token to
+the last</strong>. Prompt processing (prefill) and time-to-first-token
+are therefore <em>excluded</em> from the reported rate — the number is
+steady-state decode throughput,
+<code>(tokens - 1) / decode_seconds</code>, exactly the quantity
+<code>llama-bench</code>’s <code>tg</code> reports. Time to first token
+is printed separately (<code>ttft_ms</code>) so prefill cost is still
+visible.</p>
+<p>To see how decode scales with context, it sweeps
+<strong>depths</strong>: each depth pads the prompt with filler so
+generation begins at roughly that many tokens of context, mirroring
+<code>llama-bench -d</code>. A flat curve across depths means decode is
+context-insensitive; a curve that falls with depth means attention or KV
+traffic is growing per token.</p>
+<blockquote>
+<p>The depth padding is approximate — it appends <code>~depth</code>
+filler words (≈ one BPE token each) rather than exact tokens, because
+the tool has no tokenizer and talks only HTTP. It is close enough to
+compare <em>slopes</em> between two engines or two builds; it is not an
+exact context length.</p>
+</blockquote>
+<h3 id="usage">Usage</h3>
+<p>Start the server you want to measure, then run the tool against its
+base URL.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server (default port 8100): sweep decode rate across context depths</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024,2048,3072 <span class="at">--gen</span> 128</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># llama-server on port 8300, identical harness (uses the OpenAI-compat endpoint)</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-m</span> model.gguf <span class="at">-ngl</span> 99 <span class="at">--port</span> 8300 <span class="at">-c</span> 4096</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0,512,1024,2048,3072 <span class="at">--gen</span> 128</span></code></pre></div>
+<p>Typical output (one row per depth):</p>
+<pre><code>orangu-bench → http://127.0.0.1:8100
+   depth |   gen | ttft_ms |    n_tok |     best |        mean ± sd
+-------------------------------------------------------------------
+       0 |   128 |     140 |      128 |    31.20 |    31.05 ±  0.12
+    1024 |   128 |     520 |      128 |    24.90 |    24.70 ±  0.18
+    2048 |   128 |     980 |      128 |    20.10 |    19.95 ±  0.20</code></pre>
+<h3 id="prefill-mode---pp-prompt-processing-not-decode">Prefill mode
+(<code>--pp</code>) — prompt processing, not decode</h3>
+<p><code>--pp</code> sweeps <em>prompt lengths</em> and reports
+<strong>prompt-processing</strong> throughput —
+<code>llama-bench</code>’s <code>pp</code> test to the default’s
+<code>tg</code>. Each run sends a prompt of roughly the requested length
+and generates a single token, so what is timed is prefill and nothing
+else.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pp</span> 128,512,1024,2048</span></code></pre></div>
+<pre><code>orangu-bench → http://127.0.0.1:8100
+  model    unsloth/gemma-4-E2B-it-GGUF:Q4_K_M
+  backend  Vulkan/AMD Radeon RX 5500M (RADV NAVI14) (Vulkan)
+  gpu      card1 sclk 1700Mhz (auto)
+      pp |   n_tok |  cached | prompt_ms |     best |        mean ± sd
+----------------------------------------------------------------------
+     256 |     288 |       0 |    6021.7 |    47.83 |    44.73 ±  3.10
+    1024 |    1120 |       0 |   24037.8 |    46.59 |    44.35 ±  2.24</code></pre>
+<p>Two columns exist to keep the number honest:</p>
+<ul>
+<li><strong><code>n_tok</code></strong> is the prompt length the
+<em>server</em> reported (<code>timings.prompt_n</code>), not the length
+that was asked for. The <code>--pp</code> value is only a target, since
+the tool has no tokenizer — the rate is computed from what was actually
+processed.</li>
+<li><strong><code>cached</code></strong> is how much of the prompt came
+from the server’s prefix cache and so never went through a forward pass.
+A cached prompt “prefills” instantly and would otherwise look like a
+spectacular result. Every run sends <code>cache_prompt: false</code>,
+which both <code>orangu-server</code> and <code>llama-server</code>
+honour, so this column should read <code>0</code>; if it ever climbs
+toward <code>n_tok</code>, the server ignored the flag and the row is
+measuring a cache lookup rather than prefill.</li>
+</ul>
+<p>A server that reports no <code>timings</code> at all (an older
+<code>orangu-server</code>, or a llama-server built without them) gets a
+row marked <code>no server timings (ttft only)</code>, carrying
+wall-clock time-to-first-token instead. That figure includes queueing
+and the first decode step, so it is not comparable with the rest — the
+row says so rather than quietly printing a smaller number.</p>
+<h3 id="what-was-measured">What was measured</h3>
+<p>Every run opens with the server’s model and backend (from
+<code>GET /props</code>) and, on Linux with an AMD card, each GPU’s
+current core clock and DPM mode read from
+<code>/sys/class/drm/card*/device/</code>. This is not decoration: a
+card left at <code>power_dpm_force_performance_level = auto</code> can
+idle its clock down between requests, which moves throughput by more
+than the difference most benchmarks are run to detect. A rate recorded
+without the device and clock state beside it cannot be compared against
+one recorded later. Under <code>--json</code> the same information is
+the first object emitted, tagged <code>"type": "env"</code>, so a stored
+result carries its own provenance.</p>
+<h3 id="options">Options</h3>
+<p><code>orangu-bench --help</code>:</p>
+<pre class="text"><code>Usage: orangu-bench [OPTIONS]
+
+Options:
+      --url &lt;URL&gt;          Base URL of the server [default: http://127.0.0.1:8100]
+      --depths &lt;DEPTHS&gt;    Comma-separated context depths to sweep [default: 0]
+      --pp &lt;PP&gt;            Prefill mode: comma-separated prompt lengths to sweep, reporting prompt-processing throughput
+      --gen &lt;N_GEN&gt;        Number of tokens to generate per timed run [default: 128]
+      --curve &lt;CURVE&gt;      Curve mode: ONE generation of this many tokens, decode rate bucketed by context [default: 0]
+      --bucket &lt;BUCKET&gt;    Bucket width (in context tokens) for --curve [default: 256]
+      --reps &lt;REPS&gt;        Repetitions per depth; the reported rate is the best run with mean±sd [default: 3]
+      --no-warmup          Skip the initial warmup run
+      --timeout &lt;TIMEOUT&gt;  Per-request timeout in seconds [default: 600]
+      --model &lt;MODEL&gt;      Model id to request
+      --json               Emit machine-readable JSON
+      --history &lt;HISTORY&gt;  Append each measured point to this tab-separated history file
+      --label &lt;LABEL&gt;      Series name recorded in the history file
+      --chart &lt;CHART&gt;      Render the history file to this SVG after measuring
+      --chart-only         Only render the chart from an existing history file; measure nothing
+  -h, --help               Print help
+  -V, --version            Print version</code></pre>
+<p>Notes: <code>--url</code> is the server base URL (the tool appends
+<code>/v1/completions</code>); <code>--depths</code> is comma-separated
+(e.g. <code>0,512,1024,2048</code>); <code>--reps</code> reports the
+best (fastest) run with mean ± standard deviation alongside; warmup (one
+short generation) is on unless <code>--no-warmup</code>;
+<code>--json</code> emits one JSON object per depth instead of the
+table.</p>
+<h3 id="tracking-throughput-over-time---history---chart">Tracking
+throughput over time (<code>--history</code>, <code>--chart</code>)</h3>
+<p>A rate on its own says nothing. The two things it needs to be read
+against — <em>the other engine</em> and <em>last month’s build</em> —
+are both outside any single invocation, so <code>--history</code>
+appends each measured point to a tab-separated file that accumulates
+across runs, and <code>--chart</code> draws the chart from <strong>that
+file</strong> rather than from the run that produced it. A run measuring
+only orangu still redraws llama.cpp’s line beside it.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;llama.cpp b10104&quot;</span> <span class="dt">\</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
+<p>The file is plain TSV with a <code>#</code> header, so it diffs in
+review and is hand-editable; blank lines, comments and unparseable rows
+are skipped rather than fatal. Each row is <code>date</code>,
+<code>label</code>, <code>mode</code> (<code>pp</code> or
+<code>tg</code>), <code>n</code>, and the best / mean / sd of the run’s
+repetitions:</p>
+<pre class="text"><code>#date   label   mode    n   best    mean    sd
+2026-07-25  orangu af7c767  pp  1120    81.75   81.40   0.26
+2026-07-25  llama.cpp b10104    pp  1120    1061.66 1049.40 8.84</code></pre>
+<p>Nothing is ever rewritten — a row is a measurement that was taken,
+and a later run that disagrees is another row, not a correction.</p>
+<p><code>--label</code> is the series identity, so it must stay stable
+across runs for a line to be drawn; it defaults to the server’s model
+id, which distinguishes two models but <em>not</em> two builds of
+orangu, so pass it explicitly when A/B-ing builds. Prompt-processing
+rows are keyed by the token count the server actually reported rather
+than the requested length, and a row without server timings is printed
+but not recorded — a time-to-first-token is a different measurement and
+does not belong on the same line as a prefill rate.</p>
+<p>The chart is a standalone SVG with no external references:
+<strong>two charts</strong> — prompt processing and token generation —
+each plotting <strong>tokens/second against context length</strong>,
+with one line per engine.</p>
+<p>Two charts rather than a grid of small multiples because the question
+the file is kept to answer is how throughput behaves <em>as context
+grows</em>: whether a curve is flat or falling away, and how far apart
+two engines stay along it. That is a shape, and a shape needs the
+workload on an axis rather than spread across facets. Prefill and decode
+stay separate because they are different measurements that happen to
+share a unit — putting them in one frame would need a second y-axis,
+which makes unrelated quantities look comparable.</p>
+<p>The y-axis is <strong>logarithmic</strong>. The engines on it differ
+by an order of magnitude, so on a linear axis the slower one collapses
+onto the baseline and its own shape — the thing being tracked — becomes
+unreadable. On a log axis a constant ratio is a constant vertical
+distance, which is how “N× behind” should read; the bounds are
+<code>1/2/5 × 10^k</code> so every gridline is a round number.</p>
+<p>Only the <strong>newest measurement date</strong> in the file is
+drawn, and the subtitle says which —
+<code>showing 2026-07-26 (18 of 50 rows)</code>. The file keeps every
+run; that is what it is for. But a chart of “how does throughput behave
+as context grows” is answered by the build that exists, and overlaying
+superseded runs on top of it only crowds the lines it is being read for.
+To look at history, read the file, or point <code>--chart</code> at a
+filtered copy of it. Repeated measurements of one series at one context
+on one date collapse to their best, for the same reason a single run
+reports its best repetition. Series colours are assigned in first-seen
+order and never recycled; past the last slot a label is dropped from the
+chart rather than given a colour another series already owns.</p>
+<h3 id="curve-mode---curve-decode-scaling-without-prefill">Curve mode
+(<code>--curve</code>) — decode scaling without prefill</h3>
+<p>The depth sweep pads the <em>prompt</em> to reach a context depth,
+which means a large, slow, VRAM-heavy prefill on orangu (its
+multi-hundred-token prefill is CPU-orchestrated). <code>--curve N</code>
+avoids that entirely: it does <strong>one</strong> generation of
+<code>N</code> tokens, timestamps each streamed token, and reports the
+instantaneous decode rate per <code>--bucket</code>-token context
+window. That is the cleanest way to see decode-vs-context scaling, and
+it works identically against orangu-server and llama-server.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
+<pre class="text"><code>orangu-bench → http://127.0.0.1:8100 (curve: 3072 tokens, bucket 256)
+     ctx |    tok/s
+------------------
+       0 |    29.29
+     256 |    24.10
+     512 |    23.47
+     ...</code></pre>
+<p>Context position is approximated by the generated-token index (the
+prompt is short). <code>--json</code> emits
+<code>{"ctx":…,"tok_per_s":…,"tokens":…}</code> per bucket.</p>
+<h3 id="confirm-you-are-measuring-the-build-you-think-you-are">Confirm
+you are measuring the build you think you are</h3>
+<p>The header line</p>
+<pre><code>  server   pid 2623608 up 2s</code></pre>
+<p>is there to be checked, not skipped. When A/B-ing two builds, the
+<strong>pid must change</strong> between the two runs and
+<code>up</code> must be a few seconds, not minutes.</p>
+<p>The failure it catches is quiet and convincing. Stop the old server
+by process name (<code>pkill -x orangu-server</code>) and it will miss a
+build you copied to another filename — <code>pkill</code> matches the
+<em>binary’s</em> name, not the path. The replacement server then fails
+to bind the port, exits, and <code>orangu-bench</code> measures the
+server that is still running: the old one. Both runs report the same
+numbers, which reads as a clean “this change did nothing” result rather
+than as a broken measurement. Keeping both builds named
+<code>orangu-server</code> in separate directories avoids it; checking
+the pid proves it.</p>
+<p><code>llama-server</code> does not report these fields, so the line
+is omitted for it — there, check the process yourself.</p>
+<h3 id="interpreting-a-comparison">Interpreting a comparison</h3>
+<p>Run the same sweep against both servers and compare <strong>the shape
+of the curve</strong>, not just the top-of-context point. Two builds (or
+two engines) that start at a similar short-context rate but diverge as
+depth grows differ in how their attention / KV path scales, not in their
+per-token matmul — which is the distinction that matters when deciding
+what to optimize. The overall performance investigation this tool
+supports lives in <code>doc/SERVER_ROADMAP.md</code>.</p>
+<h3
+id="measuring-kernel-occupancy-register-pressure-not-just-throughput">Measuring
+kernel occupancy (register pressure), not just throughput</h3>
+<p><code>orangu-bench</code> measures end-to-end
+<strong>throughput</strong>, which on a laptop dGPU is at the mercy of
+the GPU’s power state — if the core clock isn’t pinned at its maximum,
+two runs minutes apart are not comparable (check
+<code>cat /sys/class/drm/card1/device/pp_dpm_sclk</code> and confirm the
+<code>*</code> is on the top frequency). When the question is instead
+<em>why</em> a compute kernel is slow — its register (VGPR) count and
+occupancy — there is a <strong>clock-independent</strong> measure: the
+RADV driver’s compile-time shader statistics.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
+<p>To attribute a stats block to a specific kernel, capture with the
+kernel’s env flag on and off (e.g. <code>ORANGU_Q4K_LIGHT=1</code> vs
+unset) and diff the <code>VGPRs:</code> / <code>Code size:</code> blocks
+— the one that appears only with the flag on is that kernel.
+<code>ORANGU_DUMP_SHADERS=&lt;dir&gt;</code> additionally writes each
+kernel’s generated WGSL to <code>&lt;dir&gt;</code> for inspection. This
+is the harness the <code>doc/SERVER_ROADMAP.md</code> Step 16 work used
+to settle a kernel’s occupancy without trusting a throttled throughput
+number.</p>
+<h3 id="requirements-and-caveats">Requirements and caveats</h3>
+<ul>
+<li>Use <code>temperature 0</code> semantics: the tool always sends
+<code>temperature: 0</code> so runs are deterministic and
+comparable.</li>
+<li>It sends both <code>max_tokens</code> (OpenAI) and
+<code>n_predict</code> (llama.cpp native) so a server honors whichever
+it recognizes.</li>
+<li>Force the GPU to a stable clock state before benchmarking, or the
+numbers reflect the governor, not the code (see
+<code>orangu-server</code>’s startup power-state advisory).</li>
+<li>The tool disables prompt caching (<code>cache_prompt: false</code>)
+so each run re-establishes its context rather than reusing a cached
+prefix.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

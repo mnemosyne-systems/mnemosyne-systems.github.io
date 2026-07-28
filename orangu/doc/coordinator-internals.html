@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coordinator Internals — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html" class="active">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#coordinator-internals"
+id="toc-coordinator-internals">Coordinator internals</a></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1>Coordinator Internals</h1>
+<h2 id="coordinator-internals">Coordinator internals</h2>
+<p><code>orangu-coordinator</code>
+(<code>src/bin/orangu-coordinator/</code>) is a second binary in the
+same Cargo package as <code>orangu</code>, built around a single
+invariant: <strong>at most one <code>orangu-server</code> child process
+is alive at any time.</strong></p>
+<p>Everything else — the HTTP proxy, the self-identification endpoint,
+the pre-warming hint, client-side integration in <code>orangu</code>
+itself — exists to make swapping that one process safe and (mostly)
+transparent.</p>
+<h3 id="architecture">Architecture</h3>
+<p><code>process::Coordinator</code>
+(<code>src/bin/orangu-coordinator/process.rs</code>) owns:</p>
+<ul>
+<li><code>config: CoordinatorConfiguration</code> — the parsed
+<code>orangu-coordinator.conf</code>, keyed by profile name, each a
+<code>CoordinatorLlmEntry { name, role, model, host, port, backend, slots, web }</code>
+— every field an explicit, individually- parsed config key
+(<code>config.rs</code>’s <code>parse_llm_profiles</code>);
+<code>role</code> is validated against <code>role_server_flag</code> at
+load time, since it has to map to one of <code>orangu-server</code>’s
+own
+<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/
+<code>--embedding</code> flags for the profile to be startable at
+all.</li>
+<li><code>active: Mutex&lt;Option&lt;ActiveProcess&gt;&gt;</code> — the
+currently running process, if any, plus its rolling output tail
+(<code>OutputTail = Arc&lt;Mutex&lt;VecDeque&lt;String&gt;&gt;&gt;</code>,
+capped at 20 lines) kept for the process’s whole lifetime, not just
+while starting.</li>
+<li><code>current_pid: AtomicU32</code> — set the instant a process is
+spawned, <em>before</em> its health check even begins, and cleared once
+it’s known to have stopped. <code>active</code> is held locked for an
+entire start sequence (which can take up to
+<code>startup_timeout</code>); <code>shutdown()</code> must not have to
+wait on that same lock just to kill a still-starting process, so the PID
+is tracked separately and only ever locked briefly.</li>
+<li><code>http_client: reqwest::Client</code> — shared by both the
+health-check probe and request forwarding, with <strong>no default
+timeout</strong>. This client is used to proxy real, potentially
+long-running generation requests; only the internal
+<code>GET /v1/models</code> health-check applies its own short, explicit
+per-request timeout (<code>HEALTH_CHECK_TIMEOUT</code>, 5s). Giving the
+whole client a default timeout instead was a real bug: any generation
+slower than it got its connection torn down mid-stream, surfacing to the
+caller as a bare “unexpected EOF during chunk size line” rather than a
+clear error.</li>
+<li><code>server_binary_override: Option&lt;PathBuf&gt;</code> — which
+<code>orangu-server</code> executable to spawn, read once by
+<code>main</code> from <code>ORANGU_COORDINATOR_SERVER_BIN</code> at
+startup (never re-read per spawn, and never a bare env lookup inside
+<code>start</code> itself — this also lets tests inject a stand-in
+executable deterministically without racing parallel test threads over a
+shared process-wide environment variable). <code>None</code> falls back
+to <code>Coordinator::resolve_server_binary</code>’s
+sibling-binary/<code>PATH</code> search.</li>
+</ul>
+<h3 id="file-lifecycle-endpoints">File-lifecycle endpoints</h3>
+<p>Nothing in the coordinator handles these: <code>orangu-server</code>
+mounts them (<code>orangu::files_http::router</code>, over the shared
+<code>orangu::files</code> implementation), and the coordinator forwards
+them through <code>proxy::proxy</code> like any other path.
+<code>implied_role_for_path</code> returns <code>None</code> for them —
+only <code>/v1/embeddings</code> has a role baked into its path — so
+they resolve to the currently active profile, then <code>all</code>.</p>
+<p>Deliberately not handled locally, even though the operations are
+available to the coordinator as a library: it has no workspace to act
+in. Giving it one would mean two workspaces in one deployment (the
+coordinator’s and each backend’s) and a client unable to tell which one
+a request reached. The proxy stays a proxy.</p>
+<h3 id="get-v1coordinator"><code>GET /v1/coordinator</code></h3>
+<p>A fixed, side-effect-free identity marker
+(<code>proxy::coordinator_info</code>), answered directly and never
+proxied — it must work even before any profile has been activated.
+Neither <code>orangu-server</code> nor a generic OpenAI-compatible
+server exposes this path, so a client can probe it to tell the three
+apart:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;orangu_coordinator&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;0.12.0&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;models&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;all&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;review&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;explorer&quot;</span><span class="fu">:</span> <span class="st">&quot;unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;embeddings&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>models</code> reports what
+<code>CoordinatorConfiguration::models_by_role</code> resolves each
+conventional role to — a role with no profile of its own falls back to
+the <code>all</code>-role default’s model. <code>orangu</code>’s side of
+this lives in <code>src/llm/coordinator.rs</code>:
+<code>probe_coordinator</code> does the GET and parses the body,
+returning <code>Option&lt;Vec&lt;String&gt;&gt;</code>
+(<code>Some</code> only when <code>orangu_coordinator</code> is
+<code>true</code>). It’s shared library code (not bin-specific) because
+both the <code>orangu</code> binary’s per-cycle header-status probe and
+library code with no <code>HeaderStatus</code> of its own (the explorer
+subagent, which reloads its own config from disk) need it.</p>
+<h3
+id="post-v1coordinatoractivate"><code>POST /v1/coordinator/activate</code></h3>
+<p>A pre-warming hint (<code>proxy::activate</code>) a caller can send
+<em>before</em> the request that actually needs a model.
+<code>model</code> is matched exactly like ordinary routing (see below).
+Critically, the swap is <strong>spawned detached and not
+awaited</strong> — the handler resolves the target entry,
+<code>tokio::spawn</code>s <code>ensure_active</code> on it, and returns
+<code>202 Accepted</code> immediately. This must work this way: the
+whole point is to start the swap ahead of the real request, so it has to
+survive the caller disconnecting early or never reading the response,
+and it must never itself block on a slow cold load.</p>
+<p>Unlike ordinary routing, an unmatched <code>model</code> here is a
+<code>404</code>, not a silent fallback to <code>all</code> or
+“currently active”: those fallbacks exist so a request that must be
+answered <em>somehow</em> always is, but an explicit “activate X” call
+has no such obligation — silently activating the wrong thing would be
+worse than saying so (<code>Coordinator::match_hint</code>, which does
+only the model-id/role match, with none of <code>select_entry</code>’s
+further fallback steps).</p>
+<p><code>orangu</code> fires this hint from
+<code>spawn_coordinator_activation_hint</code>
+(<code>src/bin/orangu/models.rs</code>) at the start of
+<code>/review</code>/<code>/auto_review</code>, naming the
+<code>review</code> role, so cold-load latency is hidden behind local
+work (diff collection, the auto-review prestart screen) instead of
+stalling the first real request. It’s fire-and-forget from
+<code>orangu</code>’s side too: any failure is ignored, since the real
+request that follows triggers the same swap on its own if the hint
+didn’t get there first.</p>
+<h3 id="request-routing-select_entry">Request routing:
+<code>select_entry</code></h3>
+<p>Every other endpoint goes through <code>proxy::proxy</code>, which
+extracts the JSON body’s <code>model</code> field
+(<code>extract_model_field</code>) and the path-implied role
+(<code>implied_role_for_path</code> — currently only
+<code>/v1/embeddings</code> implies <code>embeddings</code>), then calls
+<code>Coordinator::resolve_entry</code>, which delegates to the pure,
+unit-tested <code>select_entry</code> (<code>process.rs</code>):</p>
+<ol type="1">
+<li>If a <code>model</code> field was given, match it against a
+profile’s real model id first, then its <code>role</code> name
+(<code>match_hint</code>). Ties (more than one profile sharing a model
+or role) resolve to the lexicographically smallest profile name, so the
+choice is deterministic rather than depending on <code>HashMap</code>
+iteration order.</li>
+<li>If a <code>model</code> field was given but matched nothing, try the
+path-implied role; failing that, go <strong>straight to the
+<code>all</code> default</strong> — not to “currently active”. An
+explicit-but-unmatched hint is a deliberate request for something
+specific; silently substituting whatever unrelated role a prior request
+left running would be surprising and non-deterministic.</li>
+<li>If <em>no</em> <code>model</code> field was given at all (bodyless
+requests: <code>/health</code>, <code>/props</code>,
+<code>/v1/models</code>, <code>/slots</code>, <code>/metrics</code>),
+fall back to whichever profile is currently active — this is what lets
+those report on what’s actually running rather than forcing a swap — and
+only fall back further to <code>all</code> when nothing is active
+yet.</li>
+</ol>
+<p>Once an entry is chosen, <code>ensure_active</code> (also
+<code>process.rs</code>) does the actual lifecycle work: if it’s already
+the active entry and its process is still alive (checked via
+<code>try_wait</code>), reuse it; otherwise stop whatever’s running
+(clearing <code>current_pid</code> <em>before</em> reaping, so a
+concurrent <code>shutdown</code> never targets a stale,
+possibly-recycled PID) and <code>start</code> the requested entry —
+write that profile’s own generated <code>orangu-server.conf</code>
+(<code>~/.orangu/coordinator/servers/&lt;name&gt;.conf</code>, carrying
+<code>models</code>/<code>host</code>/ <code>port</code> and whichever
+of <code>backend</code>/<code>slots</code>/<code>web</code> were set),
+resolve which <code>orangu-server</code> executable to run
+(<code>resolve_server_binary</code>), spawn it with
+<code>--config &lt;that path&gt; &lt;role flag&gt; &lt;model&gt;</code>,
+piped stdout/stderr captured into the rolling tail, record
+<code>current_pid</code> immediately (before the possibly-long health
+check), then poll <code>GET /v1/models</code> on the new origin every
+500ms until it succeeds or <code>startup_timeout</code> elapses. Only
+<em>then</em> does <code>proxy</code> forward the original request —
+headers (minus hop-by-hop ones), method, and body unchanged — and stream
+the response back.</p>
+<p>Unlike a shell-command-line design, <code>start</code> never parses a
+shell command line at all: every argument it passes is either a config
+value validated at load time or a path it generated itself, so there’s
+no argv-scraping, no
+leading-<code>KEY=VALUE</code>-environment-assignment convention, and no
+manual <code>~</code> expansion left to reproduce —
+<code>orangu-server</code> being a sibling process built from the same
+source, not an independently-installed external tool, is what makes this
+simplification possible.</p>
+<h3 id="crash-diagnostics">Crash diagnostics</h3>
+<p>If a profile’s <code>orangu-server</code> exits before answering
+<code>GET /v1/models</code>, or dies later while actively serving
+requests (mid-generation, discovered lazily the next time
+<code>ensure_active</code> reuses that entry and finds
+<code>try_wait</code> returning <code>Some</code>), the coordinator logs
+a warning (unless <code>--quiet</code>) with the exit status and the
+last 20 captured lines of stdout/stderr, then restarts it before serving
+whatever triggered the check. A crash mid-stream still surfaces to the
+<em>client</em> as a broken connection (an already-started 200 response
+can’t be retroactively turned into an error), but the coordinator’s own
+console now always has the actual reason logged.</p>
+<h3 id="client-side-integration-orangu">Client-side integration
+(<code>orangu</code>)</h3>
+<p>Everything above assumes <code>orangu</code> cooperates by sending
+the right <code>model</code> field per request type, and by not treating
+the coordinator like an ordinary server. The relevant pieces, all gated
+on a per-connection
+<code>is_active_connection_a_coordinator</code>/<code>header_status.is_coordinator</code>
+check (<code>src/bin/orangu/models.rs</code>,
+<code>src/bin/orangu/main.rs</code>):</p>
+<ul>
+<li><strong>Role overrides.</strong> <code>review_prompt_profile</code>
+(review/auto-review, via the shared
+<code>coordinator_role_profile</code> helper),
+<code>explorer_target_profile</code> (<code>src/explorer.rs</code>),
+<code>detect_embeddings_server</code>, and the plain-chat path in
+<code>main.rs</code> all skip <code>orangu.conf</code>’s own
+<code>role</code>/<code>model</code> resolution entirely once a
+coordinator is confirmed, forcing <code>.model</code> to the
+conventional role name (<code>review</code>, <code>explorer</code>,
+<code>embeddings</code>, <code>code</code>) on whichever connection is
+already active.</li>
+<li><strong>Startup/<code>/server</code> auto-detection is
+skipped.</strong> <code>try_startup_model_switch</code> (which otherwise
+probes <code>/v1/models</code> and reassigns the pinned model id to
+whatever a server advertises) never runs behind a confirmed coordinator
+— there’s nothing meaningful to detect when the coordinator alone
+decides.</li>
+<li><strong>Display.</strong>
+<code>orangu::tui::display_model_name(is_coordinator, model_id)</code>
+returns <code>"Automatic"</code> instead of the wire model id;
+<code>render_screen</code> computes this once and reuses it for both the
+header banner and the status line, and the two <code>ReviewChrome</code>
+construction sites in <code>main.rs</code> apply it directly since the
+review screens carry no <code>HeaderStatus</code> of their own.</li>
+<li><strong>Embeddings re-detection.</strong> Because role selection no
+longer depends on a fixed <code>orangu.conf</code> section,
+<code>/server</code>/<code>/reload</code> re-runs
+<code>detect_embeddings_server</code> against whichever connection just
+became active, so switching to (or away from) a coordinator mid-session
+re-evaluates semantic <code>/search</code> availability instead of
+leaving it fixed at whatever was true at launch.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

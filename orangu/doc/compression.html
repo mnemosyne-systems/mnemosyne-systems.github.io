@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compression — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html" class="active">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#compression" id="toc-compression">Compression</a></li>
+<li><a href="#goals" id="toc-goals">Goals</a></li>
+<li><a href="#design" id="toc-design">Design</a></li>
+<li><a href="#features" id="toc-features">Features</a></li>
+<li><a href="#implementation"
+id="toc-implementation">Implementation</a></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1>Compression</h1>
+<h2 id="compression">Compression</h2>
+<p><code>orangu</code> has a built-in compression layer for reducing
+repeated or noisy tool output before it is sent back to the model.</p>
+<h2 id="goals">Goals</h2>
+<p>The goals are:</p>
+<ul>
+<li>Avoid resending unchanged file content</li>
+<li>Reduce noisy shell output</li>
+<li>Preserve the lines most useful to the model</li>
+<li>Improve context efficiency without adding an external runtime
+dependency</li>
+</ul>
+<h2 id="design">Design</h2>
+<p>Compression is implemented natively inside orangu.</p>
+<p>It currently sits on the model-facing tool boundary: tool output is
+shortened or replaced only when orangu can do so deterministically.</p>
+<p>This means it currently applies to the tool results sent back to the
+model, as well as the context populated by native user commands. For
+example, <code>/show_file</code>, <code>/diff</code>, and
+<code>/show</code> render their output directly to the user in full, but
+they queue their content locally. When the LLM is actually called, this
+queued context is then compressed and injected into the active session.
+This ensures we only compress and transmit data when the model’s
+reasoning is actively requested.</p>
+<p>The setting is controlled by:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">compression </span><span class="ot">=</span><span class="st"> </span><span class="kw">on</span></span></code></pre></div>
+<p>The default is <code>on</code>.</p>
+<p>Accepted values are: <code>on</code>, <code>true</code>,
+<code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code>.</p>
+<p>When it is <code>off</code>, orangu returns the raw output.</p>
+<h2 id="features">Features</h2>
+<p>Compression currently affects two model-facing tools, as well as the
+LLM context populated by native commands.</p>
+<p>While native commands like <code>/show_file</code>,
+<code>/diff</code>, and <code>/show</code> continue to display their
+full, uncompressed output directly to the user, they now automatically
+compress their payload when injecting it into the model’s context. This
+lets the LLM follow along with your local investigation without flooding
+its context window.</p>
+<h3 id="show_file"><code>show_file</code></h3>
+<p>When the model asks for the same whole file again, and the file is
+unchanged, orangu may return a cache stub instead of resending the full
+file content. This context cache is <strong>per session</strong>, so you
+do not waste tokens re-reading unmodified files.</p>
+<p>This applies only to repeated whole-file reads. Line-range reads
+still return the requested lines normally.</p>
+<p>Additionally, <code>show_file</code> supports <strong>structural read
+modes</strong> to grab a high-level understanding of large files without
+reading their full bodies: - <code>signatures</code>: Extracts only the
+public interfaces (functions, structs) while stripping private bodies. -
+<code>map</code>: Extracts top-level item declarations for an
+overview.</p>
+<p>Additionally, orangu employs <strong>AST-Aware
+Auto-Downsampling</strong>: if the model requests a read of a file
+exceeding a certain length without specifying bounding lines, orangu
+will automatically downsample the read into <code>signatures</code> mode
+to prevent the context window from being flooded with massive file
+bodies. The threshold is controlled by the
+<code>auto_downsample_lines</code> setting in <code>[orangu]</code>
+(default: 300).</p>
+<h3 id="run_shell_command"><code>run_shell_command</code></h3>
+<p>For recognized high-volume commands, orangu compresses noisy output
+before the usual output truncation is applied. Command wrappers and
+prefixes like <code>time</code> or <code>CARGO_TERM_COLOR=always</code>
+are stripped transparently before matching.</p>
+<p>Current patterns include:</p>
+<ul>
+<li><strong>Rust:</strong> <code>cargo build</code>,
+<code>cargo check</code>, <code>cargo test</code></li>
+<li><strong>C / C++:</strong> <code>make</code>, <code>cmake</code>,
+<code>gcc</code>, <code>clang</code></li>
+<li><strong>Python:</strong> <code>pytest</code>,
+<code>python -m unittest</code></li>
+<li><strong>Node:</strong> <code>npm test</code>, <code>jest</code>,
+<code>yarn test</code></li>
+<li><strong>Java:</strong> <code>mvn test</code>,
+<code>gradle test</code></li>
+<li><strong>Version Control:</strong> <code>git log</code>,
+<code>git diff</code>, <code>git show</code></li>
+<li><strong>System:</strong> Directory listings (<code>ls</code>,
+<code>find</code>), Search outputs (<code>rg</code>,
+<code>grep</code>)</li>
+<li><strong>Package Managers:</strong> <code>npm install</code>,
+<code>yarn</code>, <code>pip install</code></li>
+</ul>
+<h3
+id="hot-line-context-extractor-disk-diversion-generic-fallback">Hot-Line
+Context Extractor &amp; Disk Diversion (Generic Fallback)</h3>
+<p>For any unrecognised or extremely large generic output (e.g., custom
+shell scripts or Makefiles), orangu uses a sophisticated “Hot-Line
+Context Extractor”. Instead of blindly truncating the middle of a log,
+it scans for universal failure markers (<code>error:</code>,
+<code>Exception</code>, <code>Traceback</code>, <code>panic:</code>,
+etc.) and perfectly preserves those specific lines along with their
+surrounding context (+/- 3 lines). All surrounding noise is dynamically
+collapsed. This ensures the LLM never misses a stack trace, regardless
+of the language.</p>
+<p><strong>Reverse Compression (Context Expansion):</strong> As an
+absolute safety net, whenever <em>any</em> massive blob of text (a giant
+diff, a massive file read, or a huge shell output) is severely
+truncated, <code>orangu</code> automatically persists the original
+uncompressed text to a session-scoped disk cache using a SHA-256 hash.
+It injects a tiny marker into the LLM’s prompt (e.g.,
+<code>[Note: Output truncated. Run expand_context(id="abc1234567")]</code>).
+This grants the LLM the ability to dynamically “reverse” the compression
+and retrieve the exact missing data on demand using the
+<code>expand_context</code> tool. ### Advanced Diff Engine</p>
+<p>When processing <code>git diff</code> outputs, orangu bypasses raw
+text truncation and uses a structured AST diff parser: - <strong>File
+Capping:</strong> Preserves only the top most changed files. The limit
+is controlled by the <code>diff_file_cap</code> setting in
+<code>[orangu]</code> (default: 20). - <strong>Context
+Trimming:</strong> Squeezes unchanged lines surrounding additions and
+deletions down to exactly 2 lines. - <strong>Intelligent Hunk
+Scoring:</strong> Scores diff hunks based on line density and priority
+keywords (e.g., <code>error</code>, <code>panic</code>,
+<code>secret</code>), preserving only the most highly-scored blocks.</p>
+<h3 id="arraylog-anchor-selector">Array/Log Anchor Selector</h3>
+<p>For raw shell outputs, if orangu detects a massive JSON array or
+highly repetitive log lines (determined by matching line prefixes), it
+activates an Anchor Selector. This perfectly preserves the first 3 lines
+and the last 3 lines while dynamically dropping the massive middle
+section.</p>
+<h3 id="secret-aware-filtering">Secret-Aware Filtering</h3>
+<p>All strings processed by orangu (file reads, shell outputs) undergo a
+fast regex redaction pass that scrubs hardcoded API keys (e.g.,
+Anthropic, AWS, GitHub tokens), replacing them with
+<code>[REDACTED_SECRET]</code> before the LLM can read them.</p>
+<h3 id="transcript-compaction-live-zone">Transcript Compaction (Live
+Zone)</h3>
+<p>Orangu continuously grooms the active conversation transcript. Right
+before sending a prompt to the LLM, it scans backwards and permanently
+evicts massive tool outputs (like 10,000-line shell errors) that are
+older than 3 user turns, replacing them with a tiny stub. This
+guarantees the context window never permanently fills up with dead tool
+artifacts.</p>
+<h3 id="metrics-usage">Metrics &amp; <code>/usage</code></h3>
+<p>You can monitor the effectiveness of the compression layer by running
+the <code>/usage</code> command during your session. It displays
+real-time metrics including total file reads, cache hits/misses, bytes
+saved by the context cache, and lines stripped by shell compression.</p>
+<h2 id="implementation">Implementation</h2>
+<p>The current implementation is a v1.</p>
+<p>It provides:</p>
+<ul>
+<li>Repeated unchanged whole-file <code>show_file</code>
+suppression</li>
+<li>Per-session file caching</li>
+<li>Structural read modes (<code>signatures</code> and
+<code>map</code>)</li>
+<li>Shell output compression for common noisy commands</li>
+<li>Tracking metrics exposed via <code>/usage</code></li>
+<li>Native command integration (e.g., <code>/show_file</code>,
+<code>/diff</code>, <code>/show</code>) sending compressed context to
+the LLM</li>
+<li>A single config switch for enabling or disabling the behavior</li>
+<li>Transcript compaction and tool-output eviction (Live Zone)</li>
+<li>Advanced structural diff compression (File Capping, Context
+Trimming, Hunk Scoring)</li>
+<li>Secret-aware token scrubbing</li>
+<li>Anchor selection for arrays and repetitive logs</li>
+</ul>
+<p>The current design intentionally separates user display from model
+context: native tools show full content to the user while sending
+compressed summaries to the model upon LLM query.</p>
+<p>It does not yet provide:</p>
+<ul>
+<li>Adaptive learning of which compression heuristics fail most
+often</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

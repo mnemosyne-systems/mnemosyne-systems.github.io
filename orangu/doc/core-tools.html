@@ -42,49 +42,74 @@
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
-        <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="workspaces.html">Workspaces</a></li>
-        <li><a href="skills.html">Skills</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html" class="active">Core Tools</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
-      <ul>
-      <li><a href="#core-tools">Core tools</a>
-      <ul>
-      <li><a href="#help">/help</a></li>
-      <li><a href="#skills">/skills</a></li>
-      <li><a href="#tools">/tools</a></li>
-      <li><a href="#model">/model</a></li>
-      <li><a href="#server">/server</a></li>
-      <li><a href="#information">/information</a></li>
-      <li><a href="#disconnect">/disconnect</a></li>
-      <li><a href="#reload">/reload</a></li>
-      <li><a href="#restart">/restart</a></li>
-      <li><a href="#prune">/prune</a></li>
-      <li><a href="#session">/session</a></li>
-      <li><a href="#list_files">/list_files</a></li>
-      <li><a href="#open_file">/open_file</a></li>
-      <li><a href="#show_file">/show_file</a></li>
-      <li><a href="#build">/build</a></li>
-      <li><a href="#shell">/shell</a></li>
-      <li><a href="#review">/review</a></li>
-      <li><a href="#auto_review">/auto_review</a></li>
-      <li><a href="#duplicates">/duplicates</a></li>
-      <li><a href="#export">/export</a></li>
-      <li><a href="#graph">/graph</a></li>
-      <li><a href="#search">/search</a></li>
-      </ul></li>
-      </ul>
+<ul>
+<li><a href="#core-tools" id="toc-core-tools">Core tools</a>
+<ul>
+<li><a href="#help" id="toc-help">/help</a></li>
+<li><a href="#skills" id="toc-skills">/skills</a></li>
+<li><a href="#tools" id="toc-tools">/tools</a></li>
+<li><a href="#model" id="toc-model">/model</a></li>
+<li><a href="#server" id="toc-server">/server</a></li>
+<li><a href="#theme" id="toc-theme">/theme</a></li>
+<li><a href="#information" id="toc-information">/information</a></li>
+<li><a href="#statistics" id="toc-statistics">/statistics</a></li>
+<li><a href="#schedule" id="toc-schedule">/schedule</a></li>
+<li><a href="#disconnect" id="toc-disconnect">/disconnect</a></li>
+<li><a href="#reload" id="toc-reload">/reload</a></li>
+<li><a href="#restart" id="toc-restart">/restart</a></li>
+<li><a href="#prune" id="toc-prune">/prune</a></li>
+<li><a href="#session" id="toc-session">/session</a></li>
+<li><a href="#list_files" id="toc-list_files">/list_files</a></li>
+<li><a href="#open_file" id="toc-open_file">/open_file</a></li>
+<li><a href="#show_file" id="toc-show_file">/show_file</a></li>
+<li><a href="#build" id="toc-build">/build</a></li>
+<li><a href="#shell" id="toc-shell">/shell</a></li>
+<li><a href="#review" id="toc-review">/review</a></li>
+<li><a href="#auto_review" id="toc-auto_review">/auto_review</a></li>
+<li><a href="#duplicates" id="toc-duplicates">/duplicates</a></li>
+<li><a href="#export" id="toc-export">/export</a></li>
+<li><a href="#graph" id="toc-graph">/graph</a></li>
+<li><a href="#search" id="toc-search">/search</a></li>
+</ul></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -99,11 +124,22 @@
 
   <main class="doc-content">
 <h1 id="core-tools">Core tools</h1>
-<p>The core tools are the local slash commands that drive the client itself — discovering commands, switching server and model, managing sessions, browsing the workspace, building the project, and reviewing changes. They are handled locally and are never sent to the model, so they keep working even when the server or model status in the header is red.</p>
-<p>Every command below also accepts the natural-language aliases listed in its <strong>Examples</strong>; the recognized phrases are matched only for these built-in commands, and any other input is sent to the model as an ordinary prompt.</p>
+<p>The core tools are the local slash commands that drive the client
+itself — discovering commands, switching server and model, managing
+sessions, browsing the workspace, building the project, and reviewing
+changes. They are handled locally and are never sent to the model, so
+they keep working even when the server or model status in the header is
+red.</p>
+<p>Every command below also accepts the natural-language aliases listed
+in its <strong>Examples</strong>; the recognized phrases are matched
+only for these built-in commands, and any other input is sent to the
+model as an ordinary prompt.</p>
 <h2 id="help">/help</h2>
-<p>Shows the list of available commands with a one-line description of each, grouped the same way as in this manual.</p>
-<p>It is the fastest way to rediscover a command name or its arguments without leaving the prompt, and it works regardless of server or model state.</p>
+<p>Shows the list of available commands with a one-line description of
+each, grouped the same way as in this manual.</p>
+<p>It is the fastest way to rediscover a command name or its arguments
+without leaving the prompt, and it works regardless of server or model
+state.</p>
 <h3 id="examples">Examples</h3>
 <pre class="text"><code>/help</code></pre>
 <p>Natural-language forms:</p>
@@ -113,15 +149,35 @@ show commands
 show available commands</code></pre>
 <h2 id="skills">/skills</h2>
 <p>Lists the discovered Agent Skills.</p>
-<p>Each line shows the slash command name, the skill description, and whether the skill came from the project or the user scope. Skills are discovered from <code>~/.orangu/skills/</code>, <code>~/.agents/skills/</code>, <code>&lt;workspace&gt;/.orangu/skills/</code>, and <code>&lt;workspace&gt;/.agents/skills/</code>, with project skills overriding user skills that share the same name.</p>
-<p>Invoke a listed skill directly with <code>/skill-name</code>. When a skill is invoked, orangu injects the skill instructions into the next model request in a structured wrapper that also identifies the skill directory and any bundled resource files.</p>
+<p>Each line shows the slash command name, the skill description, and
+whether the skill came from the project or the user scope. Skills are
+discovered from <code>~/.orangu/skills/</code>,
+<code>~/.agents/skills/</code>,
+<code>&lt;workspace&gt;/.orangu/skills/</code>, and
+<code>&lt;workspace&gt;/.agents/skills/</code>, with project skills
+overriding user skills that share the same name.</p>
+<p>Invoke a listed skill directly with <code>/skill-name</code>. When a
+skill is invoked, orangu injects the skill instructions into the next
+model request in a structured wrapper that also identifies the skill
+directory and any bundled resource files.</p>
 <h3 id="examples-1">Examples</h3>
 <pre class="text"><code>/skills</code></pre>
 <p>Invoke the bundled debugging skill:</p>
 <pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
 <h2 id="tools">/tools</h2>
-<p>Lists the model-facing workspace tools — <code>read_file</code>, <code>edit_file</code>, <code>list_directory</code>, <code>fetch_url</code>, and <code>run_shell_command</code> — that the active model may call. These are the tools described in the Tools chapter and are distinct from the local slash commands documented here.</p>
-<p><code>/tools</code> is purely informational: it shows what the model is able to do in the current workspace, not what you can type at the prompt. In particular it is separate from the local <code>/list_files</code> convenience command.</p>
+<p>Lists the model-facing workspace tools — the file-lifecycle eight
+(<code>show_file</code>, <code>create_file</code>,
+<code>modify_file</code>, <code>move_file</code>,
+<code>delete_file</code>, <code>create_directory</code>,
+<code>move_directory</code>, <code>delete_directory</code>), plus
+<code>list_directory</code>, <code>fetch_url</code>, and
+<code>run_shell_command</code> — that the active model may call. These
+are the tools described in the Tools chapter and are distinct from the
+local slash commands documented here.</p>
+<p><code>/tools</code> is purely informational: it shows what the model
+is able to do in the current workspace, not what you can type at the
+prompt. In particular it is separate from the local
+<code>/list_files</code> convenience command.</p>
 <h3 id="examples-2">Examples</h3>
 <pre class="text"><code>/tools</code></pre>
 <p>Natural-language forms:</p>
@@ -131,7 +187,10 @@ list tools
 show local tools</code></pre>
 <h2 id="model">/model</h2>
 <p>Selects the model used for requests on the active server.</p>
-<p>With no argument it lists the selected server's models, with the active model shown in green and the others in red. With a name it switches to that model. Pressing <code>Tab</code> after <code>/model</code> cycles through the models the server reports.</p>
+<p>With no argument it lists the selected server’s models, with the
+active model shown in green and the others in red. With a name it
+switches to that model. Pressing <code>Tab</code> after
+<code>/model</code> cycles through the models the server reports.</p>
 <h3 id="examples-3">Examples</h3>
 <p>List the available models:</p>
 <pre class="text"><code>/model</code></pre>
@@ -154,7 +213,13 @@ set model to llama3.1:8b
 select model llama3.1:8b</code></pre>
 <h2 id="server">/server</h2>
 <p>Selects the server <code>orangu</code> talks to.</p>
-<p>With no argument it lists the configured servers — each <code>[section]</code> in the configuration file identified as a server — with the active one in green and the others in red. With a name it switches to that server and re-detects an available model on it, so the model status in the header is refreshed automatically. Pressing <code>Tab</code> after <code>/server</code> cycles through the configured server names.</p>
+<p>With no argument it lists the configured servers — each
+<code>[section]</code> in the configuration file identified as a server
+— with the active one in green and the others in red. With a name it
+switches to that server and re-detects an available model on it, so the
+model status in the header is refreshed automatically. Pressing
+<code>Tab</code> after <code>/server</code> cycles through the
+configured server names.</p>
 <h3 id="examples-4">Examples</h3>
 <p>List the configured servers:</p>
 <pre class="text"><code>/server</code></pre>
@@ -165,68 +230,343 @@ select model llama3.1:8b</code></pre>
 switch server to local-llama
 set server to local-llama
 select server local-llama</code></pre>
+<h2 id="theme">/theme</h2>
+<p>Selects the UI theme for the current session.</p>
+<p>Built-in themes are shipped inside the binary: <code>classic</code>,
+<code>modern_dark</code>, <code>modern_light</code>,
+<code>oranguday</code>, <code>tokyonight</code>, and
+<code>rosepine-moon</code> (<code>modern</code> is a short name for
+<code>modern_dark</code>). The <code>random</code> selector draws one of
+the available themes when applied and holds it for the rest of the
+run.</p>
+<p>Custom themes can be placed in:</p>
+<pre class="text"><code>~/.orangu/themes/&lt;name&gt;.theme</code></pre>
+<p>With a theme name, <code>/theme</code> applies it immediately and
+writes a session override to:</p>
+<pre class="text"><code>~/.orangu/sessions/&lt;UUID&gt;/theme</code></pre>
+<p>That override is restored when the session is resumed or when you
+switch back to that workspace tab. Naming the theme
+<code>orangu.conf</code> already asks for drops the override instead of
+pinning a copy of it, so the session goes back to following the global
+<code>[orangu].theme</code>.</p>
+<p>Pressing <code>Tab</code> after <code>/theme</code> completes the
+built-in themes, <code>random</code>, and any user theme files found in
+<code>~/.orangu/themes/</code>.</p>
+<h3 id="examples-5">Examples</h3>
+<pre class="text"><code>/theme classic
+/theme tokyonight
+/theme modern_light
+/theme random</code></pre>
 <h2 id="information">/information</h2>
-<p>Reports everything <code>orangu</code> can learn about the active server: every OpenAI-compatible endpoint orangu itself talks to (<code>/v1/models</code>, <code>/v1/chat/completions</code>, <code>/v1/embeddings</code>), plus whatever llama.cpp-native endpoints it exposes. It is handled entirely locally, needs no arguments, and never sends anything to the model.</p>
-<p><code>/information</code> probes each capability independently — a plain OpenAI-compatible server (which has no llama.cpp-native endpoints) still gets a full report, just with those rows marked unavailable rather than the whole command failing. The result is a table, one row per capability, with a green dot for a capability that is available and enabled and a red dot for one that is not:</p>
-<p>Most probes are side-effect-free <code>GET</code> requests, so they run unconditionally. <code>/v1/chat/completions</code> is the one exception — it only accepts real generation requests — so it is only actually sent on a local llama.cpp server; on a hosted API it is not sent, to avoid a needless (potentially billed) request (see the <code>/v1/chat/completions</code> row below).</p>
+<p>Reports everything <code>orangu</code> can learn about the active
+server: every OpenAI-compatible endpoint orangu itself talks to
+(<code>/v1/models</code>, <code>/v1/chat/completions</code>,
+<code>/v1/embeddings</code>), plus whatever native endpoints it exposes.
+It is handled entirely locally, needs no arguments, and never sends
+anything to the model.</p>
+<p><code>/information</code> probes each capability independently — a
+plain OpenAI-compatible server (which has no native endpoints) still
+gets a full report, just with those rows marked unavailable rather than
+the whole command failing. The result is a table, one row per
+capability, with a green dot for a capability that is available and
+enabled and a red dot for one that is not (shown below as
+<code>x</code>, since this static example cannot render color):</p>
+<p>Most probes are side-effect-free <code>GET</code> requests, so they
+run unconditionally. <code>/v1/chat/completions</code> is the one
+exception — it only accepts real generation requests — so it is only
+actually sent on a local orangu-server; on a hosted API it is not sent,
+to avoid a needless (potentially billed) request (see the
+<code>/v1/chat/completions</code> row below).</p>
 <pre class="text"><code>Server  main-server
 Model   ggml-org/gemma-4-E4B-it-GGUF
+Graph   Complete
 
 STATUS  API        ENDPOINT              DETAILS
 ●       OpenAI     /v1/models            ggml-org/gemma-4-E4B-it-GGUF
 ●       OpenAI     /v1/chat/completions  Ok
-✗       OpenAI     /v1/embeddings        Not available
-●       llama.cpp  /health               Ok
-●       llama.cpp  /props                n_ctx=32768 n_predict=-1 total_slots=1 temperature=0.8 top_k=40 top_p=0.95 model_path=/models/gemma.gguf bos_token=&lt;bos&gt; eos_token=&lt;eos&gt; build=b4200-abc1234 chat_template=yes
-✗       llama.cpp  /slots                Not available
-✗       llama.cpp  /metrics              Not available</code></pre>
+x       OpenAI     /v1/embeddings        Not available
+●       orangu-server  /health               Ok
+●       orangu-server  /props                n_ctx=32768 n_predict=-1 total_slots=1 temperature=0.8 top_k=40 top_p=0.95 model_path=/models/gemma.gguf bos_token=&lt;bos&gt; eos_token=&lt;eos&gt; build=b4200-abc1234 chat_template=yes
+x       orangu-server  /slots                Not available
+x       orangu-server  /metrics              Not available</code></pre>
+<p>The header table’s third line, <strong><code>Graph</code></strong>,
+is not a probed capability — it is the local workspace’s background
+knowledge-graph scan status (the same one Deep <code>/auto_review</code>
+and <code>graph_lookup</code> depend on): <code>Building</code> while
+the scan is still running, <code>Complete</code> once it has finished,
+<code>None</code> if the scan task itself failed.</p>
 <p>Each row:</p>
 <ul>
-<li><strong><code>/v1/models</code></strong> — the standard OpenAI model listing, the same request <code>/model</code> and startup detection use; the details column lists every advertised model id, comma-separated (a single advertised model is shown bare, with no count prefix).</li>
-<li><strong><code>/v1/chat/completions</code></strong> — the endpoint every prompt and tool round-trip actually goes through. On a local llama.cpp server (<code>provider = llama.cpp</code>) a real generation costs nothing worth avoiding, so <code>/information</code> actually sends one: a minimal, non-streaming request capped at a single response token (<code>ggml-org/gemma-4-E4B-it-GGUF</code>'s row above shows this). On any other provider — potentially a hosted, billed API — it is not sent a real request; its availability is instead inferred from <code>/v1/models</code>, since any server that speaks the OpenAI protocol well enough to list models is expected to serve chat completions too.</li>
-<li><strong><code>/v1/embeddings</code></strong> — likewise never sent a real request; this row reflects whether the active server is the one <code>orangu</code> already detected at startup as embeddings-capable (the same detection <code>/search</code> relies on — see the <code>role = embeddings</code> configuration option).</li>
-<li><strong><code>/health</code></strong> — a llama.cpp health check; the details column shows the server's reported <code>status</code> (<code>Ok</code>, <code>Loading model</code>, …, capitalized) when present.</li>
-<li><strong><code>/props</code></strong> — the closest thing llama.cpp exposes over HTTP to <em>how the server was started</em>: the context size (<code>--ctx-size</code>), the default max response length (<code>--n-predict</code>), the parallel slot count (<code>--parallel</code>), the sampling defaults (<code>--temp</code>, <code>--top-k</code>, <code>--top-p</code>), the loaded model's path and tokenizer boundary tokens, the build version, and whether a chat template is configured. The details column reads back whichever of these the server's response actually included (the schema is not identical across llama.cpp versions, so fields it omits are simply left out rather than reported as an error). llama.cpp does not expose hardware-only startup flags — thread count, GPU layer count, batch size — through any HTTP endpoint, so <code>/information</code> cannot report those; they only ever appear in the server's own startup log.</li>
-<li><strong><code>/slots</code></strong> and <strong><code>/metrics</code></strong> — llama.cpp diagnostics endpoints that a server operator can disable at startup; a red dot here usually means the corresponding llama.cpp flag (<code>--no-slots</code>, <code>--metrics</code>) was not passed, not that something is broken. Their JSON body isn't worth summarizing field by field, so a reachable <code>/slots</code> simply reads <code>Ok</code> and a reachable <code>/metrics</code> reads <code>reachable</code>; either one, when unavailable, reads a flat <code>Not available</code> regardless of the underlying reason (disabled, not implemented, unreachable, …).</li>
+<li><strong><code>/v1/models</code></strong> — the standard OpenAI model
+listing, the same request <code>/model</code> and startup detection use;
+the details column lists every advertised model id, comma-separated (a
+single advertised model is shown bare, with no count prefix).</li>
+<li><strong><code>/v1/chat/completions</code></strong> — the endpoint
+every prompt and tool round-trip actually goes through. On a local
+orangu-server a real generation costs nothing worth avoiding, so
+<code>/information</code> actually sends one: a minimal, non-streaming
+request capped at a single response token
+(<code>ggml-org/gemma-4-E4B-it-GGUF</code>’s row above shows this).</li>
+<li><strong><code>/v1/embeddings</code></strong> — likewise never sent a
+real request; this row reflects whether the active server is the one
+<code>orangu</code> already detected at startup as embeddings-capable
+(the same detection <code>/search</code> relies on — see the
+<code>role = embeddings</code> configuration option).</li>
+<li><strong><code>/health</code></strong> — an orangu-server health
+check; the details column shows the server’s reported
+<code>status</code> (<code>Ok</code>, <code>Loading model</code>, …,
+capitalized) when present.</li>
+<li><strong><code>/props</code></strong> — the closest thing
+orangu-server exposes over HTTP to <em>how the server was started</em>:
+the context size (<code>--ctx-size</code>), the default max response
+length (<code>--n-predict</code>), the parallel slot count
+(<code>--parallel</code>), the sampling defaults (<code>--temp</code>,
+<code>--top-k</code>, <code>--top-p</code>), the loaded model’s path and
+tokenizer boundary tokens, the build version, and whether a chat
+template is configured. The details column reads back whichever of these
+the server’s response actually included (the schema is not identical
+across server versions, so fields it omits are simply left out rather
+than reported as an error). orangu-server does not expose hardware-only
+startup flags — thread count, GPU layer count, batch size — through any
+HTTP endpoint, so <code>/information</code> cannot report those; they
+only ever appear in the server’s own startup log.</li>
+<li><strong><code>/slots</code></strong> and
+<strong><code>/metrics</code></strong> — orangu-server diagnostics
+endpoints that a server operator can disable at startup; a red dot here
+usually means the corresponding server flag (<code>--no-slots</code>,
+<code>--metrics</code>) was not passed, not that something is broken.
+Their JSON body isn’t worth summarizing field by field, so a reachable
+<code>/slots</code> simply reads <code>Ok</code> and a reachable
+<code>/metrics</code> reads <code>reachable</code>; either one, when
+unavailable, reads a flat <code>Not available</code> regardless of the
+underlying reason (disabled, not implemented, unreachable, …).</li>
 </ul>
-<p>A llama.cpp-native endpoint outside <code>/slots</code>/<code>/metrics</code> that is unreachable (connection refused, timeout) or answers with an unexpected status is reported the same way as one the server never implemented — <code>/information</code> only distinguishes "the server told us it's disabled" (<code>HTTP 501</code>) from "the server doesn't know this path" (<code>HTTP 404</code>) from any other response, shown as its raw HTTP status.</p>
-<h3 id="examples-5">Examples</h3>
+<p>A native endpoint outside <code>/slots</code>/<code>/metrics</code>
+that is unreachable (connection refused, timeout) or answers with an
+unexpected status is reported the same way as one the server never
+implemented — <code>/information</code> only distinguishes “the server
+told us it’s disabled” (<code>HTTP 501</code>) from “the server doesn’t
+know this path” (<code>HTTP 404</code>) from any other response, shown
+as its raw HTTP status.</p>
+<h3 id="examples-6">Examples</h3>
 <pre class="text"><code>/information</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>information
 show information
 server information
 llm information</code></pre>
+<h2 id="statistics">/statistics</h2>
+<p>Reports persistent activity: how active this project has been over
+time. Where <code>/usage</code> reports the current session’s totals and
+disappears when orangu exits, <code>/statistics</code> reads back a
+small log that survives restarts, and folds in the workspace’s own
+<code>git log</code> — so a repository with commit history has something
+to report from the very first run, not just after you’ve used orangu in
+it for a while.</p>
+<p>Every completed turn — success, cancellation, or failure — appends
+one record to
+<code>~/.orangu/workspace/&lt;hash&gt;/stats/activity.json</code> (the
+same shared cache root the knowledge graph and semantic search index
+use, keyed by a hash of the workspace’s canonical path — see
+<code>/search</code>): the day it happened, the session it belongs to,
+and that turn’s token count, LLM time, and tool time. Bare
+<code>/statistics</code> reads the current workspace’s log and merges in
+its <code>git log</code>; <code>/statistics total</code> merges every
+workspace’s turn log into one aggregate instead (commit history is left
+out of <code>total</code>, since it would mean reading unrelated
+repositories that don’t share one <code>git log</code>).</p>
+<p>The report has two parts:</p>
+<ul>
+<li><strong>Total</strong> — all-time figures, split into a
+<strong>Repository Activity</strong> table (total commits, days active,
+and your current/longest streak of consecutive active days) and a
+<strong>Token Usage</strong> table (sessions, turns, tokens, LLM and
+tool time), then a <strong>Heatmap</strong> and an
+<strong>Authors</strong> breakdown (from <code>git log</code>, most
+commits first) of each author’s commit count and lines added/removed —
+similar to GitHub’s contributors graph.</li>
+<li>One section per calendar <strong>year</strong> with any activity,
+newest first: that year’s <strong>Yearly total</strong> (tokens and
+commits), then a <strong>Monthly</strong> breakdown (also newest
+first).</li>
+</ul>
+<p>The heatmap is a GitHub-style grid: the last 20 weeks, one
+Monday-to-Sunday column per week and one row per weekday (Monday on top,
+each row labelled with its initial), shaded from blank (no activity)
+through four increasing quartiles of your busiest recorded day. A day
+with orangu usage shades by its token count; a day with only a commit
+(no orangu usage that day) still gets the lightest tint rather than
+staying blank:</p>
+<pre class="text"><code>Total
+
+Repository Activity
+Commits          : 512
+Days active      : 340
+Current streak   : 4 days
+Longest streak   : 9 days
+
+Token Usage
+Sessions         : 42
+Turns            : 358
+Tokens           : 1284091
+LLM time         : 6h 12m 0s
+Tool time        : 1h 47m 0s
+
+Heatmap
+
+M ░░▒▒▓▓██████████████████████████████████░░
+T ▒▒▓▓██████████████████████████████████░░░░
+W   ░░▒▒▓▓████████████████████████████████░░
+T ░░▒▒▓▓██████████████████████████████████░░
+F ▒▒▓▓██████████████████████████████████░░░░
+S   ░░▒▒▓▓████████████████████████████████░░
+S ░░▒▒▓▓██████████████████████████████████░░
+
+Authors
+Jesper Pedersen           310 commits    +45210   -12043
+Tejas Bhati               202 commits    +28114    -9021
+
+2026
+
+Yearly total
+Tokens           : 442080
+Commits          : 302
+
+Monthly
+2026-02                 : 232036 tokens, 182 commits
+2026-01                 : 210044 tokens, 120 commits</code></pre>
+<p>A current streak counts today if you’ve already used orangu today, or
+ends at yesterday if you haven’t yet — so a streak in progress isn’t
+reported as broken partway through the day. With no activity recorded
+yet (a fresh install outside a Git repository, or a corrupted log),
+<code>/statistics</code> reports that plainly rather than an error or a
+blank table.</p>
+<p>See <a href="#export"><code>/export statistics</code></a> to save the
+same report — plus a two-layer table of contents, per-year and per-month
+heatmaps, Authors breakdowns, and bar charts, and a per-author appendix
+— to a PDF.</p>
+<h3 id="examples-7">Examples</h3>
+<pre class="text"><code>/statistics
+/statistics total</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>statistics
+show statistics
+activity
+statistics total
+show statistics total
+activity total</code></pre>
+<h2 id="schedule">/schedule</h2>
+<p>Runs commands on a schedule, cron style. Jobs live in
+<code>~/.orangu/schedule</code>, one per line in classic crontab form —
+five time fields, then the command to run:</p>
+<pre class="text"><code># hourly pull request report
+0 * * * * /export pr
+30 6 * * 1-5 /statistics</code></pre>
+<p>The command is anything you could type at the prompt — a slash
+command, a natural-language form, or a free-form prompt for the model.
+While orangu is running, a job whose minute arrives is queued exactly
+like a command typed while a request is in flight: it waits its turn
+behind whatever is running, echoes into the output window as
+<code>&gt; /export pr</code>, and executes in the <strong>active
+workspace tab</strong>. If orangu was busy (or idle in the background)
+when the minute passed, the job still runs as soon as the loop comes
+back around — every minute boundary since the last check is considered,
+so nothing is silently skipped. Minutes that passed before orangu
+started never fire, and orangu must be running for anything to run at
+all: this is a scheduler inside the client, not a system daemon.</p>
+<p><code>&amp;&amp;</code> chains commands, shell style — each part runs
+after the one before it, and a part that fails drops the rest of its
+chain (the output window notes how many follow-ups were skipped):</p>
+<pre class="text"><code>0 6 * * * auto review immediate &amp;&amp; export auto review</code></pre>
+<p>Scheduled commands run <strong>unattended</strong>.
+<code>/auto_review</code> normally opens interactive phases — a
+pre-start screen waiting for Alt+s, and the finished report kept on
+screen until Alt+x — but when launched by the scheduler it starts at
+once and returns as soon as the run completes, so a chained
+<code>export auto review</code> can pick up the report with nobody at
+the keyboard. The report still lands in the output window (and the
+clipboard) exactly as if the run had been watched.</p>
+<p>The five fields are minute (0-59), hour (0-23), day of month (1-31),
+month (1-12), and day of week (0-7, both 0 and 7 meaning Sunday), each
+supporting <code>*</code>, lists (<code>1,15</code>), ranges
+(<code>1-5</code>), and steps (<code>*/10</code>, <code>8-18/2</code>).
+Fields are numeric — no <code>JAN</code>/<code>MON</code> names. When
+both day-of-month and day-of-week are restricted the job runs when
+either matches, like classic cron. <strong>Times are UTC</strong>, since
+orangu carries no timezone database. Blank lines and <code>#</code>
+comments are skipped. The file is re-read every minute, so edits apply
+without a restart.</p>
+<p>Bare <code>/schedule</code> lists the jobs with the next time each
+will run, and points out any lines that didn’t parse instead of silently
+ignoring them:</p>
+<pre class="text"><code>Scheduled jobs (~/.orangu/schedule, times UTC):
+/export pr                               next: 2026-07-09 14:00
+/statistics                              next: 2026-07-10 06:30</code></pre>
+<p>With no schedule file (or an empty one) it says how to create
+one.</p>
+<h3 id="examples-8">Examples</h3>
+<pre class="text"><code>/schedule</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>schedule
+show schedule</code></pre>
 <h2 id="disconnect">/disconnect</h2>
 <p>Disconnects from the current server.</p>
-<p>After disconnecting, the server status in the header turns red and free-form prompts are blocked, but every local command in this manual continues to work. Use <code>/server</code> or <code>/reload</code> to reconnect.</p>
-<h3 id="examples-6">Examples</h3>
+<p>After disconnecting, the server status in the header turns red and
+free-form prompts are blocked, but every local command in this manual
+continues to work. Use <code>/server</code> or <code>/reload</code> to
+reconnect.</p>
+<h3 id="examples-9">Examples</h3>
 <pre class="text"><code>/disconnect</code></pre>
 <p>Natural-language form:</p>
 <pre class="text"><code>disconnect</code></pre>
 <h2 id="reload">/reload</h2>
-<p>Restores the configured model and server from the configuration file, undoing any <code>/model</code> or <code>/server</code> switches made during the session.</p>
-<p><code>/reload</code> also clears the in-memory conversation history, so it doubles as a way to start a clean exchange while returning to the configured defaults.</p>
-<h3 id="examples-7">Examples</h3>
+<p>Restores the configured model and server from the configuration file,
+undoing any <code>/model</code> or <code>/server</code> switches made
+during the session.</p>
+<p><code>/reload</code> also clears the in-memory conversation history,
+so it doubles as a way to start a clean exchange while returning to the
+configured defaults.</p>
+<h3 id="examples-10">Examples</h3>
 <pre class="text"><code>/reload</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>reload
 reload configuration
 reset session</code></pre>
 <h2 id="restart">/restart</h2>
-<p>Restarts <code>orangu</code> in place, resuming the same workspace and session.</p>
-<p>The current session is saved first, then the running process is replaced via <code>exec</code> with the same binary, passing <code>--workspace</code>, <code>--config</code>, and <code>--resume &lt;session-id&gt;</code> so the new process picks up exactly where the old one left off. This is the recommended way to pick up a freshly built binary or an edited configuration file without losing conversation context.</p>
-<p>When the binary was rebuilt while running, the original on-disk path may be reported as deleted; <code>/restart</code> resolves the real path so it relaunches the freshly built binary. Only if that path is gone entirely does it fall back to staging a runnable copy under <code>~/.orangu/last</code>, a scratch directory that is cleared on every startup.</p>
-<h3 id="examples-8">Examples</h3>
+<p>Restarts <code>orangu</code> in place, resuming the same workspace
+and session.</p>
+<p>The current session is saved first, then the running process is
+replaced via <code>exec</code> with the same binary, passing
+<code>--workspace</code>, <code>--config</code>, and
+<code>--resume &lt;session-id&gt;</code> so the new process picks up
+exactly where the old one left off. This is the recommended way to pick
+up a freshly built binary or an edited configuration file without losing
+conversation context.</p>
+<p>When the binary was rebuilt while running, the original on-disk path
+may be reported as deleted; <code>/restart</code> resolves the real path
+so it relaunches the freshly built binary. Only if that path is gone
+entirely does it fall back to staging a runnable copy under
+<code>~/.orangu/last</code>, a scratch directory that is cleared on
+every startup.</p>
+<h3 id="examples-11">Examples</h3>
 <pre class="text"><code>/restart</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>restart
 restart orangu</code></pre>
 <h2 id="prune">/prune</h2>
-<p>Deletes session directories from <code>~/.orangu/sessions/</code>. The active session is never deleted regardless of strategy.</p>
-<p>With a UUID it deletes that single session. With <code>all</code> it deletes every session except the active one. With <code>--workspace &lt;path&gt;</code> (or <code>-w &lt;path&gt;</code>) it deletes all sessions whose recorded workspace path contains <code>&lt;path&gt;</code>. With <code>--older-than &lt;days&gt;</code> (or <code>-o &lt;days&gt;</code>) it deletes all sessions whose <code>last_updated_at</code> timestamp is more than <code>&lt;days&gt;</code> days in the past.</p>
-<p>Tab completion after <code>/prune</code> cycles through session UUIDs newest-first.</p>
-<h3 id="examples-9">Examples</h3>
+<p>Deletes session directories from <code>~/.orangu/sessions/</code>.
+The active session is never deleted regardless of strategy.</p>
+<p>With a UUID it deletes that single session. With <code>all</code> it
+deletes every session except the active one. With
+<code>--workspace &lt;path&gt;</code> (or <code>-w &lt;path&gt;</code>)
+it deletes all sessions whose recorded workspace path contains
+<code>&lt;path&gt;</code>. With <code>--older-than &lt;days&gt;</code>
+(or <code>-o &lt;days&gt;</code>) it deletes all sessions whose
+<code>last_updated_at</code> timestamp is more than
+<code>&lt;days&gt;</code> days in the past.</p>
+<p>Tab completion after <code>/prune</code> cycles through session UUIDs
+newest-first.</p>
+<h3 id="examples-12">Examples</h3>
 <p>Delete a single session by UUID:</p>
 <pre class="text"><code>/prune 550e8400-e29b-41d4-a716-446655440000</code></pre>
 <p>Delete all sessions except the active one:</p>
@@ -241,22 +581,41 @@ prune all
 prune sessions in myproject
 prune sessions older than 30</code></pre>
 <h2 id="session">/session</h2>
-<p>Lists, switches, and opens sessions. See the Sessions section of the Terminal interface chapter for how sessions are stored, auto-resumed, and cleaned up.</p>
-<p>With no argument it lists all sessions found under <code>~/.orangu/sessions/</code>, one line per session with aligned columns: UUID, start date, last-updated date, command count, branch, and workspace path. Sessions are sorted by creation time, most-recent first, and the branch column shows <code>-</code> for sessions with no recorded branch:</p>
+<p>Lists, switches, and opens sessions. See the Sessions section of the
+Terminal interface chapter for how sessions are stored, auto-resumed,
+and cleaned up.</p>
+<p>With no argument it lists all sessions found under
+<code>~/.orangu/sessions/</code>, one line per session with aligned
+columns: UUID, start date, last-updated date, command count, branch, and
+workspace path. Sessions are sorted by creation time, most-recent first,
+and the branch column shows <code>-</code> for sessions with no recorded
+branch:</p>
 <pre class="text"><code>UUID                                  STARTED       LAST          CMDS  BRANCH                WORKSPACE
 550e8400-e29b-41d4-a716-446655440000  202605220910  202605221143    42  feature/my-pr         /home/user/myproject
 a1b2c3d4-e5f6-7890-abcd-ef1234567890  202605210830  202605210831     3  -                     /home/user/other</code></pre>
 <p>The argument is resolved in order:</p>
 <ul>
-<li>When it names an existing session directory (a UUID), it switches to that session in place; the current session is saved first.</li>
-<li>Otherwise it is treated as a workspace match: if exactly one session's workspace path contains the string it switches to that session; if several do it lists only those sessions.</li>
-<li>If none match but the argument resolves to a real directory on disk (a leading <code>~</code>/<code>~/</code> is expanded), it opens that directory as a new workspace, auto-resuming any existing session for it or starting a fresh one.</li>
+<li>When it names an existing session directory (a UUID), it switches to
+that session in place; the current session is saved first.</li>
+<li>Otherwise it is treated as a workspace match: if exactly one
+session’s workspace path contains the string it switches to that
+session; if several do it lists only those sessions.</li>
+<li>If none match but the argument resolves to a real directory on disk
+(a leading <code>~</code>/<code>~/</code> is expanded), it opens that
+directory as a new workspace, auto-resuming any existing session for it
+or starting a fresh one.</li>
 </ul>
-<p>Tab completion after <code>/session</code> (with a trailing space) cycles through all session UUIDs newest first, then the distinct workspace paths recorded across sessions; when the typed text matches neither, it falls back to filesystem directory completion so a new workspace can be navigated to one segment at a time (<code>/session ~/co&lt;Tab&gt;/pr&lt;Tab&gt;</code>).</p>
-<h3 id="examples-10">Examples</h3>
+<p>Tab completion after <code>/session</code> (with a trailing space)
+cycles through all session UUIDs newest first, then the distinct
+workspace paths recorded across sessions; when the typed text matches
+neither, it falls back to filesystem directory completion so a new
+workspace can be navigated to one segment at a time
+(<code>/session ~/co&lt;Tab&gt;/pr&lt;Tab&gt;</code>).</p>
+<h3 id="examples-13">Examples</h3>
 <p>List every session:</p>
 <pre class="text"><code>/session</code></pre>
-<p>Narrow to sessions whose workspace path contains a string (switches straight to it when exactly one matches):</p>
+<p>Narrow to sessions whose workspace path contains a string (switches
+straight to it when exactly one matches):</p>
 <pre class="text"><code>/session myproject</code></pre>
 <p>Switch to a specific session by UUID:</p>
 <pre class="text"><code>/session 550e8400-e29b-41d4-a716-446655440000</code></pre>
@@ -270,8 +629,11 @@ list sessions
 show sessions</code></pre>
 <h2 id="list_files">/list_files</h2>
 <p>Lists the workspace files as a tree.</p>
-<p>This is a local convenience command for quickly orienting yourself in the workspace; it is separate from the model-facing <code>list_directory</code> tool that the model uses to explore files on its own.</p>
-<h3 id="examples-11">Examples</h3>
+<p>This is a local convenience command for quickly orienting yourself in
+the workspace; it is separate from the model-facing
+<code>list_directory</code> tool that the model uses to explore files on
+its own.</p>
+<h3 id="examples-14">Examples</h3>
 <pre class="text"><code>/list_files</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>list files
@@ -280,10 +642,23 @@ list workspace files
 show workspace files</code></pre>
 <h2 id="open_file">/open_file</h2>
 <p>Opens a workspace file in your <code>$EDITOR</code>.</p>
-<p>The command is workspace-scoped — paths outside the workspace are rejected. It launches <code>$EDITOR</code> on the file in a separate window so <code>orangu</code> stays usable, and it never waits for the editor to close.</p>
-<p>Tab completion after <code>/open_file</code> searches the workspace recursively for file paths, and quoted paths such as <code>/open_file "..."</code> are supported.</p>
-<p>The same <code>/open_file &lt;path&gt;</code> (and <code>open &lt;path&gt;</code>) form also works inside the <code>/review</code> and <code>/auto_review</code> split views, where it opens any project file — not only the changed ones — in your editor, with the same whole-workspace <code>Tab</code> completion. In <code>/review</code> it is available the whole time; in <code>/auto_review</code> it works once the run has finished. See the <code>/review</code> and <code>/auto_review</code> tools for the details.</p>
-<h3 id="examples-12">Examples</h3>
+<p>The command is workspace-scoped — paths outside the workspace are
+rejected. It launches <code>$EDITOR</code> on the file in a separate
+window so <code>orangu</code> stays usable, and it never waits for the
+editor to close.</p>
+<p>Tab completion after <code>/open_file</code> searches the workspace
+recursively for file paths, and quoted paths such as
+<code>/open_file "..."</code> are supported.</p>
+<p>The same <code>/open_file &lt;path&gt;</code> (and
+<code>open &lt;path&gt;</code>) form also works inside the
+<code>/review</code> and <code>/auto_review</code> split views, where it
+opens any project file — not only the changed ones — in your editor,
+with the same whole-workspace <code>Tab</code> completion. In
+<code>/review</code> it is available the whole time; in
+<code>/auto_review</code> it works once the run has finished. See the
+<code>/review</code> and <code>/auto_review</code> tools for the
+details.</p>
+<h3 id="examples-15">Examples</h3>
 <pre class="text"><code>/open_file README.md
 /open_file src/main.rs</code></pre>
 <p>Natural-language forms:</p>
@@ -292,13 +667,28 @@ open file README.md
 edit src/main.rs
 edit file src/main.rs</code></pre>
 <h2 id="show_file">/show_file</h2>
-<p>Shows the contents of a workspace file, optionally at a specific Git ref and optionally with per-line blame columns.</p>
+<p>Shows the contents of a workspace file, optionally at a specific Git
+ref and optionally with per-line blame columns.</p>
 <pre class="text"><code>/show_file [--hash] [--author] &lt;path&gt; [&lt;ref&gt;]</code></pre>
-<p>The command is workspace-scoped. Without a ref, the current workspace file is shown — when <code>bat</code> is installed it is used for the plain view, otherwise the built-in syntax-highlighted renderer is used. When a ref (commit hash, branch, or tag) is given, the file content at that ref is retrieved via <code>git show &lt;ref&gt;:&lt;path&gt;</code> and rendered with the built-in renderer.</p>
-<p><code>--hash</code> and <code>--author</code> add per-line blame columns sourced from <code>git blame</code>, using the same ref when one is provided.</p>
-<p>Tab completion for the first positional argument offers workspace file paths recursively; once a file path is present, the next <code>Tab</code> press cycles through that file's commit history (abbreviated hashes from <code>git log --follow</code>). <code>--hash</code> and <code>--author</code> are completed as well.</p>
-<p>Because source lines may be wider than the terminal, <code>/show_file</code> output is laid out on the full virtual canvas and can be panned horizontally with <code>Alt+Left</code>/<code>Alt+Right</code> without reflowing.</p>
-<h3 id="examples-13">Examples</h3>
+<p>The command is workspace-scoped. Without a ref, the current workspace
+file is shown — when <code>bat</code> is installed it is used for the
+plain view, otherwise the built-in syntax-highlighted renderer is used.
+When a ref (commit hash, branch, or tag) is given, the file content at
+that ref is retrieved via <code>git show &lt;ref&gt;:&lt;path&gt;</code>
+and rendered with the built-in renderer.</p>
+<p><code>--hash</code> and <code>--author</code> add per-line blame
+columns sourced from <code>git blame</code>, using the same ref when one
+is provided.</p>
+<p>Tab completion for the first positional argument offers workspace
+file paths recursively; once a file path is present, the next
+<code>Tab</code> press cycles through that file’s commit history
+(abbreviated hashes from <code>git log --follow</code>).
+<code>--hash</code> and <code>--author</code> are completed as well.</p>
+<p>Because source lines may be wider than the terminal,
+<code>/show_file</code> output is laid out on the full virtual canvas
+and can be panned horizontally with
+<code>Alt+Left</code>/<code>Alt+Right</code> without reflowing.</p>
+<h3 id="examples-16">Examples</h3>
 <p>Show the current file:</p>
 <pre class="text"><code>/show_file src/main.rs</code></pre>
 <p>Show the file with blame columns:</p>
@@ -309,22 +699,152 @@ edit file src/main.rs</code></pre>
 <pre class="text"><code>show README.md
 show file README.md</code></pre>
 <h2 id="build">/build</h2>
-<p>Builds the workspace project, detecting the toolchain from the workspace root. Takes an optional profile, <code>debug</code> or <code>release</code>; the default is <code>release</code>.</p>
-<p>Each step is reported individually and the pipeline stops on the first failure. The profile is mapped onto each toolchain's own notion of a build profile:</p>
+<p>Builds the workspace project, detecting the toolchain from the
+workspace root. Takes an optional profile, <code>debug</code> or
+<code>release</code> (the default is <code>release</code>), and an
+optional <strong>build target</strong> — a single word, in either order
+(<code>/build debug docs</code> and <code>/build docs debug</code> mean
+the same). Giving two profiles or two targets is rejected rather than
+one being silently dropped.</p>
+<p>Each step is reported individually and the pipeline stops on the
+first failure. The profile is mapped onto each toolchain’s own notion of
+a build profile, and the target onto its own notion of a target:</p>
 <ul>
-<li><strong>Rust</strong> (<code>Cargo.toml</code>) — runs <code>cargo fmt</code>, <code>cargo clippy</code>, then <code>cargo build</code> and <code>cargo test</code>, adding <code>--release</code> for the release profile (omitted for debug) and <code>--jobs &lt;compile_workers&gt;</code> when it is nonzero.</li>
-<li><strong>C/C++, CMake</strong> (<code>CMakeLists.txt</code>) — runs <code>clang-format.sh</code> (if present), then configures and builds in a single reused <code>build/</code> directory, then <code>make</code>, adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero. The first build runs <code>cmake .. -DCMAKE_BUILD_TYPE=Debug</code> (or <code>Release</code>); later builds skip straight to <code>make</code> when the directory is already configured for the requested profile, and reconfigure with the new <code>-DCMAKE_BUILD_TYPE</code> (which <code>cmake</code> applies in place) when it isn't — so switching between <code>/build debug</code> and <code>/build release</code> reconfigures the same directory rather than building each profile separately.</li>
-<li><strong>C/C++, Autotools</strong> (<code>configure</code>, checked when there is no <code>CMakeLists.txt</code>; takes priority over Meson when a project has both, e.g. PostgreSQL mid-migration) — runs <code>clang-format.sh</code> (if present), then builds in place, like a plain <code>./configure &amp;&amp; make</code>. If the workspace root already has a <code>config.status</code>/<code>GNUmakefile</code> (an existing configuration, from a previous <code>/build</code> or a manual run), it runs <code>make distclean</code> first — autotools has no separate build-type flag, and an out-of-tree VPATH build does not mix safely with an in-tree one, so any previous configuration is wiped rather than built alongside. Then it runs <code>sh ./configure CFLAGS=... CXXFLAGS=...</code> (<code>-g -O0</code> for debug, <code>-O2</code> for release) and <code>make</code>, adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero.</li>
-<li><strong>C/C++, Meson</strong> (<code>meson.build</code>, checked when there is no <code>CMakeLists.txt</code> or <code>configure</code>) — runs <code>clang-format.sh</code> (if present), cleans up a stale in-tree Autotools configuration the same way as above if one is found, then builds in a single reused <code>build/</code> directory (Meson refuses to build in place). The first build runs <code>meson setup build --buildtype=debug|release</code>; later builds run <code>meson configure build --buildtype=...</code> instead — a cheap no-op if the profile is unchanged, and a correct incremental rebuild if it isn't — then <code>meson compile -C build</code>, adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero.</li>
-<li><strong>Java</strong> (<code>pom.xml</code>) — installs frontend dependencies with <code>npm ci</code> when outdated, runs <code>npm run fix</code> and <code>npm run check</code> for the frontend (if <code>src/frontend/</code> exists), then <code>mvn package</code> for debug, or <code>mvn -P release package</code> for release (this assumes the project defines a Maven profile named <code>release</code> in its <code>pom.xml</code>; Maven has no built-in debug/release axis).</li>
-<li><strong>Python</strong> (<code>pyproject.toml</code>, <code>setup.py</code>, or <code>setup.cfg</code>, checked in that order) — runs <code>pip install -e .</code>. There is no separate debug/release artifact, so the profile is accepted but has no effect.</li>
-<li><strong>Go</strong> (<code>go.mod</code>, checked when none of the above are found) — runs <code>go build ./...</code>, adding <code>-p &lt;compile_workers&gt;</code> when it is nonzero. Go has no separate debug/release artifact either; debug instead adds <code>-gcflags="all=-N -l"</code>, disabling optimizations and inlining (mirroring the C backends' <code>-O0</code>) so a debugger such as delve can step through unoptimized code. Release passes no extra flags.</li>
+<li><strong>Rust</strong> (<code>Cargo.toml</code>) — runs
+<code>cargo fmt</code>, <code>cargo clippy</code>, then
+<code>cargo build</code> and <code>cargo test</code>, adding
+<code>--release</code> for the release profile (omitted for debug) and
+<code>--jobs &lt;compile_workers&gt;</code> when it is nonzero. A target
+names one <strong>binary</strong>: both the build and its tests are
+scoped to it with <code>--bin &lt;target&gt;</code>, leaving the rest of
+the workspace untouched.</li>
+<li><strong>C/C++, CMake</strong> (<code>CMakeLists.txt</code>) — runs
+<code>clang-format.sh</code> (if present), then configures and builds in
+a single reused <code>build/</code> directory, then <code>make</code>,
+adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero. The
+first build runs <code>cmake .. -DCMAKE_BUILD_TYPE=Debug</code> (or
+<code>Release</code>); later builds skip straight to <code>make</code>
+when the directory is already configured for the requested profile
+<em>and</em> the source-file set is unchanged, and reconfigure with the
+new <code>-DCMAKE_BUILD_TYPE</code> (which <code>cmake</code> applies in
+place) when the profile differs — so switching between
+<code>/build debug</code> and <code>/build release</code> reconfigures
+the same directory rather than building each profile separately. A
+target is a rule in the generated Makefile
+(<code>make &lt;target&gt;</code> — CMake emits one per
+<code>add_executable</code>/<code>add_library</code> target, plus
+<code>install</code> and friends).</li>
+<li><strong>C/C++, Autotools</strong> (<code>configure</code>, checked
+when there is no <code>CMakeLists.txt</code>; takes priority over Meson
+when a project has both, e.g. PostgreSQL mid-migration) — runs
+<code>clang-format.sh</code> (if present), then builds in place, like a
+plain <code>./configure &amp;&amp; make</code>. When a usable
+configuration is already present (same profile, same source-file set),
+it goes straight to an incremental <code>make</code> and skips
+reconfiguring entirely. When it must reconfigure — first build, a
+profile switch, or a file added or removed — it runs
+<code>make distclean</code> first if a
+<code>config.status</code>/<code>GNUmakefile</code> exists (autotools
+has no separate build-type flag, and an out-of-tree VPATH build does not
+mix safely with an in-tree one, so the previous configuration is wiped
+rather than built alongside), then
+<code>sh ./configure CFLAGS=... CXXFLAGS=...</code> (<code>-g -O0</code>
+for debug, <code>-O2</code> for release). Either way it finishes with
+<code>make</code>, adding <code>-j &lt;compile_workers&gt;</code> when
+it is nonzero. A target is a <strong>Makefile rule</strong>
+(<code>make &lt;target&gt;</code>).</li>
+<li><strong>C/C++, Meson</strong> (<code>meson.build</code>, checked
+when there is no <code>CMakeLists.txt</code> or <code>configure</code>)
+— runs <code>clang-format.sh</code> (if present), cleans up a stale
+in-tree Autotools configuration the same way as above if one is found,
+then builds in a single reused <code>build/</code> directory (Meson
+refuses to build in place). The first build runs
+<code>meson setup build --buildtype=debug|release</code>; a later build
+regenerates the directory with
+<code>meson setup build --reconfigure --buildtype=...</code> only when
+the profile or the source-file set changed, and otherwise skips straight
+to <code>meson compile -C build</code>, adding
+<code>-j &lt;compile_workers&gt;</code> when it is nonzero. A target is
+one of Meson’s own compile targets
+(<code>meson compile &lt;target&gt;</code>).</li>
+<li><strong>Java</strong> (<code>pom.xml</code>) — installs frontend
+dependencies with <code>npm ci</code> when outdated, runs
+<code>npm run fix</code> and <code>npm run check</code> for the frontend
+(if <code>src/frontend/</code> exists), then <code>mvn package</code>
+for debug, or <code>mvn -P release package</code> for release (this
+assumes the project defines a Maven profile named <code>release</code>
+in its <code>pom.xml</code>; Maven has no built-in debug/release axis).
+A target is a Maven lifecycle phase or goal, replacing the default
+<code>package</code> (<code>/build verify</code> runs
+<code>mvn verify</code>).</li>
+<li><strong>Python</strong> (<code>pyproject.toml</code>,
+<code>setup.py</code>, or <code>setup.cfg</code>, checked in that order)
+— runs <code>pip install -e .</code>. There is no separate debug/release
+artifact, so the profile is accepted but has no effect — and no target
+concept either, so a requested target is rejected with an error rather
+than silently ignored.</li>
+<li><strong>Go</strong> (<code>go.mod</code>, checked when none of the
+above are found) — runs <code>go build ./...</code>, adding
+<code>-p &lt;compile_workers&gt;</code> when it is nonzero. Go has no
+separate debug/release artifact either; debug instead adds
+<code>-gcflags="all=-N -l"</code>, disabling optimizations and inlining
+(mirroring the C backends’ <code>-O0</code>) so a debugger such as delve
+can step through unoptimized code. Release passes no extra flags. A
+target is a package path (e.g. <code>./cmd/server</code>), replacing the
+default whole-module <code>./...</code>.</li>
+<li><strong>Plain Makefile</strong> (<code>GNUmakefile</code>,
+<code>makefile</code>, or <code>Makefile</code>, in GNU make’s own
+lookup order — the <strong>last resort</strong>, only when none of the
+managed build systems above claim the workspace, since CMake, Autotools,
+and Meson all generate or ship their own Makefiles) — runs
+<code>clang-format.sh</code> (if present), then <code>make</code>,
+adding <code>-j &lt;compile_workers&gt;</code> when it is nonzero. A
+target is a Makefile rule (<code>/build docs</code> runs
+<code>make docs</code>). Plain make has no universal debug/release
+convention, so the profile is accepted but not mapped to anything.</li>
 </ul>
-<p><code>&lt;compile_workers&gt;</code> is the <code>[orangu].compile_workers</code> value. It defaults to <code>0</code>, which means unused: no job flag is passed at all, and each toolchain falls back to its own default (Cargo's own automatic parallelism, a bare serial <code>make</code>, <code>meson compile</code>'s ninja default, <code>go build</code>'s own <code>-p</code> default). Setting it above <code>0</code> passes an explicit job count to every backend above — Rust, the C/C++ backends, and Go. Java and Python are unaffected: Maven and <code>pip</code> have no directly equivalent per-compile job flag.</p>
-<h3 id="examples-14">Examples</h3>
+<p>The target <strong>Tab-completes</strong> (and shows the inline ghost
+hint): after <code>/build</code>, Tab offers <code>debug</code>,
+<code>release</code>, and the workspace’s discovered targets — cargo
+binary names (from <code>[[bin]]</code> entries and
+<code>src/bin/</code>) for a Cargo project, Makefile rule names for a
+plain-Makefile one. Discovery is best-effort: an unlisted target can
+still be typed by hand.</p>
+<p><strong>Incremental builds.</strong> For the backends that generate
+build files (CMake, Autotools, Meson), repeat builds avoid regenerating
+the build environment when nothing relevant changed, so a second
+<code>/build</code> reuses the existing object files instead of starting
+from scratch. The environment is regenerated only when the profile
+changes or a source file is added or removed — the case that leaves the
+generated build files stale, since a plain incremental <code>make</code>
+would not otherwise pick up a new or deleted file. To detect that,
+orangu records the requested profile and the set of source files
+(tracked and untracked-but-not-ignored, via git) after each configure,
+under its own per-workspace cache
+(<code>~/.orangu/workspace/&lt;hash&gt;/</code>, never in the source
+tree). When it cannot be sure the environment still matches — the
+workspace is not a git repository, nothing has been recorded yet, or the
+file set differs — it regenerates rather than risk reusing a stale
+environment. Editing an existing file is left to the toolchain’s own
+incremental rebuild, which already handles it. Cargo and Go are
+incremental by nature and keep their own build caches, so they are
+unaffected.</p>
+<p><code>&lt;compile_workers&gt;</code> is the
+<code>[orangu].compile_workers</code> value. It defaults to
+<code>0</code>, which means unused: no job flag is passed at all, and
+each toolchain falls back to its own default (Cargo’s own automatic
+parallelism, a bare serial <code>make</code>,
+<code>meson compile</code>’s ninja default, <code>go build</code>’s own
+<code>-p</code> default). Setting it above <code>0</code> passes an
+explicit job count to every backend above — Rust, the C/C++ backends,
+plain make, and Go. Java and Python are unaffected: Maven and
+<code>pip</code> have no directly equivalent per-compile job flag.</p>
+<h3 id="examples-17">Examples</h3>
 <pre class="text"><code>/build
 /build debug
-/build release</code></pre>
+/build release
+/build docs
+/build release orangu-server</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>build
 build project
@@ -334,31 +854,86 @@ debug build
 build release
 release build</code></pre>
 <h2 id="shell">/shell</h2>
-<p>Runs a shell command in the workspace, streaming its output to the output window line by line as it is produced — long-running commands (a test suite, a script that tails a log) show output live rather than all at once when they finish.</p>
+<p>Runs a shell command in the workspace, streaming its output to the
+output window line by line as it is produced — long-running commands (a
+test suite, a script that tails a log) show output live rather than all
+at once when they finish.</p>
 <pre class="text"><code>/shell &lt;command&gt;</code></pre>
-<p>The command line runs through <code>bash -lc</code>, exactly like the model-facing <code>run_shell_command</code> tool (see the Tools chapter), so it supports everything a login shell does: pipes, redirects, globs, and any executable on <code>$PATH</code>, not a fixed allow-list. It runs with the workspace as its current directory. <code>/shell</code> requires a command — a bare <code>/shell</code> reports usage instead of doing nothing quietly.</p>
-<p>The command exits non-zero the same way it would at a real terminal — <code>/shell</code> reports the failure but the output already streamed stays in the output window.</p>
-<p>Tab completion after <code>/shell</code> completes the token being typed against files in the workspace, one path segment at a time, exactly like a real shell: <code>/shell ./te</code> offers <code>./test/</code>, and once inside that directory <code>/shell ./test/c</code> offers <code>./test/check.sh</code>. Only the last word of the command line completes this way — the program name and any earlier arguments are left alone. The inline ghost hint previews the same completion.</p>
-<h3 id="examples-15">Examples</h3>
+<p>The command line runs through the platform’s shell —
+<code>bash -lc</code> on Linux and macOS,
+<code>powershell -NoLogo -NonInteractive -Command</code> on Windows —
+exactly like the model-facing <code>run_shell_command</code> tool (see
+the Tools chapter). Either way it supports everything that shell does:
+pipes, redirects, globs, and any executable on the path, not a fixed
+allow-list. It runs with the workspace as its current directory.
+<code>/shell</code> requires a command — a bare <code>/shell</code>
+reports usage instead of doing nothing quietly.</p>
+<p>Note that a command line is passed to the shell verbatim and is not
+translated between them, so anything beyond the simplest command is
+written for one platform’s shell or the other. Windows uses
+<code>powershell</code> rather than <code>pwsh</code> because Windows
+PowerShell ships with the operating system while PowerShell 7 is an
+optional install, and <code>-NonInteractive</code> so a command that
+would prompt fails rather than waiting for input that nothing is
+attached to answer.</p>
+<p>The command exits non-zero the same way it would at a real terminal —
+<code>/shell</code> reports the failure but the output already streamed
+stays in the output window.</p>
+<p>Tab completion after <code>/shell</code> completes the token being
+typed against files in the workspace, one path segment at a time,
+exactly like a real shell: <code>/shell ./te</code> offers
+<code>./test/</code>, and once inside that directory
+<code>/shell ./test/c</code> offers <code>./test/check.sh</code>. Only
+the last word of the command line completes this way — the program name
+and any earlier arguments are left alone. The inline ghost hint previews
+the same completion.</p>
+<h3 id="examples-18">Examples</h3>
 <pre class="text"><code>/shell ls -la
 /shell cargo test
 /shell ./test/check.sh</code></pre>
 <h2 id="review">/review</h2>
-<p><code>/review</code> opens a full-screen, two-pane view for reviewing the changes on the current branch before sharing them, with the status bar and input window kept at the bottom so you can ask the model for help. It is available inside a Git repository and has no <code>gh</code> dependency.</p>
-<p>Enter it with the <code>/review</code> command, or the natural-language forms <code>review</code>, <code>review changes</code>, <code>code review</code>, or <code>review branch</code>.</p>
+<p><code>/review</code> opens a full-screen, two-pane view for reviewing
+the changes on the current branch before sharing them, with the status
+bar and input window kept at the bottom so you can ask the model for
+help. It is available inside a Git repository and has no <code>gh</code>
+dependency.</p>
+<p>Enter it with the <code>/review</code> command, or the
+natural-language forms <code>review</code>, <code>review changes</code>,
+<code>code review</code>, or <code>review branch</code>.</p>
 <h3 id="what-is-reviewed">What is reviewed</h3>
-<p>The review shows everything the current branch adds on top of the default branch:</p>
+<p>The review shows everything the current branch adds on top of the
+default branch:</p>
 <ul>
 <li>Committed changes on the branch, and</li>
-<li>Local uncommitted changes (staged and unstaged) in the working tree.</li>
+<li>Local uncommitted changes (staged and unstaged) in the working
+tree.</li>
 </ul>
-<p>The comparison is made against the merge base with the default branch. The default branch is detected in the usual order: <code>origin/main</code>, <code>origin/master</code>, <code>main</code>, then <code>master</code>. If the working tree has no changes against that base, <code>/review</code> reports that there is nothing to review and does not open the view.</p>
-<p>The branch must be <strong>up to date (rebased)</strong> against the default branch: when commits have landed on main/master that the branch has not incorporated, the review would run against stale code, so <code>/review</code> refuses to start and points at <code>/rebase</code> instead. The check uses the locally known base ref; nothing is fetched.</p>
+<p>The comparison is made against the merge base with the default
+branch. The default branch is detected in the usual order:
+<code>origin/main</code>, <code>origin/master</code>, <code>main</code>,
+then <code>master</code>. If the working tree has no changes against
+that base, <code>/review</code> reports that there is nothing to review
+and does not open the view.</p>
+<p>The branch must be <strong>up to date (rebased)</strong> against the
+default branch: when commits have landed on main/master that the branch
+has not incorporated, the review would run against stale code, so
+<code>/review</code> refuses to start and points at <code>/rebase</code>
+instead. The check uses the locally known base ref; nothing is
+fetched.</p>
 <h3 id="layout">Layout</h3>
-<p>Above the bottom prompt frame (the status bar and input window, exactly as on the normal screen), the view is split into two panes separated by a single straight vertical line.</p>
+<p>Above the bottom prompt frame (the status bar and input window,
+exactly as on the normal screen), the view is split into two panes
+separated by a single straight vertical line.</p>
 <ul>
-<li><strong>Left pane</strong> — the diff of the <strong>selected file only</strong>, rendered through the same pipeline as the <code>/diff</code> command, including the configured non-interactive git pager (such as <code>delta</code>) when one is set. It is the larger pane and scrolls independently.</li>
-<li><strong>Right pane</strong> — the checklist of changed files, one per row, shown with their full repository-relative paths. The right pane is kept as narrow as possible: just wide enough for the longest path (capped on very narrow terminals so the diff stays usable).</li>
+<li><strong>Left pane</strong> — the diff of the <strong>selected file
+only</strong>, rendered through the same pipeline as the
+<code>/diff</code> command, including the configured non-interactive git
+pager (such as <code>delta</code>) when one is set. It is the larger
+pane and scrolls independently.</li>
+<li><strong>Right pane</strong> — the checklist of changed files, one
+per row, shown with their full repository-relative paths. The right pane
+is kept as narrow as possible: just wide enough for the longest path
+(capped on very narrow terminals so the diff stays usable).</li>
 </ul>
 <p>Each file row begins with a review-status box:</p>
 <ul>
@@ -366,28 +941,113 @@ release build</code></pre>
 <li>a green dot in the box — approved</li>
 <li>a red dot in the box — rejected</li>
 </ul>
-<p>The currently selected file is highlighted in the right pane. Selecting a different file replaces the left pane with that file's diff, shown from the top.</p>
+<p>The currently selected file is highlighted in the right pane.
+Selecting a different file replaces the left pane with that file’s diff,
+shown from the top.</p>
 <pre><code> diff --git a/src/main.rs b/src/main.rs |Files (3)
  @@ -1,4 +1,5 @@                        |[ ] README.md
  +fn new() {}                           |[*] src/main.rs  &lt;- selected
   (only the selected file&#39;s diff,       |[*] src/git.rs
    scrollable)                          |
                                         |</code></pre>
-<h3 id="asking-the-model-to-review-a-file">Asking the model to review a file</h3>
-<p>The input window at the bottom takes a request for the model about the selected file — for example <code>focus on error handling</code> or <code>is this thread-safe?</code>. Press <code>Alt+o</code> (or <code>Enter</code>) to send that request together with the selected file's diff to the LLM. While the model works, the status bar shows the usual thinking indicator over the panes.</p>
-<p>While the model works you are not stuck: press <code>Esc</code> twice to cancel the request and return to the diff, or <code>Alt+x</code> to leave review mode entirely. A cancelled request is rolled back out of the session.</p>
-<p>When the response arrives it opens in a <strong>feedback window</strong> over the panes. If you typed a question, it is echoed at the top of the window — styled like a submitted prompt in the main output — above the model's review. A plain <code>Alt+o</code> (empty input) just asks for a plain review of the file, with no question echoed. Press <code>x</code> (or <code>Esc</code>) to close the window and return to the diff.</p>
-<p>The request and the model's reply are added to your chat session, so after leaving review mode you can keep discussing it with full context.</p>
+<h3 id="asking-the-model-to-review-a-file">Asking the model to review a
+file</h3>
+<p>The input window at the bottom takes a request for the model about
+the selected file — for example <code>focus on error handling</code> or
+<code>is this thread-safe?</code>. Press <code>Alt+o</code> (or
+<code>Enter</code>) to send that request together with the selected
+file’s diff to the LLM. While the model works, the status bar shows the
+usual thinking indicator over the panes.</p>
+<p>While the model works you are not stuck: press <code>Esc</code> twice
+to cancel the request and return to the diff, or <code>Alt+x</code> to
+leave review mode entirely. A cancelled request is rolled back out of
+the session.</p>
+<p>When the response arrives it opens in a <strong>feedback
+window</strong> over the panes. If you typed a question, it is echoed at
+the top of the window — styled like a submitted prompt in the main
+output — above the model’s review. A plain <code>Alt+o</code> (empty
+input) just asks for a plain review of the file, with no question
+echoed. Press <code>x</code> (or <code>Esc</code>) to close the window
+and return to the diff.</p>
+<p>The request and the model’s reply are added to your chat session, so
+after leaving review mode you can keep discussing it with full
+context.</p>
 <h3 id="opening-a-file">Opening a file</h3>
-<p>Press <code>Alt+e</code> to open the currently selected file in your <code>$EDITOR</code> — the same way as the <code>/open_file</code> command. Terminal editors open in a new window (the configured <code>terminal</code> command, or an auto-detected emulator) and GUI editors open their own window; either way the editor is detached, leaving review mode on screen so you can keep working through the diff. If the file cannot be opened, the error is shown in a feedback window.</p>
-<p>To open <strong>any file in the project — not only the changed files</strong> — type <code>/open_file &lt;path&gt;</code> (or just <code>open &lt;path&gt;</code>) into the input window and press <code>Enter</code>. <code>Tab</code> completes the path against every file in the workspace, exactly like <code>/open_file</code> at the main prompt: typing a bare name matches files anywhere in the tree, and the grey ghost previews the first match. This open form is available the whole time you are in <code>/review</code>. Anything you type that is <strong>not</strong> an <code>open &lt;path&gt;</code> (or <code>edit &lt;path&gt;</code>) line is still sent to the model as a review request, so an ordinary request such as <code>focus on error handling</code> is unaffected.</p>
+<p>Press <code>Alt+e</code> to open the currently selected file in your
+<code>$EDITOR</code> — the same way as the <code>/open_file</code>
+command. Terminal editors open in a new window (the configured
+<code>terminal</code> command, or an auto-detected emulator) and GUI
+editors open their own window; either way the editor is detached,
+leaving review mode on screen so you can keep working through the diff.
+If the file cannot be opened, the error is shown in a feedback
+window.</p>
+<p>To open <strong>any file in the project — not only the changed
+files</strong> — type <code>/open_file &lt;path&gt;</code> (or just
+<code>open &lt;path&gt;</code>) into the input window and press
+<code>Enter</code>. <code>Tab</code> completes the path against every
+file in the workspace, exactly like <code>/open_file</code> at the main
+prompt: typing a bare name matches files anywhere in the tree, and the
+grey ghost previews the first match. This open form is available the
+whole time you are in <code>/review</code>. Anything you type that is
+<strong>not</strong> an <code>open &lt;path&gt;</code> (or
+<code>edit &lt;path&gt;</code>) line is still sent to the model as a
+review request, so an ordinary request such as
+<code>focus on error handling</code> is unaffected.</p>
 <h3 id="commenting-on-a-line">Commenting on a line</h3>
-<p>Move the highlighted line to the place you want to comment on and press <code>Alt+c</code>. A small comment window opens <strong>inline, just below that line</strong> in the left pane. Its first row is a single-line <strong>category selector</strong> — the same categories as <code>/auto_review</code>: <strong>Overall</strong>, <strong>Code</strong>, <strong>Security</strong>, <strong>Memory</strong>, <strong>Performance</strong>, <strong>Test Suite</strong>, and <strong>Documentation</strong> — and below it the comment text. The focus starts on the text, so you can type right away (it wraps and the five-line window scrolls if the comment is long). Press <code>Tab</code> to switch the focus between the category selector and the comment text; while the selector has the focus, <code>Up</code>/<code>Down</code> move through the categories. Press <code>Enter</code> to save the comment or <code>Esc</code> to discard it.</p>
-<p>Each comment defaults to the <strong>Overall</strong> category and is recorded against the file, that diff line, and the chosen category; lines with a comment are flagged with an amber dot at the right edge. Pressing <code>Alt+c</code> on a line that already has a comment re-opens it for editing — pre-filled with both its category and text — and saving an empty comment removes it.</p>
-<p>You can also add a <strong>general note</strong> about the patch: type <code># &lt;note&gt;</code> in the input window and press <code>Enter</code> (or <code>Alt+o</code>). Instead of being sent to the model, it is recorded as a general note (the <code>#</code> is dropped). Anything not starting with <code>#</code> is still treated as an LLM request.</p>
-<p>When you leave review mode (<code>Alt+x</code>), a <strong>category-grouped report</strong> is written to the output window, laid out like the <code>/auto_review</code> report. Each category — <strong>Overall</strong>, <strong>Code</strong>, <strong>Security</strong>, <strong>Memory</strong>, <strong>Performance</strong>, <strong>Test Suite</strong>, and <strong>Documentation</strong> — is a heading, under which its line comments appear as a bullet list (<code>&lt;file&gt;:&lt;line&gt;: &lt;comment&gt;</code>, ordered by file then line, with 1-based line numbers); a category with no comments reads <code>No issues found</code>. The general <code># &lt;note&gt;</code> notes are whole-patch commentary, so they lead the <strong>Overall</strong> category. The report closes with a <strong>Conclusion</strong>: the bold verdict — <code>Patch approved</code> when every file is approved, otherwise <code>Patch rejected</code> — followed by any <code>Rejected:</code> or <code>Not reviewed:</code> files (approved files are implied by the verdict).</p>
-<p>The whole report's Markdown is copied to the system clipboard on exit. If the clipboard cannot be reached (for example on a headless machine), a short note is shown instead and the output-window report is unaffected.</p>
-<p>The same Markdown is also kept for the rest of the session, so <code>/comment &lt;number&gt; with review</code> can post it on a GitHub/GitLab issue (see the <code>/comment</code> tool in the Git tools chapter) and <code>/export review</code> can write it to a PDF (see the <code>/export</code> tool).</p>
+<p>Move the highlighted line to the place you want to comment on and
+press <code>Alt+c</code>. A small comment window opens <strong>inline,
+just below that line</strong> in the left pane. Its first row is a
+single-line <strong>category selector</strong> — the same categories as
+<code>/auto_review</code>: <strong>Overall</strong>,
+<strong>Code</strong>, <strong>Security</strong>,
+<strong>Memory</strong>, <strong>Performance</strong>, <strong>Test
+Suite</strong>, and <strong>Documentation</strong> — and below it the
+comment text. The focus starts on the text, so you can type right away
+(it wraps and the five-line window scrolls if the comment is long).
+Press <code>Tab</code> to switch the focus between the category selector
+and the comment text; while the selector has the focus,
+<code>Up</code>/<code>Down</code> move through the categories. Press
+<code>Enter</code> to save the comment or <code>Esc</code> to discard
+it.</p>
+<p>Each comment defaults to the <strong>Overall</strong> category and is
+recorded against the file, that diff line, and the chosen category;
+lines with a comment are flagged with an amber dot at the right edge.
+Pressing <code>Alt+c</code> on a line that already has a comment
+re-opens it for editing — pre-filled with both its category and text —
+and saving an empty comment removes it.</p>
+<p>You can also add a <strong>general note</strong> about the patch:
+type <code># &lt;note&gt;</code> in the input window and press
+<code>Enter</code> (or <code>Alt+o</code>). Instead of being sent to the
+model, it is recorded as a general note (the <code>#</code> is dropped).
+Anything not starting with <code>#</code> is still treated as an LLM
+request.</p>
+<p>When you leave review mode (<code>Alt+x</code>), a
+<strong>category-grouped report</strong> is written to the output
+window, laid out like the <code>/auto_review</code> report. Each
+category — <strong>Overall</strong>, <strong>Code</strong>,
+<strong>Security</strong>, <strong>Memory</strong>,
+<strong>Performance</strong>, <strong>Test Suite</strong>, and
+<strong>Documentation</strong> — is a heading, under which its line
+comments appear as a bullet list
+(<code>&lt;file&gt;:&lt;line&gt;: &lt;comment&gt;</code>, ordered by
+file then line, with 1-based line numbers); a category with no comments
+reads <code>No issues found</code>. The general
+<code># &lt;note&gt;</code> notes are whole-patch commentary, so they
+lead the <strong>Overall</strong> category. The report closes with a
+<strong>Conclusion</strong>: the bold verdict —
+<code>Patch approved</code> when every file is approved, otherwise
+<code>Patch rejected</code> — followed by any <code>Rejected:</code> or
+<code>Not reviewed:</code> files (approved files are implied by the
+verdict).</p>
+<p>The whole report’s Markdown is copied to the system clipboard on
+exit. If the clipboard cannot be reached (for example on a headless
+machine), a short note is shown instead and the output-window report is
+unaffected.</p>
+<p>The same Markdown is also kept for the rest of the session, so
+<code>/comment &lt;number&gt; with review</code> can post it on a
+GitHub/GitLab issue (see the <code>/comment</code> tool in the Git tools
+chapter) and <code>/export review</code> can write it to a PDF (see the
+<code>/export</code> tool).</p>
 <h3 id="key-bindings">Key bindings</h3>
 <table>
 <colgroup>
@@ -395,65 +1055,82 @@ release build</code></pre>
 <col style="width: 50%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Key</th>
 <th>Action</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>Alt+j</code></td>
 <td>Select the next file (shows its diff in the left pane)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+k</code></td>
 <td>Select the previous file (shows its diff in the left pane)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Alt+a</code></td>
 <td>Mark the selected file approved (green dot)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+r</code></td>
 <td>Mark the selected file rejected (red dot)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Alt+c</code></td>
-<td>Comment on the highlighted line — pick a category (<code>Tab</code> to focus it, <code>Up</code>/<code>Down</code> to move), <code>Enter</code> saves, <code>Esc</code> discards</td>
+<td>Comment on the highlighted line — pick a category (<code>Tab</code>
+to focus it, <code>Up</code>/<code>Down</code> to move),
+<code>Enter</code> saves, <code>Esc</code> discards</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+e</code></td>
 <td>Open the selected file in your configured editor</td>
 </tr>
-<tr class="odd">
-<td><code>/open_file &lt;path&gt;</code> / <code>open &lt;path&gt;</code> + <code>Enter</code></td>
-<td>Open any project file in your configured editor (<code>Tab</code> completes every workspace file)</td>
+<tr>
+<td><code>/open_file &lt;path&gt;</code> /
+<code>open &lt;path&gt;</code> + <code>Enter</code></td>
+<td>Open any project file in your configured editor (<code>Tab</code>
+completes every workspace file)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+o</code> / <code>Enter</code></td>
-<td>Ask the model to review the selected file using the typed request (when the line is not an <code>open &lt;path&gt;</code>)</td>
+<td>Ask the model to review the selected file using the typed request
+(when the line is not an <code>open &lt;path&gt;</code>)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Esc</code> <code>Esc</code></td>
-<td>Cancel an in-progress review request (while the model is thinking)</td>
+<td>Cancel an in-progress review request (while the model is
+thinking)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+x</code> or <code>Esc</code> <code>Esc</code></td>
 <td>Exit review mode and return to the prompt</td>
 </tr>
 </tbody>
 </table>
-<p>When the feedback window is open it is modal: <code>x</code> or <code>Esc</code> closes it, and <code>Up</code>/<code>Down</code>, <code>PageUp</code>/<code>PageDown</code>, and <code>Left</code>/<code>Right</code> scroll and pan it.</p>
-<p>Otherwise you can type into the input window normally, and move through the selected file's diff:</p>
+<p>When the feedback window is open it is modal: <code>x</code> or
+<code>Esc</code> closes it, and <code>Up</code>/<code>Down</code>,
+<code>PageUp</code>/<code>PageDown</code>, and
+<code>Left</code>/<code>Right</code> scroll and pan it.</p>
+<p>Otherwise you can type into the input window normally, and move
+through the selected file’s diff:</p>
 <ul>
-<li><code>Up</code> / <code>Down</code> move a highlighted line cursor through the diff; the pane scrolls to keep it in view</li>
-<li><code>Alt+Up</code> / <code>Alt+Down</code> scroll the diff one line at a time without moving the cursor</li>
-<li><code>PageUp</code> / <code>PageDown</code> scroll the diff by a full page</li>
-<li><code>Alt+Left</code> / <code>Alt+Right</code> pan horizontally for long lines</li>
-<li><code>Tab</code> completes an <code>/open_file &lt;path&gt;</code> / <code>open &lt;path&gt;</code> line against the workspace files (<code>Shift+Tab</code> cycles the ghost preview)</li>
+<li><code>Up</code> / <code>Down</code> move a highlighted line cursor
+through the diff; the pane scrolls to keep it in view</li>
+<li><code>Alt+Up</code> / <code>Alt+Down</code> scroll the diff one line
+at a time without moving the cursor</li>
+<li><code>PageUp</code> / <code>PageDown</code> scroll the diff by a
+full page</li>
+<li><code>Alt+Left</code> / <code>Alt+Right</code> pan horizontally for
+long lines</li>
+<li><code>Tab</code> completes an <code>/open_file &lt;path&gt;</code> /
+<code>open &lt;path&gt;</code> line against the workspace files
+(<code>Shift+Tab</code> cycles the ghost preview)</li>
 </ul>
-<p>The review status marks and line comments are kept for the duration of the review session and are not persisted after exit.</p>
-<h3 id="examples-16">Examples</h3>
+<p>The review status marks and line comments are kept for the duration
+of the review session and are not persisted after exit.</p>
+<h3 id="examples-19">Examples</h3>
 <pre class="text"><code>/review</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>review
@@ -461,27 +1138,152 @@ review changes
 code review
 review branch</code></pre>
 <h2 id="auto_review">/auto_review</h2>
-<p><code>/auto_review</code> runs an LLM-driven review of the changes on the current branch, in a full-screen, two-pane view modeled on <code>/review</code>. The model reviews the changes overall and each file by itself, sorts what it finds into the <strong>Overall</strong>, <strong>Code</strong>, <strong>Security</strong>, <strong>Memory</strong>, <strong>Performance</strong>, <strong>Test Suite</strong>, and <strong>Documentation</strong> categories, and marks each file approved or rejected. It is available inside a Git repository and requires a connected LLM server.</p>
-<p>Enter it with the <code>/auto_review</code> command, or the natural-language form <code>auto review</code>. Give it a file — <code>/auto_review &lt;file&gt;</code> — to review just that one file instead of the whole branch (see <em>Reviewing a single file</em> below). The view opens in a <strong>pre-start phase</strong> that waits for you to begin the run (see <em>Starting the run</em> below); add the <code>immediate</code> keyword — <code>/auto_review immediate</code> (or <code>/auto_review &lt;file&gt; immediate</code>) — to skip it and start at once.</p>
+<p><code>/auto_review</code> runs an LLM-driven review of the changes on
+the current branch, in a full-screen, two-pane view modeled on
+<code>/review</code>. The model reviews the changes overall and each
+file by itself, sorts what it finds into the <strong>Overall</strong>,
+<strong>Code</strong>, <strong>Security</strong>,
+<strong>Memory</strong>, <strong>Performance</strong>, <strong>Test
+Suite</strong>, and <strong>Documentation</strong> categories, and marks
+each file approved or rejected. It is available inside a Git repository
+and requires a connected LLM server.</p>
+<p>Enter it with the <code>/auto_review</code> command, or the
+natural-language form <code>auto review</code>. Give it a file —
+<code>/auto_review &lt;file&gt;</code> — to review just that one file
+instead of the whole branch (see <em>Reviewing a single file</em>
+below), or the <code>all</code> keyword — <code>/auto_review all</code>
+— to review every file in the project instead (see <em>Reviewing every
+file</em> below). The view opens in a <strong>pre-start phase</strong>
+that waits for you to begin the run (see <em>Starting the run</em>
+below); add the <code>immediate</code> keyword —
+<code>/auto_review immediate</code> (or
+<code>/auto_review &lt;file&gt; immediate</code>, or
+<code>/auto_review all immediate</code>) — to skip it and start at once.
+Add the <code>deep</code> keyword — <code>/auto_review deep</code> — to
+start every file in <strong>Deep</strong> mode instead of Normal, the
+same Deep the Alt+m pre-start cycle offers per file (see <em>Normal,
+Deep, and Ignore</em> below), applied to the whole launch at once. The
+three keywords and a file argument combine freely, in any order — the
+longest accepted form is <code>/auto_review deep all immediate</code>
+(or, natural-language, <code>auto review deep all immediate</code>).</p>
 <h3 id="what-is-reviewed-1">What is reviewed</h3>
-<p>The same change set as <code>/review</code>: everything the current branch adds on top of the default branch — committed changes on the branch plus local uncommitted changes — measured against the merge base with the default branch (<code>origin/main</code>, <code>origin/master</code>, <code>main</code>, then <code>master</code>). If there is nothing to review, <code>/auto_review</code> reports that and does not open the view.</p>
-<p>Like <code>/review</code>, the branch must be <strong>up to date (rebased)</strong> against the default branch before the auto review starts: when the branch is behind main/master, the command refuses with <code>The branch is N commits behind &lt;base&gt;; run /rebase before reviewing.</code> — reviewing against stale code would waste the run and could approve changes that conflict with the newer base.</p>
+<p>The same change set as <code>/review</code>: everything the current
+branch adds on top of the default branch — committed changes on the
+branch plus local uncommitted changes — measured against the merge base
+with the default branch (<code>origin/main</code>,
+<code>origin/master</code>, <code>main</code>, then
+<code>master</code>). If there is nothing to review,
+<code>/auto_review</code> reports that and does not open the view.</p>
+<p>Like <code>/review</code>, the branch must be <strong>up to date
+(rebased)</strong> against the default branch before the auto review
+starts: when the branch is behind main/master, the command refuses with
+<code>The branch is N commits behind &lt;base&gt;; run /rebase before reviewing.</code>
+— reviewing against stale code would waste the run and could approve
+changes that conflict with the newer base.</p>
 <h3 id="reviewing-a-single-file">Reviewing a single file</h3>
-<p><code>/auto_review &lt;file&gt;</code> reviews one file rather than the whole branch. The view, the categories, and the report are exactly the same as a whole-branch run — there is just one file in the checklist. What gets reviewed depends on the branch you are on:</p>
+<p><code>/auto_review &lt;file&gt;</code> reviews one file rather than
+the whole branch. The view, the categories, and the report are exactly
+the same as a whole-branch run — there is just one file in the
+checklist. What gets reviewed depends on the branch you are on:</p>
 <ul>
-<li><strong>On <code>main</code>/<code>master</code></strong> the whole file is reviewed — a full read of its current content, every line in scope — not a diff. This is the way to have the model review a file that is not part of any in-progress change.</li>
-<li><strong>On any other branch</strong> only the file's <strong>changes</strong> against the default branch are reviewed, exactly as in a whole-branch run (the same rebased-branch guard applies).</li>
+<li><strong>On <code>main</code>/<code>master</code></strong> the whole
+file is reviewed — a full read of its current content, every line in
+scope — not a diff. This is the way to have the model review a file that
+is not part of any in-progress change.</li>
+<li><strong>On any other branch</strong> only the file’s
+<strong>changes</strong> against the default branch are reviewed,
+exactly as in a whole-branch run (the same rebased-branch guard
+applies).</li>
 </ul>
-<p>The natural-language form takes a file too: <code>auto review &lt;file&gt;</code> is equivalent to <code>/auto_review &lt;file&gt;</code>. The file argument is resolved by <strong>Tab completion</strong> in either form, and it completes on the file's <strong>name, not its location</strong> — typing <code>t</code> and pressing Tab offers <code>src/tui.rs</code>. The <code>immediate</code> keyword Tab-completes (and ghosts) the same way — typing <code>imm</code> offers <code>immediate</code> — and may be combined with a file in either order. The candidate list matches what will be reviewed: on <code>main</code>/<code>master</code> it is every tracked file (files ignored by <code>.gitignore</code> are excluded); on any other branch it is only the files that differ from the default branch. Selecting a candidate fills in its full repository-relative path; a hand-typed bare name (e.g. <code>tui.rs</code>) is resolved too. On a branch, a file with no changes against the default branch is refused with <code>'&lt;file&gt;' has no changes against &lt;base&gt;.</code></p>
+<p>The natural-language form takes a file too:
+<code>auto review &lt;file&gt;</code> is equivalent to
+<code>/auto_review &lt;file&gt;</code>. The file argument is resolved by
+<strong>Tab completion</strong> in either form, and it completes on the
+file’s <strong>name, not its location</strong> — typing <code>t</code>
+and pressing Tab offers <code>src/tui.rs</code>. The
+<code>immediate</code>, <code>all</code>, and <code>deep</code> keywords
+Tab-complete (and ghost) the same way — typing <code>imm</code> offers
+<code>immediate</code>, typing <code>al</code> offers <code>all</code>,
+and typing <code>de</code> offers <code>deep</code> — and any of them
+may be combined with a file, and with each other, in any order. The
+candidate list matches what will be reviewed: on
+<code>main</code>/<code>master</code> it is every tracked file (files
+ignored by <code>.gitignore</code> are excluded); on any other branch it
+is only the files that differ from the default branch. Selecting a
+candidate fills in its full repository-relative path; a hand-typed bare
+name (e.g. <code>tui.rs</code>) is resolved too. On a branch, a file
+with no changes against the default branch is refused with
+<code>'&lt;file&gt;' has no changes against &lt;base&gt;.</code></p>
+<h3 id="reviewing-every-file">Reviewing every file</h3>
+<p><code>/auto_review all</code> reviews every file <code>git</code>
+tracks in the project instead of the branch diff or a single file — the
+view, the categories, and the report are exactly the same, just with
+every tracked file in the checklist. Each file gets the same treatment
+as a single-file review on <code>main</code>/<code>master</code>: a full
+read of its current content, every line in scope, regardless of which
+branch you are on — <code>all</code> reviews what is actually on disk,
+not a diff, so a branch behind the default branch is reviewed anyway
+(the rebased-branch guard does not apply here). Untracked files and
+anything excluded by <code>.gitignore</code> are left out — the file
+list comes straight from <code>git ls-files</code>. If <code>all</code>
+is combined with a file argument, <code>all</code> wins and the file is
+ignored; combine it with <code>immediate</code> —
+<code>/auto_review all immediate</code> — to skip the pre-start phase
+and begin reviewing the whole project at once. The natural-language form
+takes it too: <code>auto review all</code>.</p>
 <h3 id="layout-1">Layout</h3>
-<p>The view opens with the tool header row at the top and under it the two panes, exactly like <code>/review</code>; the <strong>status area</strong> is the first row of the left pane, so the file checklist on the right keeps its full height. The input window stays empty — auto review takes no typed request.</p>
+<p>The view opens with the tool header row at the top and under it the
+two panes, exactly like <code>/review</code>; the <strong>status
+area</strong> is the first row of the left pane, so the file checklist
+on the right keeps its full height. The input window stays empty — auto
+review takes no typed request.</p>
 <ul>
-<li><strong>Header row</strong> — the tool title (<code>Auto review: &lt;branch&gt;</code>) and the key help, with the <code>Files (n)</code> header of the right pane.</li>
-<li><strong>Status area</strong> — a highlighted bar across the left pane, just below the header, showing what is being worked on: the file (with its position in the file list), the category, the overall progress across all of the run's requests, the total time spent on the run so far, and the estimated time still to go, e.g. <code>File: src/main.rs (2/5)  Category: Security  Progress: 8/26 (30%)  Time: 1m12s  Estimated: 2m48s</code>. Both times use the same shortest form as the Thinking/Working timers (<code>5s</code>, <code>1m5s</code>, <code>1h2m3s</code>). The <strong>estimate</strong> is the average time per completed request so far extrapolated over the requests still to run; it is recomputed after each request finishes and counts down between them. It appears once the first request completes and drops away when the run ends — after the run the bar shows <code>Done</code> (or <code>Cancelled</code>) with the time frozen at the run's total.</li>
-<li><strong>Left pane</strong> — below the status area, the <strong>report</strong>, rendered from Markdown with the syntax markers consumed: one bold heading per category (Overall, Code, Security, Memory, Performance, Test Suite, Documentation), each listing the findings collected so far as a bullet list with the file names in bold, ending with the <strong>Conclusion</strong>. A category that has produced nothing yet shows <code>(Press Alt+s)</code> before the run starts, <code>(pending)</code> while it is in progress, and <code>No issues found</code> once it is done. The pane scrolls and pans independently.</li>
-<li><strong>Right pane</strong> — the checklist of changed files, one per row, as in <code>/review</code>. The file currently being reviewed is highlighted and its status box blinks a white dot until its review resolves to green or red. A file marked <strong>Ignore</strong> (Alt+m, before the run) shows a <strong>blue dot</strong> and is skipped. Once the run ends (or the whole-change pass starts) the highlight is cleared — nothing is being reviewed anymore; <code>Alt+j</code>/<code>Alt+k</code> bring it back to move through the list while browsing.</li>
+<li><strong>Header row</strong> — the tool title
+(<code>Auto review: &lt;branch&gt;</code>) and the key help, with the
+<code>Files (n)</code> header of the right pane.</li>
+<li><strong>Status area</strong> — a highlighted bar across the left
+pane, just below the header, showing what is being worked on: the file
+(with its position in the file list), the category, the overall progress
+across all of the run’s requests, the total time spent on the run so
+far, and the estimated time still to go,
+e.g. <code>File: src/main.rs (2/5)  Category: Security  Progress: 8/26 (30%)  Time: 1m12s  Estimated: 2m48s</code>.
+Both times use the same shortest form as the Thinking/Working timers
+(<code>5s</code>, <code>1m5s</code>, <code>1h2m3s</code>). The
+<strong>estimate</strong> is the average time per completed request so
+far extrapolated over the requests still to run; it is recomputed after
+each request finishes and counts down between them. It appears once the
+first request completes and drops away when the run ends — after the run
+the bar shows <code>Done</code> (or <code>Cancelled</code>) with the
+time frozen at the run’s total.</li>
+<li><strong>Left pane</strong> — below the status area, the
+<strong>report</strong>, rendered from Markdown with the syntax markers
+consumed: one bold heading per category (Overall, Code, Security,
+Memory, Performance, Test Suite, Documentation), each listing the
+findings collected so far as a bullet list with the file names in bold,
+ending with the <strong>Conclusion</strong>. A category that has
+produced nothing yet shows <code>(Press Alt+s)</code> before the run
+starts, <code>(pending)</code> while it is in progress, and
+<code>No issues found</code> once it is done. The pane scrolls and pans
+independently.</li>
+<li><strong>Right pane</strong> — the checklist of changed files, one
+per row, as in <code>/review</code>. Before the run starts, each file’s
+box shows its mode as a dot — <strong>white</strong> for Normal,
+<strong>purple</strong> for Deep, <strong>blue</strong> for Ignore — so
+all three read the same way at a glance; see <em>Normal, Deep, and
+Ignore</em> below. Once the run starts, the file currently being
+reviewed is highlighted and its status box blinks a white dot regardless
+of mode, until its review resolves to green or red. Once the run ends
+(or the whole-change pass starts) the highlight is cleared — nothing is
+being reviewed anymore; <code>Alt+j</code>/<code>Alt+k</code> bring it
+back to move through the list while browsing.</li>
 </ul>
-<p>The header row offers different keys in each phase: <strong>before the run starts</strong> the pre-start keys (<code>Alt+s Start  Alt+j/k Switch file  Alt+m Mode  Alt+e Diff  Esc Esc Cancel  Alt+x Exit</code>); <strong>while the run is in progress</strong> the run keys (<code>Esc Esc Cancel  Alt+x Exit</code>); once the run has <strong>ended</strong> the browse keys (<code>Alt+j/k Switch file  Alt+a Approve  Alt+r Reject  Alt+e Open  ↑/↓ Item  Enter Diff  PgUp/PgDn Category  - Remove  Alt+x Exit</code>).</p>
+<p>The header row offers different keys in each phase: <strong>before
+the run starts</strong> the pre-start keys
+(<code>Alt+s Start  Alt+j/k Switch file  Alt+m Mode  Alt+e Diff  Esc Esc Cancel  Alt+x Exit</code>);
+<strong>while the run is in progress</strong> the run keys
+(<code>Esc Esc Cancel  Alt+x Exit</code>); once the run has
+<strong>ended</strong> the browse keys
+(<code>Alt+j/k Switch file  Alt+a Approve  Alt+r Reject  Alt+e Open  ↑/↓ Item  Enter Diff  PgUp/PgDn Category  - Remove  Alt+x Exit</code>).</p>
 <pre><code> Auto review: feature/x ...                          |Files (3)
  File: src/main.rs (2/3) ... Time: 45s Estimated: 1m |[*] README.md
  Overall                                |[o] src/main.rs  &lt;- reviewing (blinks)
@@ -491,45 +1293,328 @@ review branch</code></pre>
  Security                               |
    (pending)                            |</code></pre>
 <h3 id="starting-the-run">Starting the run</h3>
-<p>Unless you passed <code>immediate</code>, the view opens in a <strong>pre-start phase</strong>: the panes are drawn but no requests are sent yet, every category reads <code>(Press Alt+s)</code>, and the status area shows how many files will be reviewed. Press <strong><code>Alt+s</code></strong> to begin; from then on the run behaves exactly as described below.</p>
+<p>Unless you passed <code>immediate</code>, the view opens in a
+<strong>pre-start phase</strong>: the panes are drawn but no requests
+are sent yet, every category reads <code>(Press Alt+s)</code>, and the
+status area shows how many files will be reviewed. Press
+<strong><code>Alt+s</code></strong> to begin; from then on the run
+behaves exactly as described below.</p>
 <p>Before starting, you can prepare the run:</p>
 <ul>
-<li><strong><code>Alt+j</code>/<code>Alt+k</code></strong> move the highlight through the file list (like <code>/review</code>).</li>
-<li><strong><code>Alt+m</code></strong> (Mode) toggles the highlighted file between <strong>Normal</strong> and <strong>Ignore</strong>. An ignored file shows a <strong>blue dot</strong> and is <strong>skipped from the run entirely</strong> — it gets no requests, and when the run starts it is <strong>automatically approved</strong>: its blue dot turns <strong>green</strong> and it counts as approved toward the verdict, so it never appears in the Conclusion's rejected / not-reviewed listing. This lets you exclude files you do not want reviewed (vendored code, generated output, an unrelated change) before the run begins. Toggle <code>Alt+m</code> again to bring a file back to Normal.</li>
-<li><strong><code>Alt+e</code></strong> (Diff) opens the highlighted file's diff in <code>$EDITOR</code>, like <code>/diff</code> for one file — orangu writes the file's unified diff to a temporary file and opens it in a separate window, so you can read what changed before deciding whether to review or ignore it.</li>
+<li><strong><code>Alt+j</code>/<code>Alt+k</code></strong> move the
+highlight through the file list (like <code>/review</code>).</li>
+<li><strong><code>Alt+m</code></strong> (Mode) cycles the highlighted
+file through three modes, in order — <strong>Normal → Deep → Ignore →
+Normal</strong> — described in full below.</li>
+<li><strong><code>Alt+e</code></strong> (Diff) opens the highlighted
+file’s diff in <code>$EDITOR</code>, like <code>/diff</code> for one
+file — orangu writes the file’s unified diff to a temporary file and
+opens it in a separate window, so you can read what changed before
+deciding which mode to give it.</li>
 </ul>
-<p><code>Alt+x</code> (or a double <code>Esc</code>) leaves without reviewing. Ignore can only be set in this phase; once the run has started, <code>Alt+s</code>, <code>Alt+j</code>/<code>Alt+k</code>, and <code>Alt+m</code> drop from the header.</p>
+<p><code>Alt+x</code> (or a double <code>Esc</code>) leaves without
+reviewing. The mode can only be changed in this phase; once the run has
+started, <code>Alt+s</code>, <code>Alt+j</code>/<code>Alt+k</code>, and
+<code>Alt+m</code> drop from the header.</p>
+<h3 id="normal-deep-and-ignore">Normal, Deep, and Ignore</h3>
+<p>Every file starts in <strong>Normal</strong> —
+<code>/auto_review</code>’s default review, described in full in <em>How
+the review runs</em> below — unless the <code>deep</code> keyword was
+given at launch (<code>/auto_review deep</code>,
+<code>/auto_review deep all</code>, …), in which case every file starts
+in Deep instead. Either way, <code>Alt+m</code> advances the highlighted
+file through the cycle <strong>Normal → Deep → Ignore → Normal</strong>
+during the pre-start phase, so individual files can still be adjusted
+(or excluded) before the run begins. Only <strong>Ignore</strong>
+changes <em>what</em> gets reviewed; <strong>Deep</strong> reviews the
+file through the same categories as Normal, just with three additional
+passes:</p>
+<ul>
+<li><strong>No diff compression.</strong> Normal respects the configured
+diff compression (<code>[orangu].compression</code>, on by default),
+which can shorten a very large diff before it reaches the model. Deep
+always sends the <strong>full, untruncated diff</strong> — at the cost
+of more tokens on large changes.</li>
+<li><strong>Cross-file graph context.</strong> Deep folds in the callers
+and callees of the file’s changed symbols that live in <em>other</em>
+files — pulled from the workspace’s background knowledge-graph scan, the
+same one <code>/graph</code> and the <code>graph_lookup</code> tool use
+— right after the diff in each category prompt, so the model can see how
+a changed function is used elsewhere, not just the file in front of it.
+Additionally, it applies <strong>Predictive Group Vectors</strong> to
+mathematically predict and list the top 3 most coupled subsystems
+(files) for cross-file consistency checks. This section is only present
+when the graph actually has cross-file neighbours recorded for that
+file; see <em>Knowledge graph status</em> below for why it can come up
+empty.</li>
+<li><strong>Verify pass on rejects.</strong> If a Deep file ends with at
+least one rejected category, one more request re-lists every finding
+recorded against it and asks the model to reconsider each one now that
+every category has had its say. A finding it withdraws is dropped from
+the report; if that clears every finding, the file is approved after all
+instead of staying rejected on a false positive.</li>
+</ul>
+<p><strong>Ignore</strong> shows a <strong>blue dot</strong> and is
+<strong>skipped from the run entirely</strong> — it gets no requests,
+and when the run starts it is <strong>automatically approved</strong>:
+its dot turns <strong>green</strong> and it counts as approved toward
+the verdict, so it never appears in the Conclusion’s rejected /
+not-reviewed listing. This lets you exclude files you do not want
+reviewed at all (vendored code, generated output, an unrelated change)
+before the run begins.</p>
+<p>A Deep file’s dot is <strong>purple</strong> before the run starts;
+once reviewed it shows the normal green/red status like any other file —
+Deep does not change how a file’s final status is decided, only how
+thoroughly it gets there.</p>
+<h4 id="knowledge-graph-status">Knowledge graph status</h4>
+<p>Deep’s cross-file context depends on orangu’s background
+knowledge-graph scan of the workspace. While a Deep review is running,
+the status bar shows a <strong><code>Graph: ●</code></strong> indicator
+alongside <code>Pending: N</code>: white while the scan is still
+building, green once it has finished, red if the scan task itself
+failed. (<code>/information</code> reports the same thing as a
+<code>Graph</code> row worded <code>Building</code>,
+<code>Complete</code>, or <code>None</code>.) A file reviewed before the
+graph has finished — or before it has picked up very recent edits, since
+the graph only rescans changed files on its own schedule rather than
+synchronously before a review — simply gets no cross-file context for
+that request; this is not an error.</p>
 <h3 id="how-the-review-runs">How the review runs</h3>
-<p>The files are reviewed one at a time, in diff order. Each file's name and extension enable the categories that are scanned, so the run spends its requests only where a review can act:</p>
+<p>The files are reviewed one at a time, in diff order. Each file’s name
+and extension enable the categories that are scanned, so the run spends
+its requests only where a review can act:</p>
 <ul>
-<li>A file on the <strong>skip list</strong> is approved at once, with <strong>no requests</strong>. These are files whose diff a review cannot act on: generated dependency <strong>lock files</strong> — by extension <code>.lock</code> (<code>Cargo.lock</code>, <code>poetry.lock</code>, <code>Pipfile.lock</code>, <code>Gemfile.lock</code>, <code>composer.lock</code>, <code>flake.lock</code>, …) and by name <code>package-lock.json</code>, <code>npm-shrinkwrap.json</code>, <code>pnpm-lock.yaml</code>, <code>go.sum</code>, <code>go.work.sum</code> — and <strong>binary assets</strong>: images (<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>, <code>.gif</code>, <code>.bmp</code>, <code>.ico</code>, <code>.svg</code>, <code>.webp</code>, <code>.tiff</code>, <code>.tif</code>), fonts (<code>.otf</code>, <code>.ttf</code>, <code>.woff</code>, <code>.woff2</code>, <code>.eot</code>), and <code>.pdf</code>, <code>.p12</code>, <code>.jks</code>, <code>.keystore</code>.</li>
-<li>A file detected as <strong>documentation</strong> (<code>.md</code>, <code>.markdown</code>, <code>.mkd</code>, <code>.mdown</code>, <code>.mdx</code>, <code>.rst</code>, <code>.adoc</code>, <code>.asciidoc</code>, <code>.txt</code>, <code>.text</code>, <code>.org</code>, <code>.tex</code>, <code>.texi</code>, <code>.texinfo</code>, <code>.pod</code>, <code>.rdoc</code>) skips the code-related checks and is reviewed only for the <strong>Documentation</strong> category — a single request per file.</li>
-<li>Every other file — the fallback — is scanned for all six per-file categories: Code, Security, Memory, Performance, Test Suite, then Documentation. Build and metadata files take this full review too: extensionless ones (<code>Makefile</code>, <code>Dockerfile</code>) fall through to it automatically, and the few that carry a documentation-looking extension (<code>CMakeLists.txt</code>, <code>requirements.txt</code>) are pulled back into it by name so a <code>.txt</code> extension does not demote them to documentation only.</li>
+<li>A file on the <strong>skip list</strong> is approved at once, with
+<strong>no requests</strong>. These are files whose diff a review cannot
+act on: generated dependency <strong>lock files</strong> — by extension
+<code>.lock</code> (<code>Cargo.lock</code>, <code>poetry.lock</code>,
+<code>Pipfile.lock</code>, <code>Gemfile.lock</code>,
+<code>composer.lock</code>, <code>flake.lock</code>, …) and by name
+<code>package-lock.json</code>, <code>npm-shrinkwrap.json</code>,
+<code>pnpm-lock.yaml</code>, <code>go.sum</code>,
+<code>go.work.sum</code> — and <strong>binary assets</strong>: images
+(<code>.png</code>, <code>.jpg</code>, <code>.jpeg</code>,
+<code>.gif</code>, <code>.bmp</code>, <code>.ico</code>,
+<code>.svg</code>, <code>.webp</code>, <code>.tiff</code>,
+<code>.tif</code>), fonts (<code>.otf</code>, <code>.ttf</code>,
+<code>.woff</code>, <code>.woff2</code>, <code>.eot</code>), and
+<code>.pdf</code>, <code>.p12</code>, <code>.jks</code>,
+<code>.keystore</code>.</li>
+<li>A file detected as <strong>documentation</strong> (<code>.md</code>,
+<code>.markdown</code>, <code>.mkd</code>, <code>.mdown</code>,
+<code>.mdx</code>, <code>.rst</code>, <code>.adoc</code>,
+<code>.asciidoc</code>, <code>.txt</code>, <code>.text</code>,
+<code>.org</code>, <code>.tex</code>, <code>.texi</code>,
+<code>.texinfo</code>, <code>.pod</code>, <code>.rdoc</code>) skips the
+code-related checks and is reviewed only for the
+<strong>Documentation</strong> category — a single request per
+file.</li>
+<li>Every other file — the fallback — is scanned for all six per-file
+categories: Code, Security, Memory, Performance, Test Suite, then
+Documentation. Build and metadata files take this full review too:
+extensionless ones (<code>Makefile</code>, <code>Dockerfile</code>) fall
+through to it automatically, and the few that carry a
+documentation-looking extension (<code>CMakeLists.txt</code>,
+<code>requirements.txt</code>) are pulled back into it by name so a
+<code>.txt</code> extension does not demote them to documentation
+only.</li>
 </ul>
-<p>For each enabled category, one focused request is sent to the LLM asking for a verdict plus findings for that category only, with the file's diff attached. The review is explicitly scoped to <strong>the changes made</strong> — the added, removed, and modified lines, and how they fit into the surrounding context — not to pre-existing content the change does not touch, and each category is capped at five short findings. Each finding is prefixed with its location as <code>&lt;file&gt;:&lt;line&gt;:</code> — the affected <strong>line number</strong>, or range as <code>&lt;start&gt;-&lt;end&gt;</code>, in the new version of the file (the right side of the diff) — so the report points at where each issue lives, e.g. <code>src/main.rs:42: unwrap may panic</code>. The status area names the file and category being worked on and counts the overall progress — the total reflects only the enabled categories — while the status bar shows the usual thinking indicator.</p>
-<p>As each category review arrives, its findings are appended to the matching section in the left pane, each prefixed with its location (<code>file:line</code>) in bold — so the report fills in category by category. When all of a file's categories have run, the file is automatically marked in the right pane — a <strong>green dot</strong> when every category passed, a <strong>red dot</strong> when any category rejected. Without an explicit verdict, a category passes only when its review found nothing. If a request fails — or its response carries neither a verdict nor findings (for example, truncated by the response cap) — the file keeps its white (unreviewed) box and the problem is noted under Overall; such a response never passes silently as a clean review.</p>
-<p>After the last file, a final pass reviews the change as a whole: the per-file verdicts and findings are summarized by the model into a few bullet points — how the changes fit together, readiness, risk, and common themes — under <strong>Overall</strong>.</p>
-<p>The report ends with the <strong>Conclusion</strong>, derived from the file statuses rather than from the model: the verdict — <code>orangu approves this patch</code> when every file is approved, or <code>orangu rejects this patch</code> when any file was rejected or not reviewed — stands alone in bold rather than as a list item; the affected files then follow as a bullet list in bold, grouped by their status (<code>Rejected: **file**</code>, <code>Not reviewed: **file**</code>). A closing <strong><code>Generated by: orangu &lt;version&gt; (&lt;model&gt;)</code></strong> line credits the orangu version and the reviewing model, e.g. <code>Generated by: **orangu 0.7.0** (gemma)</code>.</p>
-<p>Each request runs in its own scratch exchange, <strong>without tool definitions</strong> and with a <strong>capped response length</strong> (<code>[orangu].review_max_tokens</code>, default <code>512</code>; <code>0</code> disables the cap) — a review can neither wander off into tool calls nor generate unbounded output, which keeps single requests fast and bounded even on slow local models. For deeper reviews with a thinking model, raise the cap (e.g. <code>2048</code>) so the thinking tokens do not eat the answer; the <em>Response-token caps</em> part of the Configuration chapter covers the trade-offs in depth. The diff leads each prompt, so a file's category requests share their prefix and llama.cpp's prompt cache can reuse the processed diff across them. The reviews are independent of each other and nothing is added to your chat session.</p>
-<p>While the model works, the status bar shows <code>Thinking (...)</code> until the first token arrives and then the live generation rate (<code>Working @ X.Y t/s (...)</code> on llama.cpp), so a stalled server and a slowly generating model are easy to tell apart.</p>
-<p>A full-branch auto review can take a while, so when <strong><code>feedback</code> is on</strong> (see the Configuration chapter) orangu surfaces its progress outside the window too: while the run is in progress the <strong>terminal title</strong> reads <code>orangu ●</code> with the white dot blinking once a second, so a backgrounded or unfocused terminal still shows that a review is running. When the run <strong>finishes</strong>, orangu rings the <strong>terminal bell</strong> — the standard desktop notification sound (or a visual flash, depending on your terminal) — and drops the title back to a plain <code>orangu</code>. A run that is cancelled (<code>Esc Esc</code>) or exited (<code>Alt+x</code>) before it finishes does not ring. With <code>feedback</code> off, neither the title nor the bell is touched.</p>
-<h3 id="browsing-and-overriding-the-report">Browsing and overriding the report</h3>
-<p>Once the run has ended (done or cancelled), the report stays on screen and you can override the model's verdicts file by file. <code>Alt+j</code>/<code>Alt+k</code> move the highlight through the file list — from no highlight, <code>Alt+j</code> starts at the first file and <code>Alt+k</code> at the last.</p>
-<p>You can also work through the report <strong>item by item</strong> in the left pane. <code>Up</code>/<code>Down</code> move a highlight between the individual report items — the findings and the Conclusion entries, never the category headings — scrolling the pane as needed to keep the highlighted item in view (from no highlight, <code>Down</code> starts at the first item and <code>Up</code> at the last). Moving the highlight also points the file list on the right at the item's file, so <code>Alt+a</code>/<code>Alt+r</code> act on it.</p>
-<p>To skip across a long report <strong>category by category</strong>, use <code>PageDown</code>/<code>PageUp</code>: they jump the highlight straight to the first item of the next or previous category that <strong>has findings</strong>, scrolling that category's heading to the top so the whole section comes into view. Empty categories (those reading <code>No issues found</code>) are skipped, and the Conclusion entries count as the final category. From no highlight, <code>PageDown</code> lands on the first category with findings and <code>PageUp</code> on the last; once the highlight is already in the last (or first) such category the key is a no-op, so it never jumps backward past the report. Use <code>Up</code>/<code>Down</code> to walk the individual findings within a category.</p>
+<p>For each enabled category, one focused request is sent to the LLM
+asking for a verdict plus findings for that category only, with the
+file’s diff attached. The review is explicitly scoped to <strong>the
+changes made</strong> — the added, removed, and modified lines, and how
+they fit into the surrounding context — not to pre-existing content the
+change does not touch, and each category is capped at five short
+findings. Each finding is prefixed with its location as
+<code>&lt;file&gt;:&lt;line&gt;:</code> — the affected <strong>line
+number</strong>, or range as <code>&lt;start&gt;-&lt;end&gt;</code>, in
+the new version of the file (the right side of the diff) — so the report
+points at where each issue lives,
+e.g. <code>src/main.rs:42: unwrap may panic</code>. The status area
+names the file and category being worked on and counts the overall
+progress — the total reflects only the enabled categories — while the
+status bar shows the usual thinking indicator.</p>
+<p>As each category review arrives, its findings are appended to the
+matching section in the left pane, each prefixed with its location
+(<code>file:line</code>) in bold — so the report fills in category by
+category. When all of a file’s categories have run, the file is
+automatically marked in the right pane — a <strong>green dot</strong>
+when every category passed, a <strong>red dot</strong> when any category
+rejected. Without an explicit verdict, a category passes only when its
+review found nothing. If a request fails — or its response carries
+neither a verdict nor findings (for example, truncated by the response
+cap) — the file keeps its white (unreviewed) box and the problem is
+noted under Overall; such a response never passes silently as a clean
+review.</p>
+<p>After the last file, a final pass reviews the change as a whole: the
+per-file verdicts and findings are summarized by the model into a few
+bullet points — how the changes fit together, readiness, risk, and
+common themes — under <strong>Overall</strong>.</p>
+<p>The report ends with the <strong>Conclusion</strong>, derived from
+the file statuses rather than from the model: the verdict —
+<code>orangu approves this patch</code> when every file is approved, or
+<code>orangu rejects this patch</code> when any file was rejected or not
+reviewed — stands alone in bold rather than as a list item; the affected
+files then follow as a bullet list in bold, grouped by their status
+(<code>Rejected: **file**</code>, <code>Not reviewed: **file**</code>).
+A closing
+<strong><code>Generated by: orangu &lt;version&gt; (&lt;model&gt;)</code></strong>
+line credits the orangu version and the reviewing model,
+e.g. <code>Generated by: **orangu 0.7.0** (gemma)</code>.</p>
+<p>Each request runs in its own scratch exchange, <strong>without tool
+definitions</strong> and with a <strong>capped response length</strong>
+(<code>[orangu].review_max_tokens</code>, default <code>512</code>;
+<code>0</code> disables the cap) — a review can neither wander off into
+tool calls nor generate unbounded output, which keeps single requests
+fast and bounded even on slow local models. For deeper reviews with a
+thinking model, raise the cap (e.g. <code>2048</code>) so the thinking
+tokens do not eat the answer; the <em>Response-token caps</em> part of
+the Configuration chapter covers the trade-offs in depth. Every category
+prompt carries the whole file plus its diff (not just the diff), and —
+on an orangu-server — a file’s category requests are all pinned to the
+same <code>id_slot</code>, so its file and diff are prompt-processed
+once and reused from the server’s KV cache across every category instead
+of being recomputed each time. The reviews are independent of each other
+and nothing is added to your chat session.</p>
+<p>While the model works, the status bar shows
+<code>Thinking (...)</code> until the first token arrives and then the
+live generation rate (<code>Working @ X.Y t/s (...)</code>), so a
+stalled server and a slowly generating model are easy to tell apart.</p>
+<p>A full-branch auto review can take a while, so when
+<strong><code>feedback</code> is on</strong> (see the Configuration
+chapter) orangu surfaces its progress outside the window too: while the
+run is in progress the <strong>terminal title</strong> reads
+<code>orangu ●</code> (<code>orangu ◆</code> while the file currently
+being reviewed is Deep — a window title cannot carry color, so Deep is
+shown by shape instead of the purple used in the pane) with the dot
+blinking once a second, so a backgrounded or unfocused terminal still
+shows that a review is running. When the run <strong>finishes</strong>,
+orangu rings the <strong>terminal bell</strong> — the standard desktop
+notification sound (or a visual flash, depending on your terminal) — and
+drops the title back to a plain <code>orangu</code>. A run that is
+cancelled (<code>Esc Esc</code>) or exited (<code>Alt+x</code>) before
+it finishes does not ring. With <code>feedback</code> off, neither the
+title nor the bell is touched.</p>
+<h3 id="browsing-and-overriding-the-report">Browsing and overriding the
+report</h3>
+<p>Once the run has ended (done or cancelled), the report stays on
+screen and you can override the model’s verdicts file by file.
+<code>Alt+j</code>/<code>Alt+k</code> move the highlight through the
+file list — from no highlight, <code>Alt+j</code> starts at the first
+file and <code>Alt+k</code> at the last.</p>
+<p>You can also work through the report <strong>item by item</strong> in
+the left pane. <code>Up</code>/<code>Down</code> move a highlight
+between the individual report items — the findings and the Conclusion
+entries, never the category headings — scrolling the pane as needed to
+keep the highlighted item in view (from no highlight, <code>Down</code>
+starts at the first item and <code>Up</code> at the last). Moving the
+highlight also points the file list on the right at the item’s file, so
+<code>Alt+a</code>/<code>Alt+r</code> act on it.</p>
+<p>To skip across a long report <strong>category by category</strong>,
+use <code>PageDown</code>/<code>PageUp</code>: they jump the highlight
+straight to the first item of the next or previous category that
+<strong>has findings</strong>, scrolling that category’s heading to the
+top so the whole section comes into view. Empty categories (those
+reading <code>No issues found</code>) are skipped, and the Conclusion
+entries count as the final category. From no highlight,
+<code>PageDown</code> lands on the first category with findings and
+<code>PageUp</code> on the last; once the highlight is already in the
+last (or first) such category the key is a no-op, so it never jumps
+backward past the report. Use <code>Up</code>/<code>Down</code> to walk
+the individual findings within a category.</p>
 <ul>
-<li><strong><code>-</code> — remove the highlighted item.</strong> A <strong>finding</strong> is dropped from its category; if that was the <strong>last</strong> finding recorded against its file, the file is approved (its dot turns green) and it drops out of the Conclusion. Removing a <strong>Conclusion</strong> item approves the whole file it stands for, clearing every finding recorded against it across the report — the same as approving that file. So you can approve the patch outright by removing all the flagged items: once nothing is left, every file is approved and the verdict reads <code>orangu approves this patch</code>.</li>
-<li><strong><code>Alt+a</code> — approve the highlighted file.</strong> Its dot turns green and <strong>every finding recorded against it is removed from the report</strong> — the model's findings and your own rejection comments alike — so an approved file no longer appears in any category, in the exit report, or on the clipboard. The Conclusion follows the file statuses, so approving the last rejected file flips the verdict to <code>orangu approves this patch</code>.</li>
-<li><strong><code>Alt+r</code> — reject the highlighted file.</strong> A reject window opens over the panes with a <strong>category selector</strong> (Overall, Code, Security, Memory, Performance, Test Suite, Documentation) and a <strong>multi-line Markdown comment editor</strong>. <code>Tab</code> moves the focus between the two; in the selector <code>Up</code>/<code>Down</code> pick the category (<code>Enter</code> moves on to the editor), and in the editor <code>Enter</code> inserts a newline while <code>Up</code>/<code>Down</code>, <code>Home</code>/<code>End</code>, and the usual editing keys move and edit. Press <code>Alt+Enter</code> to save — the file's dot turns red and the comment is appended to the chosen category, prefixed with the file path in bold — or <code>Esc</code> to discard the window. Saving with an empty comment still rejects the file without adding a finding. <code>Alt+r</code> can be repeated on the same file; each saved comment is kept.</li>
-<li><strong><code>Alt+e</code> — open the highlighted file</strong> in your <code>$EDITOR</code>, exactly like <code>Alt+e</code> in <code>/review</code>: terminal editors open in a new window and GUI editors open their own, leaving the report on screen.</li>
-<li><strong><code>Enter</code> — show the selected file's diff.</strong> With the input window empty, pressing <code>Enter</code> opens a <strong>diff popup</strong> over the panes showing the colorized <code>/diff</code> of the highlighted file. When that file is <strong>not part of the diff</strong> (for example a whole-file <code>/auto_review &lt;file&gt;</code> review of an unchanged file), it falls back to the <code>/show_file</code> tool, showing the file's syntax-highlighted code around the highlighted finding's line — <strong>3 lines before and after</strong>. <code>Up</code>/<code>Down</code> (and <code>PageUp</code>/<code>PageDown</code>) scroll it, <code>Alt+Left</code>/<code>Alt+Right</code> pan it for long lines, and <code>Esc</code> closes it. When the input window instead holds an <code>open &lt;path&gt;</code> line, <code>Enter</code> submits that instead (see below).</li>
-<li><strong><code>/open_file &lt;path&gt;</code> / <code>open &lt;path&gt;</code> + <code>Enter</code> — open any project file</strong>, not only the changed ones. Once the run is done the input window at the bottom accepts an open command: type <code>/open_file &lt;path&gt;</code> (or <code>open &lt;path&gt;</code>), with <code>Tab</code> completing every workspace file just like <code>/open_file</code> at the main prompt, and press <code>Enter</code> to open it in your <code>$EDITOR</code>. This works <strong>only after the run has finished</strong> — during the run the input window stays empty. While the input is empty, <code>Enter</code> opens the diff popup and <code>-</code> still removes the highlighted item; a <code>-</code> typed into a path is left for editing.</li>
+<li><strong><code>-</code> — remove the highlighted item.</strong> A
+<strong>finding</strong> is dropped from its category; if that was the
+<strong>last</strong> finding recorded against its file, the file is
+approved (its dot turns green) and it drops out of the Conclusion.
+Removing a <strong>Conclusion</strong> item approves the whole file it
+stands for, clearing every finding recorded against it across the report
+— the same as approving that file. So you can approve the patch outright
+by removing all the flagged items: once nothing is left, every file is
+approved and the verdict reads
+<code>orangu approves this patch</code>.</li>
+<li><strong><code>Alt+a</code> — approve the highlighted file.</strong>
+Its dot turns green and <strong>every finding recorded against it is
+removed from the report</strong> — the model’s findings and your own
+rejection comments alike — so an approved file no longer appears in any
+category, in the exit report, or on the clipboard. The Conclusion
+follows the file statuses, so approving the last rejected file flips the
+verdict to <code>orangu approves this patch</code>.</li>
+<li><strong><code>Alt+r</code> — reject the highlighted file.</strong> A
+reject window opens over the panes with a <strong>category
+selector</strong> (Overall, Code, Security, Memory, Performance, Test
+Suite, Documentation) and a <strong>multi-line Markdown comment
+editor</strong>. <code>Tab</code> moves the focus between the two; in
+the selector <code>Up</code>/<code>Down</code> pick the category
+(<code>Enter</code> moves on to the editor), and in the editor
+<code>Enter</code> inserts a newline while
+<code>Up</code>/<code>Down</code>, <code>Home</code>/<code>End</code>,
+and the usual editing keys move and edit. Press <code>Alt+Enter</code>
+to save — the file’s dot turns red and the comment is appended to the
+chosen category, prefixed with the file path in bold — or
+<code>Esc</code> to discard the window. Saving with an empty comment
+still rejects the file without adding a finding. <code>Alt+r</code> can
+be repeated on the same file; each saved comment is kept.</li>
+<li><strong><code>Alt+e</code> — open the highlighted file</strong> in
+your <code>$EDITOR</code>, exactly like <code>Alt+e</code> in
+<code>/review</code>: terminal editors open in a new window and GUI
+editors open their own, leaving the report on screen.</li>
+<li><strong><code>Enter</code> — show the selected file’s diff.</strong>
+With the input window empty, pressing <code>Enter</code> opens a
+<strong>diff popup</strong> over the panes showing the colorized
+<code>/diff</code> of the highlighted file. When that file is
+<strong>not part of the diff</strong> (for example a whole-file
+<code>/auto_review &lt;file&gt;</code> review of an unchanged file), it
+falls back to the <code>/show_file</code> tool, showing the file’s
+syntax-highlighted code around the highlighted finding’s line —
+<strong>3 lines before and after</strong>.
+<code>Up</code>/<code>Down</code> (and
+<code>PageUp</code>/<code>PageDown</code>) scroll it,
+<code>Alt+Left</code>/<code>Alt+Right</code> pan it for long lines, and
+<code>Esc</code> closes it. When the input window instead holds an
+<code>open &lt;path&gt;</code> line, <code>Enter</code> submits that
+instead (see below).</li>
+<li><strong><code>/open_file &lt;path&gt;</code> /
+<code>open &lt;path&gt;</code> + <code>Enter</code> — open any project
+file</strong>, not only the changed ones. Once the run is done the input
+window at the bottom accepts an open command: type
+<code>/open_file &lt;path&gt;</code> (or
+<code>open &lt;path&gt;</code>), with <code>Tab</code> completing every
+workspace file just like <code>/open_file</code> at the main prompt, and
+press <code>Enter</code> to open it in your <code>$EDITOR</code>. This
+works <strong>only after the run has finished</strong> — during the run
+the input window stays empty. While the input is empty,
+<code>Enter</code> opens the diff popup and <code>-</code> still removes
+the highlighted item; a <code>-</code> typed into a path is left for
+editing.</li>
 </ul>
-<p>Rejection comments become part of the report: they are rendered in the matching category of the left pane (and the exit report), and land on the clipboard as Markdown bullets — a multi-line comment keeps its lines inside one bullet, indented under the first line.</p>
+<p>Rejection comments become part of the report: they are rendered in
+the matching category of the left pane (and the exit report), and land
+on the clipboard as Markdown bullets — a multi-line comment keeps its
+lines inside one bullet, indented under the first line.</p>
 <h3 id="cancelling-and-exiting">Cancelling and exiting</h3>
-<p>Press <code>Esc</code> <code>Esc</code> to <strong>cancel</strong> the auto review: the in-flight request is dropped, the run stops, and the report collected so far stays on screen for browsing. Press <code>Alt+x</code> (or <code>Esc</code> <code>Esc</code> again once the run is no longer in progress) to <strong>exit</strong>.</p>
-<p>On exit the report — every category with its findings (or <code>No issues found</code>), the <strong>Conclusion</strong> and its patch verdict, and the closing <code>Generated by:</code> line — is rendered into the output window exactly like the left pane (bold headings and file names, no Markdown syntax markers), while its raw Markdown is copied to the system clipboard: there each category is a <code>##</code> heading and its findings a bullet list with the file names in <code>**bold**</code>, ready to paste into an issue or pull request. The per-file statuses are not listed separately: the rejected and not-reviewed files appear inside the Conclusion (<code>Rejected: **file**</code>, <code>Not reviewed: **file**</code>). If the clipboard cannot be reached (for example on a headless machine), a short note is shown instead.</p>
-<p>The Markdown report is also kept for the rest of the session, so <code>/comment &lt;number&gt; with auto review</code> can post it on a GitHub/GitLab issue (see the <code>/comment</code> tool in the Git tools chapter).</p>
+<p>Press <code>Esc</code> <code>Esc</code> to <strong>cancel</strong>
+the auto review: the in-flight request is dropped, the run stops, and
+the report collected so far stays on screen for browsing. Press
+<code>Alt+x</code> (or <code>Esc</code> <code>Esc</code> again once the
+run is no longer in progress) to <strong>exit</strong>.</p>
+<p>On exit the report — every category with its findings (or
+<code>No issues found</code>), the <strong>Conclusion</strong> and its
+patch verdict, and the closing <code>Generated by:</code> line — is
+rendered into the output window exactly like the left pane (bold
+headings and file names, no Markdown syntax markers), while its raw
+Markdown is copied to the system clipboard: there each category is a
+<code>##</code> heading and its findings a bullet list with the file
+names in <code>**bold**</code>, ready to paste into an issue or pull
+request. The per-file statuses are not listed separately: the rejected
+and not-reviewed files appear inside the Conclusion
+(<code>Rejected: **file**</code>, <code>Not reviewed: **file**</code>).
+If the clipboard cannot be reached (for example on a headless machine),
+a short note is shown instead.</p>
+<p>The Markdown report is also kept for the rest of the session, so
+<code>/comment &lt;number&gt; with auto review</code> can post it on a
+GitHub/GitLab issue (see the <code>/comment</code> tool in the Git tools
+chapter).</p>
 <h3 id="key-bindings-1">Key bindings</h3>
 <table>
 <colgroup>
@@ -537,67 +1622,79 @@ review branch</code></pre>
 <col style="width: 50%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Key</th>
 <th>Action</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>Esc</code> <code>Esc</code></td>
 <td>Cancel the auto review (the collected report stays open)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+x</code></td>
 <td>Exit auto review mode; the report is copied to the clipboard</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Esc</code> <code>Esc</code> (after the run)</td>
 <td>Exit auto review mode, like <code>Alt+x</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+j</code> / <code>Alt+k</code></td>
 <td>Move the highlight through the file list (after the run)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Alt+a</code></td>
-<td>Approve the highlighted file and drop its findings from the report</td>
+<td>Approve the highlighted file and drop its findings from the
+report</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+r</code></td>
-<td>Reject the highlighted file: pick a category, write a Markdown comment</td>
+<td>Reject the highlighted file: pick a category, write a Markdown
+comment</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Alt+e</code></td>
 <td>Open the highlighted file in your configured editor</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Enter</code></td>
-<td>Show the selected file's <code>/diff</code> (or its <code>/show_file</code> code, ±3 lines around the finding, when it is not part of the diff) in a scrollable popup (after the run, while the input window is empty)</td>
+<td>Show the selected file’s <code>/diff</code> (or its
+<code>/show_file</code> code, ±3 lines around the finding, when it is
+not part of the diff) in a scrollable popup (after the run, while the
+input window is empty)</td>
 </tr>
-<tr class="odd">
-<td><code>/open_file &lt;path&gt;</code> / <code>open &lt;path&gt;</code> + <code>Enter</code></td>
-<td>Open any project file in your editor (after the run; <code>Tab</code> completes every workspace file)</td>
+<tr>
+<td><code>/open_file &lt;path&gt;</code> /
+<code>open &lt;path&gt;</code> + <code>Enter</code></td>
+<td>Open any project file in your editor (after the run;
+<code>Tab</code> completes every workspace file)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Up</code> / <code>Down</code></td>
-<td>Move the item highlight through the report's findings and Conclusion entries (after the run)</td>
+<td>Move the item highlight through the report’s findings and Conclusion
+entries (after the run)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>PageUp</code> / <code>PageDown</code></td>
-<td>Jump the item highlight to the previous / next category that has findings (after the run)</td>
+<td>Jump the item highlight to the previous / next category that has
+findings (after the run)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>-</code></td>
-<td>Remove the highlighted item; clearing a file's last item approves it (after the run, while the input window is empty)</td>
+<td>Remove the highlighted item; clearing a file’s last item approves it
+(after the run, while the input window is empty)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Alt+Left</code> / <code>Alt+Right</code></td>
 <td>Pan the report horizontally for long lines</td>
 </tr>
 </tbody>
 </table>
-<p>The report can be scrolled while the run is still in progress; <code>Alt+a</code>, <code>Alt+r</code>, <code>Alt+e</code>, and the <code>/open_file</code> input act once the run has ended.</p>
+<p>The report can be scrolled while the run is still in progress;
+<code>Alt+a</code>, <code>Alt+r</code>, <code>Alt+e</code>, and the
+<code>/open_file</code> input act once the run has ended.</p>
 <p>When the reject window is open it is modal:</p>
 <table>
 <colgroup>
@@ -605,29 +1702,31 @@ review branch</code></pre>
 <col style="width: 50%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Key</th>
 <th>Action</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>Tab</code></td>
-<td>Move the focus between the category selector and the comment editor</td>
+<td>Move the focus between the category selector and the comment
+editor</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Up</code> / <code>Down</code></td>
 <td>Pick the category (selector) / move the cursor (editor)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Enter</code></td>
 <td>Move on to the editor (selector) / insert a newline (editor)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Alt+Enter</code></td>
-<td>Save: mark the file rejected and add the comment to the category</td>
+<td>Save: mark the file rejected and add the comment to the
+category</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Esc</code></td>
 <td>Discard the window without saving</td>
 </tr>
@@ -636,45 +1735,62 @@ review branch</code></pre>
 <p>When the diff popup is open it is modal:</p>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>Key</th>
 <th>Action</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>Up</code> / <code>Down</code></td>
 <td>Scroll the diff</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>PageUp</code> / <code>PageDown</code></td>
 <td>Scroll the diff by a page</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Alt+Left</code> / <code>Alt+Right</code></td>
 <td>Pan the diff horizontally for long lines</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>Esc</code></td>
 <td>Close the popup, returning to the report</td>
 </tr>
 </tbody>
 </table>
-<h3 id="examples-17">Examples</h3>
+<h3 id="examples-20">Examples</h3>
 <pre class="text"><code>/auto_review</code></pre>
 <p>Review a single file (Tab-completes on the file name):</p>
 <pre class="text"><code>/auto_review src/tui.rs</code></pre>
-<p>Natural-language form (a whole-branch review, or a single file):</p>
+<p>Review every file in the project, starting at once:</p>
+<pre class="text"><code>/auto_review all immediate</code></pre>
+<p>Natural-language form (a whole-branch review, a single file, or every
+file):</p>
 <pre class="text"><code>auto review
-auto review src/tui.rs</code></pre>
+auto review src/tui.rs
+auto review all</code></pre>
 <h2 id="duplicates">/duplicates</h2>
-<p><code>/duplicates</code> scans the workspace for <strong>duplicated code</strong> across many languages and reports the function pairs that are structurally similar, so you can review them and decide whether they should be unified. It is handled locally and never sent to the model, and needs no Git repository.</p>
-<p>Run it with the <code>/duplicates</code> command, or the natural-language forms <code>find duplicates</code> or <code>find duplicate code</code>.</p>
+<p><code>/duplicates</code> scans the workspace for <strong>duplicated
+code</strong> across many languages and reports the function pairs that
+are structurally similar, so you can review them and decide whether they
+should be unified. It is handled locally and never sent to the model,
+and needs no Git repository.</p>
+<p>Run it with the <code>/duplicates</code> command, or the
+natural-language forms <code>find duplicates</code> or
+<code>find duplicate code</code>.</p>
 <h3 id="supported-languages">Supported languages</h3>
-<p>A file is analysed when its extension matches one of the built-in languages:</p>
+<p>A file is analysed when its extension matches one of the built-in
+languages:</p>
 <table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Language</th>
 <th>Extensions</th>
 <th>Language</th>
@@ -682,73 +1798,76 @@ auto review src/tui.rs</code></pre>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Rust</td>
 <td><code>.rs</code></td>
 <td>Scala</td>
 <td><code>.scala</code>, <code>.sc</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>C</td>
 <td><code>.c</code>, <code>.h</code></td>
 <td>OCaml</td>
 <td><code>.ml</code>, <code>.mli</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>C++</td>
-<td><code>.cc</code>, <code>.cpp</code>, <code>.cxx</code>, <code>.c++</code>, <code>.hpp</code>, <code>.hh</code>, <code>.hxx</code></td>
-<td>Haskell</td>
-<td><code>.hs</code></td>
-</tr>
-<tr class="even">
-<td>C#</td>
-<td><code>.cs</code></td>
+<td><code>.cc</code>, <code>.cpp</code>, <code>.cxx</code>,
+<code>.c++</code>, <code>.hpp</code>, <code>.hh</code>,
+<code>.hxx</code></td>
 <td>Julia</td>
 <td><code>.jl</code></td>
 </tr>
-<tr class="odd">
-<td>Go</td>
-<td><code>.go</code></td>
+<tr>
+<td>C#</td>
+<td><code>.cs</code></td>
 <td>Lua</td>
 <td><code>.lua</code></td>
 </tr>
-<tr class="even">
-<td>Java</td>
-<td><code>.java</code></td>
+<tr>
+<td>Go</td>
+<td><code>.go</code></td>
 <td>R</td>
 <td><code>.r</code></td>
 </tr>
-<tr class="odd">
-<td>Python</td>
-<td><code>.py</code>, <code>.pyi</code></td>
+<tr>
+<td>Java</td>
+<td><code>.java</code></td>
 <td>Zig</td>
 <td><code>.zig</code></td>
 </tr>
-<tr class="even">
-<td>JavaScript</td>
-<td><code>.js</code>, <code>.mjs</code>, <code>.cjs</code>, <code>.jsx</code></td>
+<tr>
+<td>Python</td>
+<td><code>.py</code>, <code>.pyi</code></td>
 <td>Swift</td>
 <td><code>.swift</code></td>
 </tr>
-<tr class="odd">
-<td>TypeScript</td>
-<td><code>.ts</code>, <code>.mts</code>, <code>.cts</code></td>
+<tr>
+<td>JavaScript</td>
+<td><code>.js</code>, <code>.mjs</code>, <code>.cjs</code>,
+<code>.jsx</code></td>
 <td>Dart</td>
 <td><code>.dart</code></td>
 </tr>
-<tr class="even">
-<td>TSX</td>
-<td><code>.tsx</code></td>
+<tr>
+<td>TypeScript</td>
+<td><code>.ts</code>, <code>.mts</code>, <code>.cts</code></td>
 <td>Erlang</td>
 <td><code>.erl</code>, <code>.hrl</code></td>
 </tr>
-<tr class="odd">
-<td>Ruby</td>
-<td><code>.rb</code></td>
+<tr>
+<td>TSX</td>
+<td><code>.tsx</code></td>
 <td>PHP</td>
 <td><code>.php</code></td>
 </tr>
-<tr class="even">
+<tr>
+<td>Ruby</td>
+<td><code>.rb</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td>Bash</td>
 <td><code>.sh</code>, <code>.bash</code></td>
 <td></td>
@@ -756,20 +1875,88 @@ auto review src/tui.rs</code></pre>
 </tr>
 </tbody>
 </table>
-<p>Functions are only ever compared <strong>within the same language</strong>, never across two — even where two languages share a file family (a <code>.ts</code> is never compared against a <code>.tsx</code>, nor a <code>.c</code> against a <code>.cpp</code>). Each language is a self-contained entry in orangu's grammar registry, so support for a new one is a small, isolated addition.</p>
+<blockquote>
+<p><strong>Haskell is not in this list.</strong> It was, until
+<code>tree-sitter-haskell</code>’s external scanner was found to write
+past a heap buffer on every parse (valgrind:
+<code>Invalid write of size 4</code> in
+<code>tree_sitter_haskell_external_scanner_scan</code>, reached from
+<code>ts_parser_parse</code>). That is undefined behaviour in any
+process that opens a <code>.hs</code> file, and it surfaced as a
+heap-corruption abort in an unrelated allocation later on. Upstream’s
+last release is v0.23.1 (November 2024) and its scanner has not been
+touched since September 2024, so there is no version to move to. The
+grammar was removed rather than shipped. Every other grammar is
+valgrind-clean over the same suite.</p>
+</blockquote>
+<p>Functions are only ever compared <strong>within the same
+language</strong>, never across two — even where two languages share a
+file family (a <code>.ts</code> is never compared against a
+<code>.tsx</code>, nor a <code>.c</code> against a <code>.cpp</code>).
+Each language is a self-contained entry in orangu’s grammar registry, so
+support for a new one is a small, isolated addition.</p>
 <h3 id="how-it-works">How it works</h3>
-<p>Every matching file in the workspace is walked (honouring <code>.gitignore</code>) and parsed into an <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">abstract syntax tree</a> with <a href="https://tree-sitter.github.io/tree-sitter/">tree-sitter</a>. Each function or method definition — including nested ones — is reduced to the multiset of <strong>bigrams</strong> (adjacent pairs) of its AST node kinds, visited in pre-order. Because only the node <em>kinds</em> are compared, two functions that differ only in their names, variables, or literal values still match: the comparison is about <em>shape</em>, not text.</p>
-<p>Every pair of functions <strong>in the same language</strong> is then scored with the <strong>Sørensen–Dice coefficient</strong> over those bigram multisets:</p>
+<p>Every matching file in the workspace is walked (honouring
+<code>.gitignore</code>) and parsed into an <a
+href="https://en.wikipedia.org/wiki/Abstract_syntax_tree">abstract
+syntax tree</a> with <a
+href="https://tree-sitter.github.io/tree-sitter/">tree-sitter</a>. Each
+function or method definition — including nested ones — is reduced to
+the multiset of <strong>bigrams</strong> (adjacent pairs) of its AST
+node kinds, visited in pre-order. Because only the node <em>kinds</em>
+are compared, two functions that differ only in their names, variables,
+or literal values still match: the comparison is about <em>shape</em>,
+not text.</p>
+<p>Every pair of functions <strong>in the same language</strong> is then
+scored with the <strong>Sørensen–Dice coefficient</strong> over those
+bigram multisets:</p>
 <pre class="text"><code>similarity = 2 × (shared bigrams) / (bigrams in A + bigrams in B)</code></pre>
-<p>The result runs from 0% (nothing in common) to 100% (identical structure). Functions in different languages are never compared against each other. Very small functions (fewer than 20 AST nodes) are skipped, since trivial one-liners are structurally interchangeable and would only add noise.</p>
-<p>Pairs scoring at or above the <strong>threshold</strong> are reported, sorted most-similar first. The default threshold is <strong>80%</strong>; pass a different one as the argument — a percentage such as <code>90</code> or <code>90%</code>, or a fraction such as <code>0.9</code> (an unrecognised argument falls back to the default).</p>
-<p>The report is a <strong>starting point for human review, not a verdict</strong>: a high score says two functions have the same shape, which is a strong hint they may be duplicated — but you should open each pair and confirm before refactoring.</p>
-<h3 id="on-a-branch-only-what-the-branch-adds">On a branch: only what the branch adds</h3>
-<p>When the workspace is a Git repository checked out on a branch <strong>other than the default</strong> (<code>main</code>/<code>master</code>), <code>/duplicates</code> narrows the analysis to the change the branch introduces. It diffs the branch against its merge base with the default branch (<code>origin/main</code>, <code>origin/master</code>, <code>main</code>, then <code>master</code>, in that order — the same base <code>/review</code> uses), takes the <strong>functions the branch adds or changes</strong> (any function whose lines overlap an added line), and compares <strong>each of those against the whole project</strong>.</p>
-<p>So on a branch the report answers <em>"does my branch duplicate code that already exists?"</em> — every reported pair has the new or changed function first. On the default branch (or outside a Git repository) the whole project is compared against itself as usual. If the branch <strong>adds nothing</strong> — for example it has been rebased onto the base with no commits of its own and a clean working tree — there is nothing branch-specific to analyse, so the whole-project report runs instead. The summary line and the PDF's first page state which mode ran, the base it compared against, and how many new/changed functions were analysed.</p>
+<p>The result runs from 0% (nothing in common) to 100% (identical
+structure). Functions in different languages are never compared against
+each other. Very small functions (fewer than 20 AST nodes) are skipped,
+since trivial one-liners are structurally interchangeable and would only
+add noise.</p>
+<p>Pairs scoring at or above the <strong>threshold</strong> are
+reported, sorted most-similar first. The default threshold is
+<strong>80%</strong>; pass a different one as the argument — a
+percentage such as <code>90</code> or <code>90%</code>, or a fraction
+such as <code>0.9</code> (an unrecognised argument falls back to the
+default).</p>
+<p>The report is a <strong>starting point for human review, not a
+verdict</strong>: a high score says two functions have the same shape,
+which is a strong hint they may be duplicated — but you should open each
+pair and confirm before refactoring.</p>
+<h3 id="on-a-branch-only-what-the-branch-adds">On a branch: only what
+the branch adds</h3>
+<p>When the workspace is a Git repository checked out on a branch
+<strong>other than the default</strong>
+(<code>main</code>/<code>master</code>), <code>/duplicates</code>
+narrows the analysis to the change the branch introduces. It diffs the
+branch against its merge base with the default branch
+(<code>origin/main</code>, <code>origin/master</code>,
+<code>main</code>, then <code>master</code>, in that order — the same
+base <code>/review</code> uses), takes the <strong>functions the branch
+adds or changes</strong> (any function whose lines overlap an added
+line), and compares <strong>each of those against the whole
+project</strong>.</p>
+<p>So on a branch the report answers <em>“does my branch duplicate code
+that already exists?”</em> — every reported pair has the new or changed
+function first. On the default branch (or outside a Git repository) the
+whole project is compared against itself as usual. If the branch
+<strong>adds nothing</strong> — for example it has been rebased onto the
+base with no commits of its own and a clean working tree — there is
+nothing branch-specific to analyse, so the whole-project report runs
+instead. The summary line and the PDF’s first page state which mode ran,
+the base it compared against, and how many new/changed functions were
+analysed.</p>
 <h3 id="output">Output</h3>
-<p>The output window prints a summary (files scanned, functions analysed, the threshold, and the number of candidate pairs) followed by each pair: its similarity percentage, the two function names, and for each function its <code>path:start–end</code> location. To save the same report as a PDF, use <code>/export duplicates</code> (see the <code>/export</code> tool).</p>
-<h3 id="examples-18">Examples</h3>
+<p>The output window prints a summary (files scanned, functions
+analysed, the threshold, and the number of candidate pairs) followed by
+each pair: its similarity percentage, the two function names, and for
+each function its <code>path:start–end</code> location. To save the same
+report as a PDF, use <code>/export duplicates</code> (see the
+<code>/export</code> tool).</p>
+<h3 id="examples-21">Examples</h3>
 <p>Scan with the default 80% threshold:</p>
 <pre class="text"><code>/duplicates</code></pre>
 <p>Only report pairs that are at least 90% similar:</p>
@@ -778,64 +1965,285 @@ auto review src/tui.rs</code></pre>
 <pre class="text"><code>find duplicates
 find duplicate code</code></pre>
 <h2 id="export">/export</h2>
-<p><code>/export</code> writes a buffer to a PDF file in the root of the workspace, so a session's output or a review can be saved and shared outside the terminal.</p>
+<p><code>/export</code> writes a buffer to a PDF file in the root of the
+workspace, so a session’s output or a review can be saved and shared
+outside the terminal.</p>
 <p>It takes one optional argument selecting what to export:</p>
 <ul>
-<li><code>/export</code> or <code>/export console</code> — the <strong>console output window</strong>: everything currently in the main output window (prompts, command output, and model responses), with the terminal ANSI styling removed and the lines printed verbatim.</li>
-<li><code>/export review</code> — the <strong>review buffer</strong>: the Markdown of the last <code>/review</code> (or, if none, the last <code>/auto_review</code>) report from this session. If no review has been run yet, the command reports that there is nothing to export.</li>
-<li><code>/export auto review</code> — the <strong>auto-review buffer</strong> specifically: the Markdown of the last <code>/auto_review</code> report. If no auto review has been run yet, the command reports that there is nothing to export.</li>
-<li><code>/export duplicates</code> — a <strong>duplicate-code report</strong>: the report from the most recent <code>/duplicates</code> run in this tab, rendered to a PDF. The report is cached when <code>/duplicates</code> runs, so the export reuses it directly — including that run's threshold (run <code>/duplicates 0.8</code> and <code>/export duplicates</code> writes an 80% report) — without scanning the workspace a second time. If <code>/duplicates</code> has not been run this session, the export scans once at the default 80% threshold and caches the result, so it still works with no prior command.</li>
-<li><code>/export pr</code> — a <strong>pull request report</strong>: every open pull/merge request in the repository, fetched from the forge (<code>gh</code>/<code>glab</code>) at export time, one page per pull request with as much detail as the forge returns.</li>
+<li><code>/export</code> or <code>/export console</code> — the
+<strong>console output window</strong>: everything currently in the main
+output window (prompts, command output, and model responses), with the
+terminal ANSI styling removed and the lines printed verbatim.</li>
+<li><code>/export review</code> — the <strong>review buffer</strong>:
+the Markdown of the last <code>/review</code> (or, if none, the last
+<code>/auto_review</code>) report from this session. If no review has
+been run yet, the command reports that there is nothing to export.</li>
+<li><code>/export auto review</code> — the <strong>auto-review
+buffer</strong> specifically: the Markdown of the last
+<code>/auto_review</code> report. If no auto review has been run yet,
+the command reports that there is nothing to export.</li>
+<li><code>/export duplicates</code> — a <strong>duplicate-code
+report</strong>: the report from the most recent
+<code>/duplicates</code> run in this tab, rendered to a PDF. The report
+is cached when <code>/duplicates</code> runs, so the export reuses it
+directly — including that run’s threshold (run
+<code>/duplicates 0.8</code> and <code>/export duplicates</code> writes
+an 80% report) — without scanning the workspace a second time. If
+<code>/duplicates</code> has not been run this session, the export scans
+once at the default 80% threshold and caches the result, so it still
+works with no prior command.</li>
+<li><code>/export pr</code> — a <strong>pull request report</strong>:
+every open pull/merge request in the repository, fetched from the forge
+(<code>gh</code>/<code>glab</code>) at export time, one page per pull
+request with as much detail as the forge returns.</li>
+<li><code>/export statistics</code> (or
+<code>/export statistics total</code>) — the <strong>persistent activity
+history</strong>: the same Total-then-year report
+<code>/statistics</code> (or <code>/statistics total</code>) prints in
+the console — totals, streaks, heatmap, and by-author commit breakdown,
+then a yearly/monthly breakdown per year — plus a token-usage bar chart,
+rendered to a PDF.</li>
 </ul>
-<p>The argument <strong>Tab-completes</strong> (and shows the inline ghost hint): pressing Tab after <code>/export</code> offers <code>console</code>, <code>review</code>, <code>auto review</code>, <code>duplicates</code>, and <code>pr</code>, and the multi-word <code>auto review</code> completes from as little as <code>a</code> (so <code>export a</code> → <code>export auto review</code>). The natural-language <code>export &lt;target&gt;</code> form (without the leading slash) completes the same way.</p>
-<p>The file is saved in the workspace root as <code>{repository}-{branch}-console.pdf</code>, <code>{repository}-{branch}-review.pdf</code>, or <code>{repository}-{branch}-duplicates.pdf</code>, where <code>{repository}</code> is the Git repository (or workspace) directory name and <code>{branch}</code> is the current branch (<code>nobranch</code> when not on one); both are sanitized for use in a filename, so a branch such as <code>feature/x</code> becomes <code>feature-x</code>. The <code>pr</code> export is saved as <code>{repository}-pr.pdf</code> instead — no branch, since the report covers every open pull request in the repository, not one branch. An existing file with the same name is overwritten. On success the saved path is printed to the output window.</p>
-<p>Every page carries a <strong>header band</strong> centered on <code>{repository}-{branch}</code> and a <strong>footer band</strong> centered on <code>orangu {version} ({model})</code> (the active model), both in white on the orangu brand colour to match the terminal banner; in the footer the word <code>orangu</code> links to the project site.</p>
-<p>The PDF keeps the Markdown formatting as much as a self-contained file can. Text is set in <strong>Red Hat Text</strong>, embedded into the binary (SIL Open Font License), so no system fonts are needed; if for any reason the embedded font cannot be loaded the export falls back to the closest built-in face, Helvetica. Headings use the orangu brand colour. Long lines wrap to the page width using the font's real glyph metrics — prose on word boundaries, code lines hard at the margin — and the content flows across as many pages as needed.</p>
-<p>The <strong>console</strong> export preserves the output window line for line (terminal colours removed).</p>
-<p>The <strong>duplicates</strong> export is organized like the review export:</p>
+<p>The argument <strong>Tab-completes</strong> (and shows the inline
+ghost hint): pressing Tab after <code>/export</code> offers
+<code>console</code>, <code>review</code>, <code>auto review</code>,
+<code>duplicates</code>, <code>pr</code>, and <code>statistics</code>,
+and the multi-word <code>auto review</code> completes from as little as
+<code>a</code> (so <code>export a</code> →
+<code>export auto review</code>). The natural-language
+<code>export &lt;target&gt;</code> form (without the leading slash)
+completes the same way.</p>
+<p>The file is saved in the workspace root as
+<code>{repository}-{branch}-console.pdf</code>,
+<code>{repository}-{branch}-review.pdf</code>, or
+<code>{repository}-{branch}-duplicates.pdf</code>, where
+<code>{repository}</code> is the Git repository (or workspace) directory
+name and <code>{branch}</code> is the current branch
+(<code>nobranch</code> when not on one); both are sanitized for use in a
+filename, so a branch such as <code>feature/x</code> becomes
+<code>feature-x</code>. The <code>pr</code> and <code>statistics</code>
+exports are saved as <code>{repository}-pr.pdf</code> and
+<code>{repository}-statistics.pdf</code> instead — no branch, since
+those reports cover the whole repository, not one branch. An existing
+file with the same name is overwritten. On success the saved path is
+printed to the output window.</p>
+<p>Every page carries a <strong>header band</strong> centered on
+<code>{repository}-{branch}</code> (<code>{repository}-statistics</code>
+for the statistics export, which covers the whole repository rather than
+one branch) and a <strong>footer band</strong> centered on
+<code>orangu {version} ({model})</code> (the active model), both in
+white on the orangu brand colour to match the terminal banner; in the
+footer the word <code>orangu</code> links to the project site.</p>
+<p>The PDF keeps the Markdown formatting as much as a self-contained
+file can. Text is set in <strong>Red Hat Text</strong>, embedded into
+the binary (SIL Open Font License), so no system fonts are needed; if
+for any reason the embedded font cannot be loaded the export falls back
+to the closest built-in face, Helvetica. Headings use the orangu brand
+colour. Long lines wrap to the page width using the font’s real glyph
+metrics — prose on word boundaries, code lines hard at the margin — and
+the content flows across as many pages as needed.</p>
+<p>The <strong>console</strong> export preserves the output window line
+for line (terminal colours removed).</p>
+<p>The <strong>duplicates</strong> export is organized like the review
+export:</p>
 <ul>
-<li><strong>Page 1 — summary.</strong> A table of the repository, branch, generation date/time, the similarity threshold the scan used, and the file, function, and candidate-pair counts.</li>
-<li><strong>Page 2 — table of contents.</strong> Each similarity chapter with the page it starts on; the entries are <strong>clickable links</strong> that jump to their chapter.</li>
-<li><strong>Page 3 onward — the chapters.</strong> The candidate pairs are grouped by their similarity percentage; each <code>{n}% similar</code> chapter starts on its own page and lists its pairs, every pair showing the two function names and each function's location as <code>path:start–end</code>. When the repository's <code>origin</code> remote is on <strong>GitHub or GitLab</strong>, each location is a <strong>link to that file on the forge with the lines highlighted</strong> (at the current branch, or the default branch when detached); on any other host the location is plain text. (A report with no pairs is the summary page followed by a short note instead.)</li>
+<li><strong>Page 1 — summary.</strong> A table of the repository,
+branch, generation date/time, the similarity threshold the scan used,
+and the file, function, and candidate-pair counts.</li>
+<li><strong>Page 2 — table of contents.</strong> Each similarity chapter
+with the page it starts on; the entries are <strong>clickable
+links</strong> that jump to their chapter.</li>
+<li><strong>Page 3 onward — the chapters.</strong> The candidate pairs
+are grouped by their similarity percentage; each
+<code>{n}% similar</code> chapter starts on its own page and lists its
+pairs, every pair showing the two function names and each function’s
+location as <code>path:start–end</code>. When the repository’s
+<code>origin</code> remote is on <strong>GitHub or GitLab</strong>, each
+location is a <strong>link to that file on the forge with the lines
+highlighted</strong> (at the current branch, or the default branch when
+detached); on any other host the location is plain text. (A report with
+no pairs is the summary page followed by a short note instead.)</li>
 </ul>
-<p>The <strong>review</strong> export is organized for reading and sharing:</p>
+<p>The <strong>review</strong> export is organized for reading and
+sharing:</p>
 <ul>
-<li><strong>Page 1 — summary.</strong> A table of the repository, branch, and generation date/time, followed by one row per category with its number of entries (findings), and then an overall <strong>Approved</strong> (green) or <strong>Rejected</strong> (red) status banner read from the report's conclusion.</li>
-<li><strong>Page 2 — table of contents.</strong> Each category with the page it starts on, then a final <strong>Appendix</strong> entry.</li>
-<li><strong>Page 3 onward — the report.</strong> Each category (<code>Overall</code>, <code>Code</code>, <code>Security</code>, <code>Memory</code>, <code>Performance</code>, <code>Test Suite</code>, <code>Documentation</code>, then <code>Conclusion</code>) starts on its own page, rendered from the report's Markdown with brand-coloured headings, <strong>bold</strong> and <em>italic</em> emphasis, ordered and unordered (including nested) lists, fenced code blocks, block quotes, and tables. So <code>Overall</code> opens on page 3.</li>
-<li><strong>Appendix.</strong> Both the <code>/review</code> and <code>/auto_review</code> exports add a <strong>source appendix</strong> following the categories on its own page: grouped by category, each finding (or comment) is listed with the <strong>source code around its line</strong> — the <code>/show_file</code> view, 3 lines before and after, with line numbers. Only the finding's <strong>recorded line(s)</strong> are <strong>syntax-highlighted and drawn in bold</strong>; the surrounding context lines are shown plain, so the line the finding points at stands out. (For <code>/review</code>, the comment's diff position is mapped to its real source line so the appendix matches the file.)</li>
+<li><strong>Page 1 — summary.</strong> A table of the repository,
+branch, and generation date/time, followed by one row per category with
+its number of entries (findings), and then an overall
+<strong>Approved</strong> (green) or <strong>Rejected</strong> (red)
+status banner read from the report’s conclusion.</li>
+<li><strong>Page 2 — table of contents.</strong> Each category with the
+page it starts on, then a final <strong>Appendix</strong> entry.</li>
+<li><strong>Page 3 onward — the report.</strong> Each category
+(<code>Overall</code>, <code>Code</code>, <code>Security</code>,
+<code>Memory</code>, <code>Performance</code>, <code>Test Suite</code>,
+<code>Documentation</code>, then <code>Conclusion</code>) starts on its
+own page, rendered from the report’s Markdown with brand-coloured
+headings, <strong>bold</strong> and <em>italic</em> emphasis, ordered
+and unordered (including nested) lists, fenced code blocks, block
+quotes, and tables. So <code>Overall</code> opens on page 3.</li>
+<li><strong>Appendix.</strong> Both the <code>/review</code> and
+<code>/auto_review</code> exports add a <strong>source appendix</strong>
+following the categories on its own page: grouped by category, each
+finding (or comment) is listed with the <strong>source code around its
+line</strong> — the <code>/show_file</code> view, 3 lines before and
+after, with line numbers. Only the finding’s <strong>recorded
+line(s)</strong> are <strong>syntax-highlighted and drawn in
+bold</strong>; the surrounding context lines are shown plain, so the
+line the finding points at stands out. (For <code>/review</code>, the
+comment’s diff position is mapped to its real source line so the
+appendix matches the file.)</li>
 </ul>
-<p>The <strong>pr</strong> export is organized like the review and duplicates exports:</p>
+<p>The <strong>pr</strong> export is organized like the review and
+duplicates exports:</p>
 <ul>
-<li><strong>Page 1 — pull request status.</strong> A single table: the repository name, generation date/time, the open pull requests broken down by status — <strong>Open</strong> (the total), <strong>Ready</strong> (not a draft), and <strong>Conflicts</strong> (reported as having a merge conflict) — then <strong>Oldest</strong> and <strong>Newest</strong>, each a clickable link to that pull request followed by its creation date. With no open pull requests both read <code>N/A</code>; with exactly one, <strong>Oldest</strong> is left empty rather than repeating the same entry as <strong>Newest</strong>.</li>
-<li><strong>Page 2 — table of contents.</strong> One entry per open pull request, <code>#N Title</code>, <strong>clickable links</strong> that jump to their page. Each entry ends with a status icon: a <strong>green checkmark</strong> when the pull request is neither a draft nor conflicting, otherwise a <strong>red "X"</strong>.</li>
-<li><strong>Page 3 onward — one page per pull request</strong> (more when it changes many files or has a long last comment). The title <strong>links to the pull/merge request's home page on the forge</strong>, followed by a table (spanning the full page width) of author, a <strong>Link</strong> row with the pull request's full URL (also clickable), created/updated dates, the branch, draft status, merge-conflict status, comment count, assignees, reviewers, and labels — whatever the forge returned. The <strong>Draft</strong> and <strong>Conflicts</strong> values are shown in <strong>bold</strong> when they are <code>Yes</code>, so an unfinished or blocked pull request catches the eye. Each <strong>reviewer</strong> is shown as their name followed by a status icon rather than the review state spelled out: a <strong>green checkmark</strong> for an approval, a <strong>red "X"</strong> for a change request (or, on GitLab, a still-outstanding review request — its merge-request list does not carry per-reviewer approval state at all), and a <strong>"?"</strong> for anything else that isn't a clear verdict (a comment, a still-pending GitHub review request, or a dismissed review). Below the table, the <strong>changed files</strong>: one line per file, its <strong>full path</strong> followed by its added-line count in <strong>green</strong> and removed-line count in <strong>red</strong> (GitLab's merge-request list carries no diff, so this section is empty there). Finally a <strong>Last comment</strong> table (also full width): a header spanning both columns, then one row with the comment's <strong>author</strong> (left) and its <strong>text</strong> (right, word-wrapped and truncated if very long); a pull request with no comments — or, on GitLab, whose comment bodies the list endpoint does not carry — shows <code>N/A</code> in both columns. (A repository with no open pull requests is the status page followed by a short note instead.)</li>
+<li><strong>Page 1 — pull request status.</strong> A single table: the
+repository name, generation date/time, the open pull requests broken
+down by status — <strong>Open</strong> (the total),
+<strong>Ready</strong> (not a draft), and <strong>Conflicts</strong>
+(reported as having a merge conflict) — then <strong>Oldest</strong> and
+<strong>Newest</strong>, each a clickable link to that pull request
+followed by its creation date. With no open pull requests both read
+<code>N/A</code>; with exactly one, <strong>Oldest</strong> is left
+empty rather than repeating the same entry as
+<strong>Newest</strong>.</li>
+<li><strong>Page 2 — table of contents.</strong> One entry per open pull
+request, <code>#N Title</code>, <strong>clickable links</strong> that
+jump to their page. Each entry ends with a status icon: a <strong>green
+checkmark</strong> when the pull request is neither a draft nor
+conflicting, otherwise a <strong>red “X”</strong>.</li>
+<li><strong>Page 3 onward — one page per pull request</strong> (more
+when it changes many files or has a long last comment). The title
+<strong>links to the pull/merge request’s home page on the
+forge</strong>, followed by a table (spanning the full page width) of
+author, a <strong>Link</strong> row with the pull request’s full URL
+(also clickable), created/updated dates, the branch, draft status,
+merge-conflict status, comment count, assignees, reviewers, and labels —
+whatever the forge returned. The <strong>Draft</strong> and
+<strong>Conflicts</strong> values are shown in <strong>bold</strong>
+when they are <code>Yes</code>, so an unfinished or blocked pull request
+catches the eye. Each <strong>reviewer</strong> is shown as their name
+followed by a status icon rather than the review state spelled out: a
+<strong>green checkmark</strong> for an approval, a <strong>red
+“X”</strong> for a change request (or, on GitLab, a still-outstanding
+review request — its merge-request list does not carry per-reviewer
+approval state at all), and a <strong>“?”</strong> for anything else
+that isn’t a clear verdict (a comment, a still-pending GitHub review
+request, or a dismissed review). Below the table, the <strong>changed
+files</strong>: one line per file, its <strong>full path</strong>
+followed by its added-line count in <strong>green</strong> and
+removed-line count in <strong>red</strong> (GitLab’s merge-request list
+carries no diff, so this section is empty there). Finally a <strong>Last
+comment</strong> table (also full width): a header spanning both
+columns, then one row with the comment’s <strong>author</strong> (left)
+and its <strong>text</strong> (right, word-wrapped and truncated if very
+long); a pull request with no comments — or, on GitLab, whose comment
+bodies the list endpoint does not carry — shows <code>N/A</code> in both
+columns. (A repository with no open pull requests is the status page
+followed by a short note instead.)</li>
 </ul>
-<h3 id="examples-19">Examples</h3>
+<p>The <strong>statistics</strong> export has the most pages of the six,
+since most of the work is in the PDF rather than the console:</p>
+<ul>
+<li><strong>Page 1 — Total.</strong> A <strong>Repository
+Activity</strong> table (total commits, days active, current streak,
+longest streak) and a <strong>Token Usage</strong> table (total
+sessions, turns, tokens, LLM and tool time) — the same figures
+<code>/statistics</code> prints in the console.</li>
+<li><strong>Table of contents.</strong> Two layers: one top-level entry
+per section — Activity, Authors, each calendar year, and Author Details
+— with each year’s months nested beneath it, so a specific month (“June,
+2026”) is one click away. Every entry is a <strong>clickable
+link</strong> that jumps to its page, in the same style as
+<code>/export pr</code> and <code>/export review</code>’s tables of
+contents; the contents flow across as many pages as the history
+needs.</li>
+<li><strong>Activity.</strong> The last 20 weeks of activity as a grid
+of filled squares, one Monday-to-Sunday column per week and one row per
+weekday (Monday on top, each row labelled with its initial), shaded from
+a light tint through the full orangu brand colour by quartile of your
+busiest recorded day — the PDF counterpart of the console’s
+block-character heatmap. A commit-only day (no orangu usage) still gets
+the lightest tint rather than staying blank.</li>
+<li><strong>Authors.</strong> A borderless table, one row per
+<code>git log</code> author, most commits first: the name, then the
+commit count, lines added (green), and lines removed (red), each
+right-aligned in its own column so the <code>+</code>/<code>-</code>
+figures line up down the page — the same colouring
+<code>/export pr</code> uses for a pull request’s changed files. Spans
+as many pages as it needs. Omitted for <code>statistics total</code> and
+for a workspace with no commit history.</li>
+<li><strong>One section per calendar year with activity, newest
+first.</strong> The year’s <strong>Yearly Total</strong> table (tokens
+and commits), its own <strong>Activity</strong> heatmap spanning the
+whole year (cells shrink to fit all ~53 weeks on the page), a
+<strong>Monthly Token Usage</strong> bar chart of that year’s months,
+and that year’s own <strong>Authors</strong> breakdown.</li>
+<li><strong>One page per month, newest first,</strong> headed by its
+name (“July, 2026”): the month’s tokens and commits, its own
+<strong>Activity</strong> heatmap, and its own <strong>Authors</strong>
+breakdown.</li>
+<li><strong>Author Details — one page per commit author.</strong> Their
+total commits and lines added/removed, then a <strong>Yearly
+Commits</strong> table breaking down their commit count by calendar
+year. Omitted for <code>statistics total</code> and for a workspace with
+no commit history.</li>
+</ul>
+<p><code>statistics total</code> renders the Total page, table of
+contents, and year/month sections aggregated across every workspace’s
+turn log instead of just the current one (with the Total heading noting
+it covers “all workspaces”), but without the Authors breakdowns or
+appendix — <code>total</code> has no one workspace’s
+<code>git log</code> to read.</p>
+<h3 id="examples-22">Examples</h3>
 <p>Export the output window (the default):</p>
 <pre class="text"><code>/export
 /export console</code></pre>
-<p>Export the last review report (or the auto-review report specifically):</p>
+<p>Export the last review report (or the auto-review report
+specifically):</p>
 <pre class="text"><code>/export review
 /export auto review</code></pre>
 <p>Export a fresh duplicate-code report:</p>
 <pre class="text"><code>/export duplicates</code></pre>
 <p>Export a pull request report:</p>
 <pre class="text"><code>/export pr</code></pre>
+<p>Export the persistent activity history:</p>
+<pre class="text"><code>/export statistics
+/export statistics total</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>export
 export console
 export review
 export auto review
 export duplicates
-export pr</code></pre>
+export pr
+export statistics
+export statistics total</code></pre>
 <h2 id="graph">/graph</h2>
-<p>Generates an interactive, standalone HTML visualization of the workspace's Knowledge Graph.</p>
-<p>Orangu incrementally extracts a semantic graph of the codebase in the background using Tree-sitter. This command takes that internal graph and writes it out to <code>&lt;repository&gt;-&lt;branch&gt;-graph.html</code> (for example, <code>orangu-knowledge-graph-graph.html</code> when in the <code>orangu</code> repo on the <code>knowledge-graph</code> branch) using the <code>vis-network</code> JavaScript library.</p>
-<p>The generated HTML file is fully self-contained (all data and scripts are embedded). You can open it directly in your web browser (e.g. <code>file:///path/to/project/orangu-main-graph.html</code>).</p>
-<p>Inside the visualization you can: - <strong>Search</strong>: Use the sidebar to quickly locate specific functions, classes, or types. - <strong>Inspect</strong>: Click on any node (function or class) to see its full location and a list of all callers (Incoming) and callees (Outgoing). - <strong>Filter</strong>: Toggle specific files on and off in the legend to unclutter the graph. - <strong>Jump</strong>: Click on any related node in the info panel to instantly jump to it and see its connections.</p>
-<p>Nodes are automatically clustered and color-coded based on the file they belong to, helping you easily visualize architectural boundaries and module dependencies.</p>
-<h3 id="examples-20">Examples</h3>
+<p>Generates an interactive, standalone HTML visualization of the
+workspace’s Knowledge Graph.</p>
+<p>Orangu incrementally extracts a semantic graph of the codebase in the
+background using Tree-sitter. This command takes that internal graph and
+writes it out to
+<code>&lt;repository&gt;-&lt;branch&gt;-graph.html</code> (for example,
+<code>orangu-knowledge-graph-graph.html</code> when in the
+<code>orangu</code> repo on the <code>knowledge-graph</code> branch)
+using the <code>vis-network</code> JavaScript library.</p>
+<p>The generated HTML file is fully self-contained (all data and scripts
+are embedded). You can open it directly in your web browser
+(e.g. <code>file:///path/to/project/orangu-main-graph.html</code>).</p>
+<p>Inside the visualization you can: - <strong>Search</strong>: Use the
+sidebar to quickly locate specific functions, classes, or types. -
+<strong>Inspect</strong>: Click on any node (function or class) to see
+its full location and a list of all callers (Incoming) and callees
+(Outgoing). - <strong>Filter</strong>: Toggle specific files on and off
+in the legend to unclutter the graph. - <strong>Jump</strong>: Click on
+any related node in the info panel to instantly jump to it and see its
+connections.</p>
+<p>Nodes are automatically clustered and color-coded based on the file
+they belong to, helping you easily visualize architectural boundaries
+and module dependencies.</p>
+<h3 id="examples-23">Examples</h3>
 <pre class="text"><code>/graph</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>graph
@@ -843,14 +2251,73 @@ show graph
 generate graph
 visualize codebase</code></pre>
 <h2 id="search">/search</h2>
-<p>Semantic code search. Where <code>/grep</code> matches text and the Knowledge Graph matches symbol names and structure, <code>/search</code> matches <em>meaning</em>: a query like <code>where is rate-limiting handled?</code> can surface a <code>throttle_requests</code> function whose name shares no words with the query.</p>
+<p>Semantic code search. Where <code>/grep</code> matches text and the
+Knowledge Graph matches symbol names and structure, <code>/search</code>
+matches <em>meaning</em>: a query like
+<code>where is rate-limiting handled?</code> can surface a
+<code>throttle_requests</code> function whose name shares no words with
+the query.</p>
 <pre class="text"><code>/search &lt;query&gt;</code></pre>
-<p>The first time it runs, orangu embeds every extractable symbol in the workspace and stores the vectors under <code>~/.orangu/embeddings/workspace/&lt;hash&gt;/</code>, keyed by a hash of the workspace path so the cache is shared across sessions without cluttering the workspace tree. The directory holds <code>chunks.json</code> (one embedded chunk per line), a small <code>meta.json</code> (version and per-file hashes), and a <code>processed.log</code> recording each file's path and the time it was embedded. Every subsequent search re-embeds only the files whose contents changed and drops chunks for files that no longer exist — the same incremental sha256 approach the Knowledge Graph cache uses — so the cache is always consistent with the current workspace and stays cheap to keep current. Everything is computed locally through the server's OpenAI-compatible <code>/v1/embeddings</code> endpoint — nothing leaves the machine.</p>
-<p>That first indexing pass can take a while on a large codebase with a local embedding model. It runs in two phases, each half of the progress bar. The first half (0–50%) does all the local work up front: it parses every file into chunks in parallel — across <code>compile_workers</code> threads, or every CPU thread when it is <code>0</code> — logs each to <code>processed.log</code>, and writes the full <code>meta.json</code> when done, so the on-disk state lists every file before anything is uploaded. The second half (50–100%) uploads: it embeds the parsed chunks, keeping several requests in flight at once so the embedding server — the real bottleneck — stays busy rather than idling between round-trips (a llama-server started with <code>-np N</code> embeds them in parallel). Each request stays within a conservative token budget — chunks are grouped so a request comfortably fits under a stock llama.cpp server's default physical batch size (<code>-b</code>/<code>--batch-size 512</code>), so <code>/search</code> works out of the box without needing that flag raised. The status bar shows the percentage and an estimate of the time remaining that counts down (<code>Working (57%) (4m10s, ~3m left)</code>); on completion it reports the total (<code>Searched 2000 symbols in 3m12s.</code>).</p>
-<p>Vectors are appended to <code>chunks.json</code> as each file finishes — the existing vectors are never rewritten — so persistence stays cheap no matter how large the index grows, and the work on disk builds up as the pass proceeds, surviving even a hard kill. The pass can also be stopped with a double-<code>Esc</code>, which aborts the in-flight requests at once; either way the files embedded so far are kept, and the next <code>/search</code> resumes from where it left off rather than starting over.</p>
-<p>Ranking is hybrid. The query is embedded and scored against every chunk by cosine similarity; the strongest matches are then expanded along the Knowledge Graph's call edges — a semantic seed followed by structural expansion — so a relevant function pulls in its callers and callees. Each result is anchored to its <code>file:line</code> for quick navigation, and results expanded from a semantic hit are marked <code>(via &lt;symbol&gt;)</code>.</p>
-<p>Semantic search enables itself automatically. At startup orangu probes the <code>/v1/embeddings</code> endpoint of the server that serves the <code>embeddings</code> role — a server with <code>role = embeddings</code>, or the default <code>all</code> server — and turns <code>/search</code> on when it responds. To dedicate a server to embeddings, give its section <code>role = embeddings</code> (see the Configuration chapter). When no server serves embeddings, <code>/search</code> explains how to enable it and existing retrieval (<code>/grep</code>, the Knowledge Graph) is unaffected.</p>
-<h3 id="examples-21">Examples</h3>
+<p>The first time it runs, orangu embeds every extractable symbol in the
+workspace and stores the vectors under
+<code>~/.orangu/workspace/&lt;hash&gt;/embeddings/</code>, keyed by a
+hash of the workspace path so the cache is shared across sessions
+without cluttering the workspace tree — the same per-workspace cache
+root the Knowledge Graph uses (at <code>.../graph/</code> alongside it).
+The directory holds <code>chunks.json</code> (one embedded chunk per
+line), a small <code>meta.json</code> (version and per-file hashes), and
+a <code>processed.log</code> recording each file’s path and the time it
+was embedded. Every subsequent search re-embeds only the files whose
+contents changed and drops chunks for files that no longer exist — the
+same incremental sha256 approach the Knowledge Graph cache uses — so the
+cache is always consistent with the current workspace and stays cheap to
+keep current. Everything is computed locally through the server’s
+OpenAI-compatible <code>/v1/embeddings</code> endpoint — nothing leaves
+the machine.</p>
+<p>That first indexing pass can take a while on a large codebase with a
+local embedding model. It runs in two phases, each half of the progress
+bar. The first half (0–50%) does all the local work up front: it parses
+every file into chunks in parallel — across <code>compile_workers</code>
+threads, or every CPU thread when it is <code>0</code> — logs each to
+<code>processed.log</code>, and writes the full <code>meta.json</code>
+when done, so the on-disk state lists every file before anything is
+uploaded. The second half (50–100%) uploads: it embeds the parsed
+chunks, keeping several requests in flight at once so the embedding
+server — the real bottleneck — stays busy rather than idling between
+round-trips (a orangu-server started with <code>-np N</code> embeds them
+in parallel). Each request stays within a conservative token budget —
+chunks are grouped so a request comfortably fits under a stock
+orangu-server’s default physical batch size
+(<code>-b</code>/<code>--batch-size 512</code>), so <code>/search</code>
+works out of the box without needing that flag raised. The status bar
+shows the percentage and an estimate of the time remaining that counts
+down (<code>Working (57%) (4m10s, ~3m left)</code>); on completion it
+reports the total (<code>Searched 2000 symbols in 3m12s.</code>).</p>
+<p>Vectors are appended to <code>chunks.json</code> as each file
+finishes — the existing vectors are never rewritten — so persistence
+stays cheap no matter how large the index grows, and the work on disk
+builds up as the pass proceeds, surviving even a hard kill. The pass can
+also be stopped with a double-<code>Esc</code>, which aborts the
+in-flight requests at once; either way the files embedded so far are
+kept, and the next <code>/search</code> resumes from where it left off
+rather than starting over.</p>
+<p>Ranking is hybrid. The query is embedded and scored against every
+chunk by cosine similarity; the strongest matches are then expanded
+along the Knowledge Graph’s call edges — a semantic seed followed by
+structural expansion — so a relevant function pulls in its callers and
+callees. Each result is anchored to its <code>file:line</code> for quick
+navigation, and results expanded from a semantic hit are marked
+<code>(via &lt;symbol&gt;)</code>.</p>
+<p>Semantic search enables itself automatically. At startup orangu
+probes the <code>/v1/embeddings</code> endpoint of the server that
+serves the <code>embeddings</code> role — a server with
+<code>role = embeddings</code>, or the default <code>all</code> server —
+and turns <code>/search</code> on when it responds. To dedicate a server
+to embeddings, give its section <code>role = embeddings</code> (see the
+Configuration chapter). When no server serves embeddings,
+<code>/search</code> explains how to enable it and existing retrieval
+(<code>/grep</code>, the Knowledge Graph) is unaffected.</p>
+<h3 id="examples-24">Examples</h3>
 <pre class="text"><code>/search where is the retry backoff computed
 /search session persistence</code></pre>
 <p>Natural-language forms:</p>

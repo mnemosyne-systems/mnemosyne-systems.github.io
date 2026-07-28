@@ -93,6 +93,7 @@
 
       <!-- Index -->
       <div class="rel-index reveal">
+        <a href="#v1-0-0"><span class="ri-date">July 27, 2026</span><span class="ri-ver">orangu 1.0.0</span></a>
         <a href="#v0-11-0"><span class="ri-date">July 13, 2026</span><span class="ri-ver">orangu 0.11.0</span></a>
         <a href="#v0-10-0"><span class="ri-date">July 6, 2026</span><span class="ri-ver">orangu 0.10.0</span></a>
         <a href="#v0-9-0"><span class="ri-date">June 29, 2026</span><span class="ri-ver">orangu 0.9.0</span></a>
@@ -106,11 +107,28 @@
         <a href="#v0-1-0"><span class="ri-date">May 15, 2026</span><span class="ri-ver">orangu 0.1.0</span></a>
       </div>
 
+      <!-- 1.0.0 -->
+      <article class="rel-entry reveal" id="v1-0-0">
+        <div class="rel-head">
+          <span class="rel-ver">orangu 1.0.0</span>
+          <span class="rel-badge">Latest</span>
+          <span class="rel-date">July 27, 2026</span>
+        </div>
+        <ul class="rel-list">
+          <li><strong>A complete stack</strong> — Three cooperating programs — <code>orangu</code>, <code>orangu-coordinator</code>, and <code>orangu-server</code> — written end to end in Rust, all under GPL v3.</li>
+          <li><strong>orangu-server: a native GGUF engine</strong> — GGUF loading, tokenization, the transformer forward pass, sampling, and request scheduling implemented directly in Rust. No llama.cpp, no ggml, no Python.</li>
+          <li><strong>Five backends</strong> — Vulkan, CUDA, OpenCL, and ROCm, plus CPU, with automated cross-verification between them.</li>
+          <li><strong>Model families and quantizations</strong> — Llama, Gemma, Qwen, Phi, and Mistral architectures, from F32/F16/BF16 through the K- and I-quant formats.</li>
+          <li><strong>OpenAI-compatible endpoints</strong> — <code>/v1/chat/completions</code>, <code>/v1/completions</code>, and <code>/v1/embeddings</code>, with prefix caching, persistent slots, and native workspace file operations.</li>
+          <li><strong>Built-in web console</strong> — Browser chat with Markdown, syntax highlighting, LaTeX, token rates, and file attachments, embedded in the binary with no build step.</li>
+          <li><strong>Model inventory</strong> — <code>list</code>, <code>show</code>, <code>download</code>, <code>delete</code>, <code>prune</code>, <code>suggest</code>, and <code>system</code> for managing local GGUF models and reading your hardware.</li>
+        </ul>
+      </article>
+
       <!-- 0.11.0 -->
       <article class="rel-entry reveal" id="v0-11-0">
         <div class="rel-head">
           <span class="rel-ver">orangu 0.11.0</span>
-          <span class="rel-badge">Latest</span>
           <span class="rel-date">July 13, 2026</span>
         </div>
         <ul class="rel-list">

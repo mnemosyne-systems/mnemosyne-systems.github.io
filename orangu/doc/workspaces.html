@@ -42,31 +42,56 @@
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="workspaces.html">Workspaces</a></li>
-        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html" class="active">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
-      <ul>
-      <li><a href="#workspaces">Workspaces</a>
-      <ul>
-      <li><a href="#workspace">/workspace</a></li>
-      <li><a href="#create_workspace-and-delete_workspace">/create_workspace and /delete_workspace</a></li>
-      <li><a href="#key-bindings">Key bindings</a></li>
-      <li><a href="#tab-placement">Tab placement</a></li>
-      </ul></li>
-      </ul>
+<ul>
+<li><a href="#workspaces" id="toc-workspaces">Workspaces</a>
+<ul>
+<li><a href="#workspace" id="toc-workspace">/workspace</a></li>
+<li><a href="#create_workspace-and-delete_workspace"
+id="toc-create_workspace-and-delete_workspace">/create_workspace and
+/delete_workspace</a></li>
+<li><a href="#key-bindings" id="toc-key-bindings">Key bindings</a></li>
+<li><a href="#tab-placement" id="toc-tab-placement">Tab
+placement</a></li>
+</ul></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -81,16 +106,57 @@
 
   <main class="doc-content">
 <h1 id="workspaces">Workspaces</h1>
-<p>A <em>workspace</em> is the project directory orangu is open on. It is the directory the model's tools read from and write to, the directory whose Git branch drives the prompt and the Git and review commands, and the directory a session belongs to. By default the workspace is the directory you launched orangu in; pass <code>--workspace &lt;path&gt;</code> (or <code>-w &lt;path&gt;</code>) at startup to begin somewhere else.</p>
-<p>Several workspaces can be open at once as tabs in a single orangu, instead of running one instance per project. Each tab is its own session — its own conversation, scrollback, pending queue and command history — and its own active server and model. A <code>/server</code> or <code>/model</code> command in one tab does not affect any other tab. The chosen server and model are saved to the session's settings file automatically, so they are restored the next time that session is resumed. Switching tabs returns to exactly where you left that workspace, or resumes the session it last had. A tab bar shows the open tabs with the active one in bold, placed where the <code>workspaces</code> setting puts it (see Tab placement); it appears once more than one workspace is open. When <code>feedback</code> is on, a colored dot precedes each tab number: green for a valid tab, red when the tab's branch has been deleted or changed underneath it, and a blinking white dot on the active tab while it is processing a response. See the Sessions section of the Terminal interface chapter for how sessions are matched to a workspace and branch.</p>
-<p>Pass <code>-a</code> or <code>--all</code> at startup to reopen the tabs that were open at the end of the previous run. Their workspace directories and auto-resumed sessions are restored behind the initial tab.</p>
-<p>You move between tabs with the <code>/workspace</code> command or the workspace key bindings, and choose where the tab bar sits with the <code>workspaces</code> configuration key — both are described below.</p>
+<p>A <em>workspace</em> is the project directory orangu is open on. It
+is the directory the model’s tools read from and write to, the directory
+whose Git branch drives the prompt and the Git and review commands, and
+the directory a session belongs to. By default the workspace is the
+directory you launched orangu in; pass
+<code>--workspace &lt;path&gt;</code> (or <code>-w &lt;path&gt;</code>)
+at startup to begin somewhere else.</p>
+<p><code>orangu-server</code> has the same concept and the same flag:
+<code>-w &lt;path&gt;</code> or <code>--workspace &lt;path&gt;</code>
+sets the root directory the server operates in, defaulting to the
+directory it was started in. See the Inference server chapter.</p>
+<p>Several workspaces can be open at once as tabs in a single orangu,
+instead of running one instance per project. Each tab is its own session
+— its own conversation, scrollback, pending queue and command history —
+and its own active server and model. A <code>/server</code> or
+<code>/model</code> command in one tab does not affect any other tab.
+The chosen server and model are saved to the session’s settings file
+automatically, so they are restored the next time that session is
+resumed. Switching tabs returns to exactly where you left that
+workspace, or resumes the session it last had. A tab bar shows the open
+tabs with the active one in bold, placed where the
+<code>workspaces</code> setting puts it (see Tab placement); it appears
+once more than one workspace is open. When <code>feedback</code> is on,
+a colored dot precedes each tab number: green for a valid tab, red when
+the tab’s branch has been deleted or changed underneath it, and a
+blinking white dot on the active tab while it is processing a response.
+See the Sessions section of the Terminal interface chapter for how
+sessions are matched to a workspace and branch.</p>
+<p>Pass <code>-a</code> or <code>--all</code> at startup to reopen the
+tabs that were open at the end of the previous run. Their workspace
+directories and auto-resumed sessions are restored behind the initial
+tab.</p>
+<p>You move between tabs with the <code>/workspace</code> command or the
+workspace key bindings, and choose where the tab bar sits with the
+<code>workspaces</code> configuration key — both are described
+below.</p>
 <h2 id="workspace">/workspace</h2>
-<p>With no argument, <code>/workspace</code> reports the active workspace directory.</p>
-<p>A bare number switches to the open tab with that number. Anything else is treated as a directory path: orangu switches to the tab already open on it, or opens a new tab for it (resuming the matching session there, or starting a fresh one). <code>Alt+Insert</code> opens a fresh tab on the current directory immediately; you then re-point it with <code>/workspace &lt;path&gt;</code>.</p>
-<p>Tab completion offers the workspaces seen in earlier sessions first, then completes filesystem directories, so a directory that has never been opened can still be navigated to a segment at a time:</p>
-<pre class="text"><code>/workspace ~/pro⇥/ora⇥</code></pre>
-<p>It is handled locally and works regardless of server or model state.</p>
+<p>With no argument, <code>/workspace</code> reports the active
+workspace directory.</p>
+<p>A bare number switches to the open tab with that number. Anything
+else is treated as a directory path: orangu switches to the tab already
+open on it, or opens a new tab for it (resuming the matching session
+there, or starting a fresh one). <code>Alt+Insert</code> opens a fresh
+tab on the current directory immediately; you then re-point it with
+<code>/workspace &lt;path&gt;</code>.</p>
+<p>Tab completion offers the workspaces seen in earlier sessions first,
+then completes filesystem directories, so a directory that has never
+been opened can still be navigated to a segment at a time:</p>
+<pre class="text"><code>/workspace ~/pro&lt;Tab&gt;/ora&lt;Tab&gt;</code></pre>
+<p>It is handled locally and works regardless of server or model
+state.</p>
 <h3 id="examples">Examples</h3>
 <pre class="text"><code>/workspace
 /workspace 1
@@ -100,10 +166,21 @@
 switch workspace
 workspace 1
 switch workspace ~/projects/orangu</code></pre>
-<h2 id="create_workspace-and-delete_workspace">/create_workspace and /delete_workspace</h2>
-<p><code>/create_workspace &lt;dir&gt;</code> opens a new tab on an existing directory — the slash-command equivalent of <code>Alt+Insert</code> followed by <code>/workspace &lt;dir&gt;</code>. The directory must already exist; orangu resolves it, opens a tab on it (resuming the matching session there, or starting a fresh one), and switches to it. A missing or non-existent directory is reported as an error.</p>
-<p><code>/delete_workspace</code> closes the active tab — the slash-command equivalent of <code>Alt+Delete</code>. The remaining tabs are renumbered and focus moves to a neighbour. The last open tab is never closed; use <code>/quit</code> to leave orangu.</p>
-<p>Both are handled locally and work regardless of server or model state.</p>
+<h2 id="create_workspace-and-delete_workspace">/create_workspace and
+/delete_workspace</h2>
+<p><code>/create_workspace &lt;dir&gt;</code> opens a new tab on an
+existing directory — the slash-command equivalent of
+<code>Alt+Insert</code> followed by <code>/workspace &lt;dir&gt;</code>.
+The directory must already exist; orangu resolves it, opens a tab on it
+(resuming the matching session there, or starting a fresh one), and
+switches to it. A missing or non-existent directory is reported as an
+error.</p>
+<p><code>/delete_workspace</code> closes the active tab — the
+slash-command equivalent of <code>Alt+Delete</code>. The remaining tabs
+are renumbered and focus moves to a neighbour. The last open tab is
+never closed; use <code>/quit</code> to leave orangu.</p>
+<p>Both are handled locally and work regardless of server or model
+state.</p>
 <h3 id="examples-1">Examples</h3>
 <pre class="text"><code>/create_workspace ~/projects/orangu
 /delete_workspace</code></pre>
@@ -113,44 +190,68 @@ delete workspace</code></pre>
 <h2 id="key-bindings">Key bindings</h2>
 <p>At the prompt, the workspace tabs are driven by these keys:</p>
 <table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Key</th>
 <th style="text-align: left;">Action</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>Alt+,</code></td>
-<td style="text-align: left;">Switch to the previous tab (to the left), wrapping</td>
+<td style="text-align: left;">Switch to the previous tab (to the left),
+wrapping</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>Alt+.</code></td>
-<td style="text-align: left;">Switch to the next tab (to the right), wrapping</td>
+<td style="text-align: left;">Switch to the next tab (to the right),
+wrapping</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>Alt+Insert</code></td>
-<td style="text-align: left;">Open a new workspace tab (re-point it with <code>/workspace</code>)</td>
+<td style="text-align: left;">Open a new workspace tab (re-point it with
+<code>/workspace</code>)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>Alt+Delete</code></td>
 <td style="text-align: left;">Close the active tab</td>
 </tr>
 </tbody>
 </table>
-<p>Closing a tab renumbers the ones after it and moves focus to a neighbour. The last open tab is never closed — only <code>/quit</code> ends orangu. The keys work at the prompt and during streaming: pressing one while the model is responding parks the stream in the background and switches immediately. The response keeps running in the original tab; a blinking dot in the tab bar shows it is still active. Switching back re-attaches the live view so you can watch it complete. Press Escape twice to cancel a response whether it is running in the foreground or in the background.</p>
+<p>Closing a tab renumbers the ones after it and moves focus to a
+neighbour. The last open tab is never closed — only <code>/quit</code>
+ends orangu. The keys work at the prompt and during streaming: pressing
+one while the model is responding parks the stream in the background and
+switches immediately. The response keeps running in the original tab; a
+blinking dot in the tab bar shows it is still active. Switching back
+re-attaches the live view so you can watch it complete. Press Escape
+twice to cancel a response whether it is running in the foreground or in
+the background.</p>
 <h2 id="tab-placement">Tab placement</h2>
-<p>Where the workspace tab bar is shown is set by the <code>workspaces</code> key in the <code>[orangu]</code> section of the configuration file:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<p>Where the workspace tab bar is shown is set by the
+<code>workspaces</code> key in the <code>[orangu]</code> section of the
+configuration file:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">workspaces </span><span class="ot">=</span><span class="st"> top</span></span></code></pre></div>
 <p>The options, matched case-insensitively, are:</p>
 <ul>
-<li><code>top</code> (the default) — a horizontal bar across the top of the screen, above the banner.</li>
-<li><code>bottom</code> — a horizontal bar across the bottom, under the input.</li>
-<li><code>left</code> — a vertical column of tab numbers down the left edge, beside the banner and output.</li>
+<li><code>top</code> (the default) — a horizontal bar across the top of
+the screen, above the banner.</li>
+<li><code>bottom</code> — a horizontal bar across the bottom, under the
+input.</li>
+<li><code>left</code> — a vertical column of tab numbers down the left
+edge, beside the banner and output.</li>
 <li><code>right</code> — the same column down the right edge.</li>
 </ul>
-<p>The interactive <code>--init</code> wizard prompts for it with Tab completion. Leaving the key out uses <code>top</code>; an unrecognised value is rejected when the configuration is loaded. The full list of <code>[orangu]</code> keys is in the Configuration chapter.</p>
+<p>The interactive <code>--init</code> wizard prompts for it with Tab
+completion. Leaving the key out uses <code>top</code>; an unrecognised
+value is rejected when the configuration is loaded. The full list of
+<code>[orangu]</code> keys is in the Configuration chapter.</p>
   </main>
 </div>
 

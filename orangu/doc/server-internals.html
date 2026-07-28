@@ -1,0 +1,3201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Server Internals — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="quickstart.html">Quick Start</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html" class="active">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#inference-server-internals"
+id="toc-inference-server-internals">Inference server internals</a></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1>Server Internals</h1>
+<h2 id="inference-server-internals">Inference server internals</h2>
+<p><code>orangu-server</code> (<code>src/bin/orangu-server/</code>) is a
+third binary in the same Cargo package as <code>orangu</code> and
+<code>orangu-coordinator</code>. Besides serving a GGUF model, it’s also
+the machine’s GGUF inventory tool
+(<code>system</code>/<code>suggest</code>/
+<code>list</code>/<code>show</code>/<code>download</code>/<code>delete</code>)
+— stateless between runs for those six: every invocation re-detects
+hardware and re-scans the models directory from scratch, so there is no
+cache, config-reload, or background process to reason about for them.
+<code>system</code>/<code>suggest</code>/<code>show</code>/<code>delete</code>
+stay entirely offline; <code>download</code> always talks to the Hub,
+and <code>list</code> does too, before printing its table, to check each
+Hugging Face-backed model for a newer commit (see
+<code>latest_commits</code> below) — swallowing the lookup silently
+rather than failing when the Hub can’t be reached. It does real tensor
+computation itself for serving — GGUF loading, dequantization, the
+transformer forward pass, sampling, and request scheduling are
+implemented in Rust with no dependency on llama.cpp/ggml’s own compiled
+code.</p>
+<h3 id="module-layout">Module layout</h3>
+<ul>
+<li><code>main.rs</code> — CLI parsing (serving plus the
+<code>system</code>/<code>suggest</code>/<code>list</code>/
+<code>show</code>/<code>download</code>/<code>delete</code>/<code>prune</code>
+subcommands), model-spec resolution, GPU backend selection
+(<code>select_backend</code>), <code>format_show</code>/
+<code>DEFAULT_ARRAY_PREVIEW</code> (for <code>show</code>),
+<code>select_model_for_deletion</code>/ <code>confirm</code> (for
+<code>delete</code>, and reused by <code>prune</code>), workspace-root
+resolution (<code>resolve_workspace</code>, over the shared
+<code>orangu::workspaces::resolve_workspace_root</code> that
+<code>orangu</code>’s own <code>-w</code>/<code>--workspace</code>
+uses), and process wiring
+(Ctrl+C/<code>SIGINT</code>/<code>--daemon</code>).</li>
+<li><code>prune.rs</code> — <code>prune</code>’s own CLI logic (listing,
+<code>NR</code>/id resolution, the
+<code>all</code>/interactive/explicit-identifier flows), built on
+<code>web::sessions</code>’s activity tracking; see below.</li>
+<li><code>config.rs</code>, <code>init.rs</code> —
+<code>orangu-server.conf</code> loading and the <code>--init</code>
+wizard.</li>
+<li><code>suggest.rs</code> — <code>suggest</code>: a hardware-based
+model-size estimate built on top of <code>orangu::hardware</code>’s own
+detection; see below.</li>
+<li><code>shell.rs</code> — hand-written bash/zsh/fish completion
+scripts.</li>
+<li><code>engine/loader.rs</code> — memory-maps a GGUF file, reads
+<code>&lt;arch&gt;.*</code> hyperparameters, resolves tensor byte
+ranges.</li>
+<li><code>engine/quant.rs</code> — dequantization for every supported
+<code>ggml_type</code>.</li>
+<li><code>engine/vecdot.rs</code> — the fused <code>int8</code> CPU
+kernels: a dot product taken against the still-quantized weight bytes,
+skipping the dequantize entirely. See below.</li>
+<li><code>engine/iq_grids.rs</code> — the <code>IQ*</code> codebooks
+(lattice-point tables, the sign table, and <code>KVALUES_IQ4NL</code>)
+that <code>quant</code>, <code>vecdot</code> and the Vulkan shaders’
+uploaded grid buffer all read from one copy.</li>
+<li><code>engine/tensor.rs</code> — the handful of numeric ops (matmul,
+RMSNorm, softmax, RoPE, SwiGLU/GEGLU) a forward pass needs, on plain
+<code>f32</code> slices — not a general ND-array library.</li>
+<li><code>engine/arch/{mod,llama,gemma,phi,mistral,qwen35moe,qwen35}.rs</code>
+— one <code>ModelForward</code> implementor per architecture
+family.</li>
+<li><code>engine/backend/{mod,cpu,vulkan,vulkan_shaders,cuda,opencl,rocm}.rs</code>
+— the <code>Backend</code> trait and its five implementors; see
+below.</li>
+<li><code>engine/tokenizer.rs</code> — a from-scratch BPE
+tokenizer.</li>
+<li><code>engine/chat_template.rs</code> — renders
+<code>tokenizer.chat_template</code> via <code>minijinja</code>.</li>
+<li><code>engine/sampling.rs</code> — repetition penalty,
+temperature/top-k/top-p/min-p.</li>
+<li><code>engine/kv_cache.rs</code> — per-sequence KV cache
+buffers.</li>
+<li><code>engine/scheduler.rs</code>, <code>engine/generate.rs</code>,
+<code>engine/batch.rs</code> — the multi-slot request scheduler and
+continuous-batching machinery.</li>
+<li><code>http/{mod,openai,native}.rs</code> — the HTTP surface.</li>
+<li><code>web/{mod,render,sessions}.rs</code> — the built-in chat UI.
+<code>sessions.rs</code> also owns the <code>session.json</code>
+activity marker (<code>mark_active</code>/<code>is_active</code>) and
+the prune-facing listing/sweep (<code>list_sessions_for_prune</code>/
+<code>sweep_empty_sessions</code>/<code>delete_session_dir</code>)
+<code>prune.rs</code> calls into.</li>
+</ul>
+<p>The GGUF-inventory subcommands lean on library modules shared with
+the rest of the workspace rather than binary-local ones:
+<code>orangu::gguf</code> (the GGUF binary-format reader),
+<code>orangu::model_spec</code> (directory scan, shard grouping, and the
+Hugging Face repo-id/quant-tag reconstruction behind <code>list</code>’s
+<code>MODEL</code> column), <code>orangu::model_download</code>
+(<code>download</code>’s fetch logic), and <code>orangu::hardware</code>
+(CPU/GPU detection). Living in <code>src/</code> alongside
+<code>orangu</code>’s and <code>orangu-coordinator</code>’s own shared
+code, rather than nested under <code>src/bin/orangu-server/</code>, is
+what let <code>orangu-server</code> absorb these subcommands from the
+now-removed <code>orangu-gguf</code> binary without duplicating any of
+this logic — <code>orangu-server</code>’s <code>main.rs</code> was
+already calling straight into
+<code>orangu::model_spec::resolve_or_fetch_model</code> for its own
+positional <code>model</code> argument, so
+<code>list</code>/<code>show</code>/<code>download</code> calling the
+same modules directly was additive, not a rewrite.</p>
+<h3 id="gguf-parsing-orangugguf">GGUF parsing
+(<code>orangu::gguf</code>)</h3>
+<p><code>GgufFile::read</code> implements the header, metadata
+key-value, and tensor-info sections of the <a
+href="https://github.com/ggml-org/ggml/blob/master/docs/gguf.md">GGUF
+specification</a> directly against a <code>BufReader</code>, without
+ever reading the tensor-data section itself — a
+<code>Reader&lt;R&gt;</code> wrapper tracks <code>bytes_read</code> as
+it goes, so <code>GgufFile::data_offset</code> (where tensor data would
+begin, aligned up to <code>general.alignment</code>, default 32) is
+computed for free without seeking into it. This is what keeps
+<code>list</code>/<code>show</code> fast against multi-gigabyte model
+files: parsing a file’s full metadata and tensor-info table costs only a
+few KB of reads regardless of the file’s total size.
+<code>engine::loader</code> (above) is a separate,
+<code>mmap</code>-based reader over the same format, built for loading
+tensor <em>data</em> rather than just metadata.</p>
+<p>Only little-endian GGUF is read — the spec itself notes there is
+currently no reliable way to detect a big-endian file, and none exist in
+practice. GGUFv1 (32-bit tensor/metadata counts, long deprecated
+upstream) is rejected with a clear error rather than silently
+misread.</p>
+<p>Two circuit breakers (<code>MAX_STRING_BYTES</code> = 100 MiB,
+<code>MAX_ARRAY_ELEMENTS</code> = 200M) guard string and array length
+prefixes: a corrupt or truncated download could otherwise claim an
+enormous length and force a huge allocation attempt before a single byte
+of it is verified to exist in the file.</p>
+<p><code>GgufValue::display(preview_limit)</code> renders a value for
+<code>show</code>; arrays longer than <code>preview_limit</code> print a
+truncated preview (<code>... (N more)</code>) rather than every element,
+since metadata arrays like <code>tokenizer.ggml.tokens</code> routinely
+hold well over 100,000 entries — <code>--full</code> passes
+<code>usize::MAX</code> to disable this.</p>
+<p><code>ggml_type_name</code> maps the <code>ggml_type</code> enum (ids
+0–41, per <a
+href="https://github.com/ggml-org/ggml/blob/master/include/ggml.h"><code>ggml.h</code></a>)
+to its canonical name; ids the format has since retired
+(e.g. <code>Q4_0_4_4</code>, whose numeric slot is never reused) print
+as <code>reserved(N)</code>, and anything beyond the table (a type added
+after this was written) as <code>unknown(N)</code>.</p>
+<h3
+id="quantization-element-counts-not-tensor-counts-type_element_totals">Quantization:
+element counts, not tensor counts
+(<code>type_element_totals</code>)</h3>
+<p><code>GgufFile::type_element_totals</code> sums each tensor’s element
+count (<code>dims.iter().product()</code>) by <code>ggml_type</code>,
+rather than counting tensors. A model has far more small
+<code>F32</code> bias/norm tensors than large weight matrices, but those
+matrices hold nearly all the parameters — a per-tensor-count majority
+would misreport a heavily quantized model as <code>F32</code>. This is a
+coarser signal than the true filename-derived quant tag (next section):
+it can’t distinguish <code>Q4_K_S</code> from <code>Q4_K_M</code>, since
+both use the <code>Q4_K</code> ggml type for most tensors, differing
+only in which few tensors (e.g. the output projection) get upgraded to a
+higher-precision type.</p>
+<h3
+id="shard-grouping-and-the-hugging-face-repo-id-orangumodel_spec">Shard
+grouping and the Hugging Face repo id
+(<code>orangu::model_spec</code>)</h3>
+<p><code>scan_models_dir</code> walks the configured directory with
+<code>walkdir::WalkDir::new(dir).follow_links(true)</code>. This is not
+optional: Hugging Face’s own hub cache — the layout llama.cpp’s
+<code>-hf</code>/<code>--hf-repo</code> itself downloads into — names
+every file under <code>snapshots/&lt;rev&gt;/</code> as a symlink into
+<code>blobs/</code>. Without <code>follow_links</code>,
+<code>entry.file_type().is_file()</code> reports the symlink itself
+(never <code>true</code>), and every such model is silently skipped
+rather than listed.</p>
+<p>Two further filters run in <code>scan_models_dir</code> itself,
+before any shard grouping, so only unique models are ever counted or
+listed:</p>
+<ul>
+<li><strong>Duplicate-file collapsing.</strong> All matching paths are
+collected and sorted first, then each is resolved with
+<code>std::fs::canonicalize</code> (which follows symlinks to their real
+target) into a <code>seen_targets: HashSet</code>; a path whose
+canonical target was already seen is skipped. This matters because the
+Hugging Face hub cache can reference the exact same blob from more than
+one <code>snapshots/&lt;rev&gt;/</code> directory — when a repo’s ref
+moves but a file’s content doesn’t change, the cache creates a new
+snapshot folder that symlinks to the already-downloaded blob rather than
+re-fetching it, so without this step a single physical download could
+count twice.</li>
+<li><strong>Multimodal projector (“mmproj”) exclusion.</strong> After a
+file parses successfully, <code>GgufFile::is_clip_projector</code> is
+checked (<code>general.architecture == "clip"</code>, identified the
+same way llama.cpp’s own <code>clip.cpp</code> loader does) and, if
+true, the file is skipped entirely — it’s excluded before it ever
+reaches <code>ModelSummary</code>/<code>group_models</code>. An mmproj
+sidecar accompanies a base model rather than standing in as one
+(llama.cpp loads it via <code>--mmproj</code>, separately from the base
+checkpoint), so it shouldn’t inflate the count of “models” a directory
+holds. This exclusion only affects <code>list</code>’s counting/grouping
+— <code>resolve_model_path</code>’s direct-path and bare-filename
+lookups (the first thing <code>show</code> tries) are untouched, so an
+mmproj file can still be <code>show</code>n by its path (the
+bare-filename branch, <code>models_dir.join(requested)</code>, only
+resolves a file sitting directly in the <code>models</code> root, not
+one nested under a cache’s <code>snapshots/&lt;rev&gt;/</code>).</li>
+</ul>
+<p><code>group_models</code> collapses a multi-part model’s shard files
+(<code>name-00001-of-00004.gguf</code>, …) into one
+<code>ModelGroup</code>, keyed by (parent directory,
+shard-suffix-stripped file stem) — so two files that merely share a name
+in different directories (e.g. two Hugging Face snapshot revisions of
+the same release) stay separate rows, while genuine shards of one model
+merge, with <code>size_bytes</code> summed and <code>type_totals</code>
+combined across every shard before picking one dominant type (a single
+shard’s own tensors are only part of the whole model).</p>
+<p><code>shard_group_label</code> and <code>hf_tag_from_label</code>
+deliberately mirror llama.cpp’s own resolver in
+<code>common/download.cpp</code> byte-for-byte, rather than reinventing
+the convention:</p>
+<ul>
+<li>The shard suffix regex, <code>-\d{5}-of-\d{5}$</code>, matches
+<code>get_gguf_split_info</code>’s <code>re_split</code>.</li>
+<li>The quant-tag regex, <code>[-.]([A-Z0-9_]+)$</code> in llama.cpp’s
+<code>re_tag</code>, is reimplemented as <code>hf_tag_from_label</code>:
+the trailing run of alphanumeric/underscore characters after the
+<em>last</em> <code>-</code> or <code>.</code> in the (shard-stripped)
+name, uppercased. It comes from the filename llama.cpp itself would
+match against, not from the tensor types, so it can say
+<code>Q4_K_M</code> where the ggml-type accounting can only say
+<code>Q4_K</code>. <code>QUANT</code> uses the same tag, narrowed by
+<code>quant_tag_from_label</code>/<code>is_quant_tag</code> to tags that
+really name a quantization (<code>hf_tag_from_label</code> alone would
+offer <code>IT</code> for <code>gemma-4-E2B-it</code>, fine to try as an
+<code>-hf</code> tag but not something to print as a quantization), and
+falls back to the dominant <code>ggml_type</code> only for a file whose
+name says nothing.</li>
+</ul>
+<p><code>group_models</code> then drops that <code>:TAG</code> back off
+the <code>MODEL</code> label whenever <code>QUANT</code> already shows
+the same string — repeating it only widens the table’s widest column.
+Two quantizations of one repo consequently share a <code>MODEL</code>
+cell, so <code>MODEL</code> is no longer a unique key:
+<code>ModelGroup::matches_label</code> accepts the printed label
+<em>and</em> the reconstructed <code>&lt;repo&gt;:&lt;quant&gt;</code>
+form (which keeps every spelling ever printed resolving locally, instead
+of falling through to <code>resolve_or_fetch_model</code>’s download
+path), and a bare request takes the first matching row. The final
+<code>sort_by</code> is stable, so rows sharing a label keep their
+<code>(parent directory, file stem)</code> order and both
+<code>NR</code> and first-match resolution stay put between runs.
+<code>delete</code> prints the group’s <code>quantization</code> in its
+confirmation line for the same reason — the label alone can’t say which
+of two rows is about to go.</p>
+<p><code>hf_repo_id_from_path</code> recovers
+<code>&lt;user&gt;/&lt;model&gt;</code> by walking a file’s ancestor
+directories for one matching
+<code>models--&lt;user&gt;--&lt;model&gt;</code> (checking every
+ancestor, not just the immediate parent, since real files sit under
+<code>snapshots/&lt;rev&gt;/</code>, sometimes with a further per-quant
+subfolder). This directory-naming convention —
+<code>folder_name = "models--" + repo_id.replace("/", "--")</code> — is
+Hugging Face’s own, confirmed directly against llama.cpp’s README
+(“models downloaded with <code>-hf</code> are now stored in the standard
+Hugging Face cache directory”). A file outside that layout has no
+<code>repo_id</code> to recover, so <code>group_models</code> falls back
+to the bare shard-stripped label.</p>
+<p><code>resolve_show_target</code> resolves whatever <code>show</code>
+was given, checking the fast, scan-free path first:
+<code>resolve_model_path</code> (a direct/relative/ absolute path, or a
+bare name under <code>models</code>) is tried before falling back to a
+full <code>scan_models_dir</code> + <code>group_models</code> for an
+<code>NR</code> or <code>MODEL</code> lookup — so the common case of
+<code>show /path/to/file.gguf</code> never pays the cost of scanning the
+whole directory. <code>ModelGroup::representative_path</code> (the first
+shard by sorted path order, which is also the one carrying full GGUF
+metadata under the standard shard-naming convention) is what
+<code>show</code> actually opens for a multi-shard model.
+<code>resolve_or_fetch_model</code> builds on top of
+<code>resolve_show_target</code> for the serving path’s own positional
+<code>model</code> argument: try resolving locally first, and only reach
+for <code>orangu::model_download::download_model</code> when nothing
+local matched — the same fallback <code>main.rs</code>’s
+<code>prepare</code> and <code>select_model_interactively</code>
+share.</p>
+<h3 id="deleting-a-model-orangumodel_spec">Deleting a model
+(<code>orangu::model_spec</code>)</h3>
+<p><code>resolve_delete_target</code> resolves <code>delete</code>’s
+argument to a full <code>ModelGroup</code>, not just
+<code>resolve_show_target</code>’s single representative path —
+<code>delete_model</code> needs every shard to remove a multi-shard
+model atomically, so this always scans and groups first rather than
+reusing <code>resolve_show_target</code>’s scan-free fast path for a
+plain file argument (that fast path only ever returns one file, with no
+way to tell whether it belongs to a larger group). Resolution order
+otherwise matches <code>resolve_show_target</code>: a direct/bare path
+first — returning that file’s whole group when <code>group_models</code>
+placed it in one, or a synthetic one-<code>ModelGroup</code>-of-one-path
+when it didn’t (an mmproj sidecar, which <code>group_models</code>
+deliberately excludes from every real group but <code>delete</code>
+should still be able to name directly) — then an <code>NR</code>, then a
+<code>MODEL</code> label.</p>
+<p><code>delete_model</code> removes every path in the resolved group,
+and, for each one that turns out to be a Hugging Face hub-cache symlink
+(<code>models--&lt;user&gt;--&lt;model&gt;/snapshots/&lt;rev&gt;/&lt;file&gt;</code>,
+resolved with <code>std::fs::canonicalize</code> <em>before</em> the
+symlink itself is unlinked), also removes its target blob under that
+same repo’s <code>blobs/</code> — but only when
+<code>blob_still_referenced</code> finds no other symlink left under
+<code>&lt;repo&gt;/snapshots/</code> still pointing at it. This matters
+for the same reason <code>scan_models_dir</code>’s own duplicate-file
+collapsing does: a repo’s ref can move without a file’s content
+changing, so the cache reuses (symlinks to) an already-downloaded blob
+from a second snapshot revision rather than re-fetching it — and
+<code>scan_models_dir</code> only ever lists the first, sorted-earliest
+occurrence of that shared content, so the second snapshot’s symlink is
+never part of any group <code>delete</code> was asked to remove. Scoping
+the reference check to just <code>&lt;repo&gt;/snapshots/</code> (not
+the whole <code>models</code> directory) is both cheap and correct:
+blobs are already nested per-repo
+(<code>models--&lt;user&gt;--&lt;model&gt;/blobs/</code>), so cross-repo
+sharing can’t happen by construction — no walk of the full, potentially
+huge <code>models</code> directory is ever needed just to delete one
+model.</p>
+<p><code>remove_empty_ancestors</code> walks up from a path’s parent
+directory, removing it (and its own parent, and so on) as long as it’s
+empty, stopping the moment one isn’t or at <code>models_dir</code>
+itself (which is never removed, whatever’s left inside it).
+<code>delete_model</code> calls it twice per shard — once from the
+removed symlink’s own <code>snapshots/&lt;rev&gt;/</code> chain, and,
+when a blob was also reclaimed, once more from that blob’s sibling
+<code>blobs/</code> chain, since the two aren’t nested inside each other
+and either could be the one left holding the repo directory open.
+Together, deleting a repo’s last shard collapses the now-empty
+<code>snapshots/&lt;rev&gt;/</code> and <code>blobs/</code>, and, once
+both are gone, <code>models--&lt;user&gt;--&lt;model&gt;/</code> itself,
+rather than leaving a hollowed-out shell of empty directories
+behind.</p>
+<p><code>main.rs</code>’s <code>Command::Delete</code> arm always
+confirms before calling <code>delete_model</code> (<code>confirm</code>,
+a plain stdin Yes/No reader defaulting to <em>No</em> on an empty entry
+or closed stdin — the same fail-safe default a destructive filesystem
+action should have) unless <code>--yes</code> was passed, and resolves
+an omitted argument through <code>select_model_for_deletion</code>: the
+same <code>format_list</code> table <code>list</code> prints, followed
+by an <code>NR</code> prompt — the delete-time counterpart of
+<code>main.rs</code>’s own <code>select_model_interactively</code> (used
+to pick a model to <em>serve</em>), returning a full
+<code>ModelGroup</code> rather than just a path/label pair since that’s
+what <code>delete_model</code> needs.</p>
+<h3 id="downloading-from-hugging-face-orangumodel_download">Downloading
+from Hugging Face (<code>orangu::model_download</code>)</h3>
+<p><code>download_model</code> implements
+<code>orangu-server download &lt;user&gt;/&lt;model&gt;[:quant]</code>
+by directly mirroring llama.cpp’s own <code>common/download.cpp</code>
+and <code>common/hf-cache.cpp</code> — read from that source rather than
+reimplemented from a guess at the Hugging Face API, since the whole
+point is producing a cache llama.cpp itself recognizes as already
+downloaded.</p>
+<p><strong>Resolving the commit.</strong> <code>resolve_commit</code>
+calls <code>GET /api/models/&lt;repo&gt;/refs</code>, which returns
+<code>{"branches": [{"name", "targetCommit"}, ...]}</code>; the branch
+named <code>main</code> wins, falling back to the first one listed. A
+repo that doesn’t exist can return <code>401</code> rather than
+<code>404</code> when unauthenticated (Hugging Face doesn’t distinguish
+“doesn’t exist” from “exists but is private” for a caller without
+access) — <code>resolve_commit</code> reports this as “repository not
+found … if it’s private or gated, set HF_TOKEN” when no token was
+supplied, or “authentication failed … check HF_TOKEN” when one was (a
+<code>401</code> with a token in hand means the token itself was
+rejected, not that the repo is missing).</p>
+<p><strong>Listing files.</strong> <code>list_repo_files</code> calls
+<code>GET /api/models/&lt;repo&gt;/tree/&lt;commit&gt;?recursive=true</code>,
+returning every file with its <code>path</code>, and either a top-level
+<code>oid</code> (the git blob sha1, for small files) or an
+<code>lfs.oid</code> (the LFS object’s sha256, for anything large enough
+to be stored as LFS — every real GGUF file). <code>RepoFile::oid</code>
+takes whichever is present; it doubles as the blob’s filename in the
+cache, so two snapshots referencing byte-identical content share one
+on-disk copy exactly like the real Hugging Face cache does.</p>
+<p><strong>Choosing what to download.</strong>
+<code>select_files_to_download</code> mirrors
+<code>find_best_model</code> + <code>get_split_files</code>:</p>
+<ul>
+<li><code>is_model_gguf</code> excludes
+<code>mmproj</code>/<code>imatrix</code>/<code>mtp-</code> files from
+counting as “the model” — the same exclusion
+<code>gguf_filename_is_model</code> applies upstream, and the same one
+<code>orangu::model_spec::scan_models_dir</code> applies when
+<em>reading</em> a cache back (see the shard-grouping section
+above).</li>
+<li>With an explicit <code>:quant</code>, <code>find_by_tag</code> looks
+for it as a substring immediately followed by <code>.</code> or
+<code>-</code> anywhere in a candidate’s path (so <code>"Q4_K_M"</code>
+matches both <code>model-Q4_K_M.gguf</code> and
+<code>model-Q4_K_M-00001-of-00004.gguf</code>) — the same non-anchored
+rule llama.cpp’s own resolver uses, deliberately different from
+<code>orangu::model_spec::hf_tag_from_label</code>’s anchored
+<em>extraction</em> of an unknown tag from a filename, since here the
+tag is already known and being searched for. A file only matches as a
+<strong>primary</strong> if it’s shard 1 (or unsharded); a later shard
+never stands in for the whole model on its own.</li>
+<li>Without a <code>:quant</code>, <code>DEFAULT_TAG_PREFERENCE</code>
+(<code>["Q4_K_M", "Q8_0"]</code>, in that order — llama.cpp’s own
+default) is tried before falling back to the first model file found at
+all.</li>
+<li>Once a primary file is chosen, <code>shard_info</code> (the same
+<code>-NNNNN-of-NNNNN</code> suffix regex
+<code>orangu::model_spec::shard_group_label</code> strips, here also
+extracting the index and total) finds every sibling sharing its prefix
+and total count, so a multi-part model downloads whole.</li>
+</ul>
+<p><strong>Choosing a multimodal projector, if any.</strong> After the
+primary model file is picked, <code>find_best_mmproj</code> (calling the
+generic <code>find_best_sibling</code> with
+<code>keyword = "mmproj"</code>) directly mirrors llama.cpp’s own
+<code>find_best_sibling</code>/ <code>find_best_mmproj</code>: among
+every <code>.gguf</code> path containing <code>mmproj</code>, it prefers
+the one sharing the deepest directory prefix with the primary file’s own
+path (rejecting any candidate whose directory list isn’t a prefix of the
+model’s), then — among ties at that depth — the one whose quantization
+bit depth (<code>extract_quant_bits</code>, reading the first run of
+digits in the filename’s trailing tag, e.g. <code>Q4_K_M</code> -&gt;
+<code>4</code>, <code>BF16</code>/<code>F16</code> -&gt;
+<code>16</code>, <code>F32</code> -&gt; <code>32</code>) is numerically
+closest to the primary file’s own. This is the same file orangu-server’s
+own <code>-hf</code> auto-fetches the first time a vision-capable model
+is launched with an image-related flag (verified against a real repo,
+<code>unsloth/Qwen3.6-35B-A3B-GGUF</code>, which offers three top-level
+mmproj variants — <code>BF16</code>/<code>F16</code>/<code>F32</code> —
+alongside a <code>Q4_K_M</code> primary; both this code and a live
+<code>orangu-server -hf ...:Q4_K_M --image-min-tokens 1024</code> run
+independently picked <code>mmproj-BF16.gguf</code>), so fetching it up
+front here means <code>LLAMA_CACHE=&lt;models&gt;</code> already has it
+ready offline. If found, it’s appended to the file list
+<code>download_model</code> fetches, alongside whatever shards the
+primary model itself has.</p>
+<p><strong>Fetching bytes, concurrently.</strong>
+<code>download_model</code> first walks <code>selected</code>
+sequentially just to decide what needs fetching at all — a blob already
+present on disk with a matching size is skipped entirely rather than
+re-verified byte-for-byte (cheap and good enough; matches the
+practicality bar the rest of this tool holds to elsewhere, e.g. the
+element-count quantization guess), printed immediately with an
+<code>[index/total]</code> suffix. Everything left becomes a
+<code>DownloadTask</code> (label, URL, blob path, size, and that same
+<code>(index, total)</code> position), and <code>download_all</code>
+hands the whole batch to rayon’s <code>par_iter().try_for_each</code> —
+bounded by rayon’s global thread pool rather than one OS thread per
+file, so a model with dozens of shards doesn’t open dozens of
+simultaneous connections. This means a sharded model’s shards, and a
+bundled mmproj sidecar, download at the same time instead of one at a
+time; <code>download_model</code> only does the symlink-placement pass
+(<code>link_or_copy</code>, below) after every download has
+finished.</p>
+<p>Each parallel task’s own <code>download_with_resume</code> streams
+its response body to a <code>&lt;blob&gt;.part</code> file, resuming
+from wherever that file left off via an HTTP <code>Range</code> request
+if one already exists from an interrupted attempt (falling back to a
+full restart if the server doesn’t honor it, signaled by a
+<code>200</code> instead of the expected <code>206</code>). Progress is
+a plain percentage against the tree API’s own reported file size — not
+the response’s <code>Content-Length</code>, which would only cover the
+<em>remaining</em> bytes on a resumed request. Since several tasks
+report progress at once, each writes into its own line of a
+<code>ProgressBoard</code> shared behind a single <code>Mutex</code>
+(one mutex around the whole board, not one per line, so a “set this
+line, then redraw every line” update is atomic and two threads’ redraws
+can’t interleave); <code>ProgressBoard::update</code> redraws in place
+with <code>\x1b[{n}A</code> (cursor up <code>n</code> lines) followed by
+<code>\x1b[2K</code> (clear line) per row, so every in-flight file’s
+percentage stays visible at once until all are done, at which point its
+line switches from <code>Downloading</code> to a final
+<code>Downloaded &lt;label&gt;: 100% [index/total]</code> — kept at 100%
+rather than dropped, so every line stays in the same
+<code>&lt;verb&gt; &lt;label&gt;: &lt;percent&gt;% [index/total]</code>
+shape whether still in flight or finished. If a task fails, the others
+still run to completion rather than being cancelled (each writes its own
+<code>.part</code> file, so a later retry only re-fetches whatever
+actually failed); <code>download_all</code> surfaces the first error
+once every task has finished.</p>
+<p><strong>Placing the file.</strong> <code>link_or_copy</code> computes
+the same relative symlink target the real Hugging Face cache uses
+(<code>../</code> once per path component between
+<code>snapshots/&lt;commit&gt;/</code> and the file, plus two more to
+reach the repo root, then into <code>blobs/&lt;oid&gt;</code>) rather
+than an absolute path, so the whole <code>models</code> directory stays
+portable if moved. Falls back to a plain copy if symlinks aren’t
+available at all (e.g. Windows without developer mode enabled) —
+mirroring <code>hf_cache::finalize_file</code>’s own degraded-mode
+fallback.</p>
+<p><strong>Not implemented</strong>, out of scope for a first version:
+<code>--mtp</code> companion downloads (also a
+<code>find_best_sibling</code> call upstream, with
+<code>keyword = "mtp-"</code>), <code>preset.ini</code>-based repos (a
+repo-root manifest naming one specific file to fetch regardless of tag
+matching), and Docker registry sources.</p>
+<h3 id="checking-for-updates-lists-refresh-marker">Checking for updates
+(<code>list</code>’s <code>(Refresh)</code> marker)</h3>
+<p><code>list</code> doesn’t just read local disk state — it also asks
+the Hub whether a newer commit exists for every model it found under a
+Hugging Face hub-cache directory. Two pieces make this work:</p>
+<ul>
+<li><strong>The local commit.</strong>
+<code>orangu::model_spec::hf_local_commit_from_path</code> recovers the
+sha a <code>ModelGroup</code> is cached at by walking its representative
+file’s ancestors for the <code>snapshots</code> directory and taking the
+child folder’s name directly below it — the same
+<code>snapshots/&lt;commit&gt;/...</code> layout
+<code>download_model</code> itself creates and
+<code>hf_repo_id_from_path</code> (above) already walks to recover the
+repo id. Stored on <code>ModelGroup</code> as
+<code>hf_repo</code>/<code>local_commit</code>, alongside
+<code>label</code>.</li>
+<li><strong>The remote commit.</strong>
+<code>orangu::model_download::latest_commits</code> takes every
+<em>distinct</em> <code>hf_repo</code> id <code>list</code> found
+(deduped, so a repo with several <code>:quant</code> rows is still only
+queried once even when those rows were cached at different commits) and,
+in parallel via <code>rayon</code>’s <code>par_iter</code>, calls the
+very same <code>resolve_commit</code> <code>download</code> uses to
+resolve <code>main</code>
+(<code>GET /api/models/&lt;repo&gt;/refs</code>) — not a separate code
+path, so a repo <code>list</code> says is stale is guaranteed to
+actually update if <code>download</code>ed again. Its own short-lived
+<code>reqwest::Client</code> (via <code>build_client</code>’s optional
+timeout parameter) carries a 5-second timeout (<code>download</code>’s
+own client passes <code>None</code>, since a multi-gigabyte transfer
+legitimately takes longer), and every per-repo failure — unreachable
+Hub, DNS failure, rate limit, a repo gone private — is discarded with
+<code>.ok()</code> rather than propagated: <code>list</code> must still
+print its table when offline, just with no <code>(Refresh)</code>
+markers, rather than fail the whole command over one lookup (or over
+having no network at all). An empty repo list short-circuits before even
+building a client.</li>
+</ul>
+<p><code>main.rs</code>‘s <code>Command::List</code> arm wires the two
+together: <code>group_models</code> runs first, its groups’ distinct
+<code>hf_repo</code> ids feed <code>latest_commits</code>, which returns
+a <code>repo -&gt; commit</code> map — not a “these repos are stale” set
+— and <code>format_groups</code> (the renderer <code>format_list</code>
+itself now delegates to) compares each row’s <em>own</em>
+<code>local_commit</code> against that map when deciding whether to
+append <code>(Refresh)</code> after <code>SIZE</code>. Comparing per row
+rather than per repo matters: a repo can have two
+<code>ModelGroup</code> rows cached at different commits
+(e.g. <code>:Q4_K_M</code> downloaded weeks ago, <code>:Q8_0</code>
+downloaded today), and only the one actually behind should be marked — a
+<code>HashSet</code> of “stale repos” would incorrectly mark both just
+because they share a repo id. The marker sits deliberately
+<em>after</em> <code>SIZE</code> rather than folded into
+<code>MODEL</code>, so the shell completion scripts (above), which only
+ever read <code>list</code>’s first two whitespace-separated columns,
+stay unaffected by a row growing a trailing marker.</p>
+<h3 id="the-supported-column">The <code>SUPPORTED</code> column</h3>
+<p><code>list</code> prints a <code>SUPPORTED</code> column reading
+<code>Yes (&lt;arch&gt;)</code> or <code>No (&lt;arch&gt;)</code> per
+row — so a user sees which models this build can actually load
+<em>before</em> selecting one, rather than only discovering it can’t
+once it’s loaded. <code>model_spec::format_groups</code> renders the
+column (and <code>format_list</code>’s signature carries the
+<code>support</code>/<code>colorize</code> parameters through), but the
+lib deliberately doesn’t decide <em>what</em> is supported: that
+judgement lives in <code>orangu-server</code>, in
+<code>engine::loader::model_load_support</code>. So
+<code>main.rs</code>’s <code>model_support</code> opens each group’s
+representative file (header only — no tensor data, the same cheap read
+<code>show</code> does), calls <code>model_load_support</code>, and
+stores the result as one
+<code>model_spec::ModelSupport { architecture, supported, unsupported_quant }</code>
+per group before handing the slice to <code>format_groups</code>. Every
+<em>shard</em> of a group is inspected, not just its representative
+file: a split model’s later shards carry their own tensor directory and
+can use a quantization shard 1 never does. An empty slice omits the
+column entirely, which is what <code>format_list</code> (lib-side tests)
+and any caller without the loader pass.</p>
+<p><code>model_load_support</code> is deliberately allowed to be
+<em>stricter</em> than <code>resolve_arch_family</code> (whose family
+tables are the single source of truth for the architecture
+<em>string</em>): a model whose architecture is recognised can still
+carry tensors this build cannot read, so a bare
+<code>resolve_arch_family</code> “yes” would promise a load that then
+fails partway through. It therefore also checks every tensor’s
+<code>ggml_type</code> against <code>quant::supports_type</code> and
+reports the first unreadable one, which <code>ModelSupport::cell</code>
+renders as <code>No (llama, TQ1_0)</code> — distinct from
+<code>No (glm-dsa)</code>, because only the former is fixed by fetching
+a different quantization of the same model. Note this is <em>not</em>
+the same question as the arch module’s own tensor expectations: gemma
+MoE checkpoints (<code>gemma-4-26B-A4B</code>,
+<code>blk.{i}.ffn_gate_inp.weight</code> present) load via
+<code>arch::gemma</code>’s routed-expert path and report
+<code>Yes (gemma4)</code>.</p>
+<p><code>SUPPORTED</code> answers “can this build read the file”, which
+is not quite the same question as “will it run on the backend you
+selected”. Every GPU backend covers fewer <code>ggml_type</code>s than
+<code>engine::quant</code> does, so a row can read <code>Yes</code> and
+still be refused at startup by
+<code>engine::backend::unsupported_tensor_types</code> — see the
+CUDA/OpenCL/ROCm section for the coverage each backend has. The column
+deliberately does not fold that in: it is rendered before a backend is
+chosen, and the same file that one backend refuses runs on
+<code>cpu</code>.</p>
+<p>A <code>No</code> row is <em>greyed</em> (dim ANSI SGR), not hidden:
+a user can still pick it and will hit the same clear “not yet supported”
+error <code>prepare</code> gives for any other unsupported model — the
+greying just deprioritizes it visually. Crucially, the escapes are only
+emitted when <code>format_groups</code>’ <code>colorize</code> flag is
+set, which every call site derives from
+<code>std::io::stdout().is_terminal()</code>. Piped or redirected output
+— including what the shell completion scripts parse with
+<code>awk '{print $1; print $2}'</code> — stays escape-free, so an ANSI
+prefix can never corrupt the <code>NR</code>/<code>MODEL</code> columns
+those scripts read. This is the same renderer the interactive serve-time
+picker (<code>select_model_interactively</code>) and the
+<code>show</code>/<code>delete</code> pickers use, so all four tables
+carry the column consistently.</p>
+<h3 id="cpugpu-detection-oranguhardware">CPU/GPU detection
+(<code>orangu::hardware</code>)</h3>
+<p>CPU statistics (brand, vendor, architecture, physical/logical core
+counts, peak frequency, total/available RAM) come from <a
+href="https://docs.rs/sysinfo"><code>sysinfo</code></a>, used with only
+its <code>system</code> feature (no
+<code>disk</code>/<code>network</code>/<code>component</code>/<code>user</code>)
+to keep the dependency footprint minimal.</p>
+<p>GPU detection has no single cross-platform API, so
+<code>detect_gpus</code> layers several best-effort, independent sources
+and concatenates whatever each finds — a card no source recognizes
+simply doesn’t appear, rather than the whole command failing:</p>
+<ol type="1">
+<li><strong>NVIDIA</strong> (<code>detect_nvidia_gpus</code>, Linux and
+Windows): shells out to
+<code>nvidia-smi --query-gpu=... --format=csv,noheader,nounits</code>,
+the one interface guaranteed to exist wherever an NVIDIA driver is
+installed. A missing binary or non-zero exit returns an empty list, not
+an error — “no NVIDIA GPU” is the expected common case.
+<code>memory_kind</code> is always <code>MemoryKind::Dedicated</code> —
+no consumer NVIDIA GPU is anything else.</li>
+<li><strong>AMD/Intel/other, Linux only</strong>
+(<code>detect_linux_sysfs_gpus</code>): enumerates
+<code>/sys/class/drm/card*/device</code>, the kernel interface every
+Linux GPU driver exposes. NVIDIA vendor ids (<code>0x10de</code>) are
+skipped here — already reported by <code>nvidia-smi</code> above, and
+<code>mem_info_vram_total</code> is an amdgpu-specific sysfs attribute
+this path can’t get for NVIDIA anyway. VRAM total/used come from
+<code>mem_info_vram_total</code>/<code>mem_info_vram_used</code> when
+present (AMD only; Intel iGPUs report no separate VRAM, being shared
+system memory). The device’s marketing name is looked up in the system’s
+<code>pci.ids</code> database (<code>load_pci_ids</code>, checking
+<code>/usr/share/hwdata/pci.ids</code> first — the <code>hwdata</code>
+package’s path on Fedora/RHEL — then the <code>pciutils</code> paths
+used elsewhere), the same file <code>lspci</code> itself reads; if it
+isn’t installed, the raw <code>vendor:device</code> PCI ids are shown
+instead of a name, rather than failing.</li>
+<li><strong>macOS</strong> (<code>detect_macos_gpus</code>):
+<code>system_profiler SPDisplaysDataType -json</code>, parsed with
+<code>serde_json</code> (already a workspace dependency).</li>
+<li><strong>Windows</strong> (<code>detect_windows_gpus</code>):
+PowerShell’s <code>Win32_VideoController</code> WMI class via
+<code>Get-CimInstance | ConvertTo-Json</code>. A single result comes
+back as a bare JSON object rather than a one-element array, which the
+parser normalizes explicitly. <code>AdapterRAM</code> is a well-known
+32-bit field that misreports (often as 0 or wrapped) for cards with more
+than ~4 GiB of VRAM; it’s still the best zero-dependency source
+available on Windows, so a <code>0</code> reading is treated as
+“unknown” rather than shown literally.</li>
+</ol>
+<h3 id="dedicated-vs.-shared-memory-memorykind">Dedicated vs. shared
+memory (<code>MemoryKind</code>)</h3>
+<p>Every <code>GpuInfo</code> carries a
+<code>memory_kind: MemoryKind</code> (<code>Dedicated</code> /
+<code>Shared</code> / <code>Unknown</code>), derived by a different
+signal per platform — there is no single cross-platform API for this
+either:</p>
+<ul>
+<li><strong>Linux</strong> (<code>linux_memory_kind</code>): whether
+<code>amdgpu</code> exposes <code>mem_info_vram_vendor</code> (the VRAM
+chip manufacturer, e.g. <code>samsung</code>/<code>hynix</code>) for the
+device. This was verified directly against real hardware carrying both a
+discrete card and an integrated APU on the same machine (a Ryzen
+laptop’s Navi 14 dGPU and Renoir iGPU): the discrete card has this file,
+the integrated one — which still reports a
+<code>mem_info_vram_total</code> for its BIOS-reserved carve-out of
+system RAM — does not, since there’s no separate memory chip to name. A
+device with no <code>mem_info_vram_*</code> attributes at all (Intel’s
+<code>i915</code> driver, almost always integrated) also defaults to
+<code>Shared</code>; a rare discrete Intel Arc card would be
+misclassified here, since its local-memory sysfs interface isn’t
+read.</li>
+<li><strong>macOS</strong> (<code>macos_memory_kind</code>):
+<code>system_profiler</code>’s own two keys already say which kind of
+memory this is — <code>spdisplays_vram</code> names a real
+dedicated-VRAM figure, while <code>spdisplays_vram_shared</code> marks
+Apple Silicon’s unified-memory architecture or an older integrated
+Mac.</li>
+<li><strong>Windows</strong> (<code>windows_memory_kind</code>):
+<code>Win32_VideoController</code> has no dedicated/shared field of its
+own (that lives in DXGI’s <code>DXGI_ADAPTER_DESC</code>, unreachable
+from a WMI/PowerShell query without a real helper binary), so this
+guesses from the adapter name string instead: NVIDIA is always
+<code>Dedicated</code>, Intel is <code>Shared</code> unless the name
+says <code>Arc</code>, and AMD is left <code>Unknown</code> outright —
+its driver names an APU’s integrated GPU and a discrete Radeon card too
+similarly (e.g. plain “AMD Radeon(TM) Graphics” for either) to guess
+reliably from the name alone.</li>
+</ul>
+<p><code>MemoryKind::Unknown</code> is only ever constructed on
+macOS/Windows, whose detection functions are <code>cfg</code>’d out on
+other build targets — hence the variant carries a blanket
+<code>#[allow(dead_code)]</code> rather than one scoped per target.</p>
+<h3
+id="shared-memorys-total-is-system-ram-not-the-raw-query-result">Shared
+memory’s total is system RAM, not the raw query result</h3>
+<p><code>detect_gpus(total_memory_bytes)</code> takes the system’s total
+RAM — <code>CpuInfo::total_memory_bytes</code>, computed once by the
+caller so this doesn’t pay for a second <code>sysinfo</code> query —
+and, after concatenating every platform’s GPUs, runs
+<code>apply_shared_memory_total</code> over the result: any
+<code>GpuInfo</code> with <code>memory_kind == MemoryKind::Shared</code>
+has its <code>vram_total_bytes</code> overwritten with
+<code>total_memory_bytes</code>, unconditionally.</p>
+<p>This matters because a shared GPU’s own reported figure (where one
+exists at all) drastically understates what it can actually use:
+<code>amdgpu</code> reports an APU’s tiny BIOS-reserved carve-out via
+<code>mem_info_vram_total</code> (as little as a few hundred MiB — 512
+MiB on the Renoir APU this was verified against), and Intel/Windows
+sources often report nothing at all. System RAM is the real ceiling on
+how much such a GPU can draw on, so it’s the only figure worth showing
+as its total; <code>vram_used_bytes</code> is left untouched (whatever
+the platform reported, or <code>None</code>), since “how much of the
+shared pool is currently claimed as graphics memory” is a real and
+distinct figure from the override, unlike the total.</p>
+<h3 id="hardware-based-model-size-suggestion-suggest.rs">Hardware-based
+model-size suggestion (<code>suggest.rs</code>)</h3>
+<p><code>main.rs</code>’s <code>Command::Suggest</code> arm calls the
+same <code>orangu::hardware:: detect_cpu</code>/<code>detect_gpus</code>
+pair <code>Command::System</code> does, then passes the result to
+<code>suggest::format_suggestion</code>, which appends two
+size-suggestion tables after
+<code>orangu::hardware::format_report</code>’s own CPU/GPU listing (via
+the shared <code>push_suggestion_block</code> helper). There is no
+separate detection path — <code>suggest</code> is purely a second
+interpretation of the same hardware inventory <code>system</code>
+already knows how to gather (and the same report printed at the top of
+every attached <code>orangu-server</code> startup — see the Inference
+server chapter’s Quick start section).</p>
+<p><strong>The memory-estimation formula.</strong>
+<code>estimate_total_vram_bytes</code> mirrors <a
+href="https://smcleod.net/vram-estimator/">Sam McLeod’s GGUF VRAM
+Estimator</a>’s own <code>calculateMemoryBreakdown</code> function (read
+directly from its published <code>vram-calculator.min.js</code>, not
+guessed) and the general shape of <a
+href="https://github.com/erans/selfhostllm">erans/selfhostllm</a>’s
+calculator:</p>
+<ul>
+<li>Model weight bytes: <code>params × bits_per_weight ÷ 8</code>, plus
+a fixed 500 MiB runtime/CUDA-context overhead
+(<code>RUNTIME_OVERHEAD_BYTES</code>, matching smcleod’s own
+<code>CUDA_SIZE</code> constant exactly).</li>
+<li>KV cache bytes:
+<code>context_size × 2 (K and V) × layers × hidden_size × (kv_cache_bits ÷ 8)</code>,
+plus a smaller “compute buffer” term for attention scratch space,
+<code>context_size × hidden_size × 3 × (bits_per_weight ÷ 8)</code>.</li>
+</ul>
+<p>Since <code>suggest</code> runs before any model is chosen, there’s
+no real GGUF file to read <code>hidden_size</code>/<code>layers</code>
+from. <code>estimate_hidden_dims</code> instead estimates both from the
+parameter count alone. The standard transformer parameter-count
+approximation (params ≈ 12 × layers × hidden_size²) is one equation with
+two unknowns, so the split is underdetermined; it’s resolved by putting
+everything into the hidden size
+(<code>hidden_size = sqrt(params / 12)</code>), which makes
+<code>layers</code> work out to exactly 1 by construction. The KV-cache
+estimate built on it therefore scales as context × √params — which
+tracks modern GQA-era models well (their per-layer KV width shrinks as
+depth grows, so total KV grows sublinearly in parameters), and matches
+the fallback smcleod’s own calculator uses when it has no real GGUF
+metadata to read either.</p>
+<p><code>DEFAULT_BITS_PER_WEIGHT</code> (4.83, Q4_K_M) and
+<code>KV_CACHE_BITS</code> (8, Q8_0) match this project’s own
+established defaults (<code>orangu::model_download</code>’s
+<code>DEFAULT_TAG_PREFERENCE</code>, and the same Q8_0 KV-cache
+quantization <code>engine::kv_cache</code> itself stores) rather than
+assuming full FP16 throughout.</p>
+<p><strong>A table, not a single guess.</strong> Actual context usage
+varies far too much to guess well from hardware alone, and
+bits-per-weight depends on which quantization tag you end up downloading
+— so instead of picking one of each, <code>push_suggestion_block</code>
+prints a row per context length in <code>CONTEXT_LADDER</code> (1K up to
+a generous long-context ceiling, 262144) and a column per quantization
+in <code>QUANT_LADDER</code> (<code>Q2_K</code> at 3.00 bits/weight,
+<code>Q4_K_M</code> at <code>DEFAULT_BITS_PER_WEIGHT</code>, and
+<code>Q8_0</code> at 8.5 — all three bits-per-weight figures read from
+smcleod’s own table, the same source as the formula itself). Each cell
+is independently computed by <code>suggest_param_count</code>, so the
+suggested size correctly shrinks along a row as quantization gets
+heavier, and down a column as context grows.</p>
+<p><strong>Picking a size.</strong> <code>suggest_param_count</code>
+walks <code>PARAM_LADDER_BILLIONS</code> — a curated list of common
+open-weight parameter counts, largest first — and returns the first
+whose <code>estimate_total_vram_bytes</code> result (at that cell’s
+context length and bits-per-weight) fits within the budget, or
+<code>None</code> if even the smallest rung (1B) doesn’t (rendered as
+<code>-</code>).</p>
+<p><strong>Two budgets, (up to) two tables.</strong>
+<code>format_suggestion</code> computes two separate budgets and prints
+a labeled <code>push_suggestion_block</code> for each,
+<code>"Suggested model size (Dedicated)"</code> and
+<code>"Suggested model size (Combined)"</code>. Both sum each eligible
+GPU’s own <code>vram_total_bytes</code> — deliberately <em>not</em>
+reduced by <code>vram_used_bytes</code>, since <code>suggest</code>
+estimates the hardware’s own capability (this file’s module doc —
+“likely to run comfortably on this machine”, picked before any model is
+chosen), not how much happens to be free at the exact moment it runs;
+whatever else is transiently using VRAM (a compositor, a browser, an
+already-running <code>orangu-server</code>) shouldn’t shrink a
+hardware-based estimate:</p>
+<ul>
+<li><code>dedicated_vram_budget_bytes</code> sums every GPU
+<code>is_dedicated_for_budget</code> accepts (multiple dedicated cards
+add up) — <code>0</code> when there’s none at all. The
+<code>Dedicated</code> block itself is skipped in that case
+(<code>gpus.iter().any(is_dedicated_for_budget)</code> gates the call to
+<code>push_suggestion_block</code>), rather than printing a
+<code>0 B</code> budget and a table where
+<code>suggest_param_count</code> correctly, but uselessly, reports
+nothing on the ladder fitting for every single cell.</li>
+<li><code>combined_gpu_budget_bytes</code> sums every GPU
+<code>is_combined_budget_eligible</code> accepts (a <code>Shared</code>
+GPU’s <code>vram_total_bytes</code> is already the system RAM total via
+<code>apply_shared_memory_total</code>, described above) — the more
+permissive figure, representing every device this server could spread
+layers across at once. Falls back to the CPU’s own
+<code>total_memory_bytes</code> when that sum is <code>0</code> (no GPU
+detected at all). Always printed, even when it just reduces to system
+RAM alone — unlike <code>Dedicated</code>, this budget is never
+literally <code>0</code> on a real machine.</li>
+</ul>
+<p><strong><code>Unknown</code>-kind GPUs: a Windows-specific
+path.</strong> On Linux/macOS,
+<code>is_dedicated_for_budget</code>/<code>is_combined_budget_eligible</code>
+only ever see <code>Dedicated</code>/<code>Shared</code> GPUs —
+<code>MemoryKind</code> is already reliably known there (see above), so
+both functions have a plain, <code>cfg</code>-free body for those
+targets. Windows is different: <code>windows_memory_kind</code>
+classifies <em>any</em> AMD adapter <code>Unknown</code>, discrete
+Radeon and integrated APU alike, since that distinction only exists in
+DXGI’s <code>DXGI_ADAPTER_DESC</code> — unreachable from the WMI query
+<code>detect_windows_gpus</code> uses. Rather than counting every
+<code>Unknown</code> GPU (overcounts an APU’s tiny carve-out as if it
+were a hard VRAM ceiling) or none (undercounts a real discrete Radeon
+card), the <code>#[cfg(target_os = "windows")]</code> variants of both
+functions trust an <code>Unknown</code> GPU’s own
+<code>vram_total_bytes</code> only above
+<code>WINDOWS_UNKNOWN_DEDICATED_THRESHOLD_BYTES</code> (1 GiB —
+comfortably above a typical integrated carve-out, comfortably below any
+real discrete card). Below the threshold it’s treated like a
+<code>Shared</code> GPU: excluded from both budgets, since its real
+ceiling is system RAM, which <code>combined_gpu_budget_bytes</code>’s
+own <code>total_memory_bytes</code> fallback already supplies once
+nothing else in the sum counts it.</p>
+<h3 id="shell-completions-shell.rs">Shell completions
+(<code>shell.rs</code>)</h3>
+<p>Mirrors <code>orangu</code>’s own
+<code>-s</code>/<code>--shell-completions</code>
+(<code>src/bin/orangu/ shell.rs</code>,
+<code>print_shell_completions</code> in <code>main.rs</code>):
+hand-written bash/zsh/ fish scripts embedded as <code>&amp;str</code>
+constants, selected by inspecting <code>$SHELL</code>, rather than
+clap-generated completions. The positional <code>model</code> argument,
+and <code>show</code>’s and <code>delete</code>’s own arguments,
+complete the same way <code>orangu</code>’s own scripts complete session
+UUIDs — the shell function shells back out to
+<code>orangu-server list</code> itself (<code>2&gt;/dev/null</code>, so
+a missing config yields no candidates rather than an error) and reads
+its first two columns with <code>awk</code>. This keeps the completion
+logic entirely in the shell script, depending on nothing but
+<code>orangu-server</code> itself being on <code>$PATH</code> — no
+dynamic-completion protocol or extra binary flag is needed. The bash and
+fish scripts also list the six subcommand names as literal completion
+candidates alongside the dynamic model list at the first argument
+position; the zsh script achieves the same with
+<code>_alternative</code> combining a <code>_values</code> list
+(subcommand names) and a <code>compadd</code>-based function (model
+candidates) for that position.</p>
+<p>An earlier version of this explored <code>clap_complete</code>’s
+<code>unstable-dynamic</code> feature for this instead; it was backed
+out in favor of the approach above once <code>orangu</code>’s own
+precedent was found, since introducing a genuinely unstable
+(semver-exempt) dependency wasn’t warranted when a small, self-contained
+shell script does the same job with zero new dependencies.</p>
+<p><code>prune</code>’s own argument completes differently from
+<code>model</code>/<code>show</code>/<code>delete</code> above: directly
+against <code>~/.orangu/server/sessions/*</code> (each entry a UUID
+directory) plus the literal <code>all</code>, with no process invocation
+at all — this time genuinely the same trick <code>orangu</code>’s own
+<code>-r</code>/<code>--resume</code> completion uses
+(<code>_orangu_sessions</code>/<code>__orangu_sessions</code> in
+<code>src/bin/orangu/shell.rs</code>), not just the same general shape.
+Shelling out to <code>orangu-server prune</code> itself the way model
+completion shells out to <code>list</code> isn’t an option here:
+<code>prune</code> with no argument prints its table and then reads a
+selection from stdin, so piping its output into a completion function
+would risk the completion hanging on that prompt — <code>list</code>
+never reads stdin, which is exactly why it’s safe to use as a completion
+source and <code>prune</code> isn’t.</p>
+<h3 id="gguf-loading-and-dequantization">GGUF loading and
+dequantization</h3>
+<p><code>engine::loader</code> memory-maps the file and reads
+hyperparameters using the same <code>&lt;arch&gt;.*</code> key names
+llama.cpp itself reads (confirmed directly against
+<code>llama.cpp/src/llama-arch.cpp</code>’s <code>LLM_KV_*</code>
+table). Weight tensors are <strong>not</strong> eagerly dequantized into
+RAM — each row is read straight from the <code>mmap</code> and
+dequantized on demand, so even a large model’s memory footprint stays
+close to its file size.</p>
+<p><code>engine::quant</code>’s dequantization struct layouts and
+algorithms are taken directly from ggml’s own
+<code>ggml-common.h</code>/<code>ggml-quants.c</code>
+(<code>dequantize_row_*</code>), not reimplemented from a description,
+so the CPU path is bit-for-bit compatible with what llama.cpp itself
+reads. Supported types: the floats (<code>F32</code>, <code>F16</code>,
+<code>BF16</code>), the legacy quants (<code>Q4_0</code>,
+<code>Q4_1</code>, <code>Q5_0</code>, <code>Q5_1</code>,
+<code>Q8_0</code>), the whole K-quant family (<code>Q2_K</code> through
+<code>Q6_K</code>), and the <code>IQ*</code> codebook quants
+(<code>IQ1_S</code>, <code>IQ1_M</code>, <code>IQ2_XXS</code>,
+<code>IQ2_XS</code>, <code>IQ2_S</code>, <code>IQ3_XXS</code>,
+<code>IQ3_S</code>, <code>IQ4_NL</code>, <code>IQ4_XS</code>) — any
+other <code>ggml_type</code> fails to load with a clear “not yet
+supported” error rather than misreading it.</p>
+<p><code>IQ4_NL</code> is worth calling out because it turns up in files
+whose <em>name</em> promises a pure K-quant. It is the one
+<code>IQ*</code> type that blocks at 32 elements rather than 256, and a
+K-quant needs 256 to divide the row, so upstream’s
+<code>llama_tensor_get_type</code> substitutes it per tensor wherever a
+row is too narrow — every 896-wide row of a <code>Qwen2.5-0.5B</code>,
+for instance. Any code that reads “<code>IQ*</code>” as
+“<code>QK_K</code>-blocked” gets its stride wrong for this one type
+alone; <code>quant::block_layout</code>, <code>vecdot::supports</code>,
+and every backend’s block-size table each place it with the 32-element
+quants deliberately.</p>
+<p>The six repacked layouts —
+<code>Q4_0_4_4</code>/<code>_4_8</code>/<code>_8_8</code> (ggml ids
+31-33) and <code>IQ4_NL_4_4</code>/<code>_4_8</code>/<code>_8_8</code>
+(36-38) — are handled differently from every other type, in
+<code>engine::loader</code> rather than <code>engine::quant</code>’s
+per-row dequantizers. They are ARM-SIMD pre-repacked
+<code>Q4_0</code>/<code>IQ4_NL</code>: ggml retired the ids and never
+shipped a <code>to_float</code> for any of them (only
+<code>gemv</code>/<code>gemm</code> kernels), which is why upstream
+refuses such a file. The packing is lossless though —
+<code>repack_{q4_0,iq4_nl}_to_*_bl</code> plus the
+<code>make_block_*</code> functions interleave 4 or 8 <em>rows</em> into
+shared records — so <code>quant::deinterleave_repack</code> inverts it
+and <code>LoadedModel::open</code> rewrites every such tensor to its
+plain base type before anything reads one. Past the loader these ids do
+not exist, so the CPU fused kernel and all four GPU backends serve them
+with no new code.</p>
+<p><code>quant::repack_layout</code> is the whole specification, as
+<code>(base type, rows, run, xor)</code>. Two entries in it do not
+follow from the type names and would corrupt every weight if
+guessed:</p>
+<ul>
+<li><code>*_4_8</code> interleaves <strong>4</strong> rows in 8-byte
+runs, not 8 rows. The digits are (rows) x (run), and
+<code>block_q4_0x4</code>/<code>block_iq4_nlx4</code> back both the
+<code>4_4</code> and <code>4_8</code> variants.</li>
+<li>The <code>Q4_0</code> family XORs each byte with <code>0x88</code>,
+letting the ARM kernels read a nibble as a signed offset without a
+subtract. The <code>IQ4_NL</code> family does <strong>not</strong> — its
+nibble indexes <code>KVALUES_IQ4NL</code>, so flipping the high bit
+would select a different level for every weight rather than adjusting a
+sign.</li>
+</ul>
+<p><code>IQ4_NL_4_8</code> is the one layout with no executable upstream
+definition: <code>make_block_iq4_nlx4</code>’s 8-byte branch is
+commented out and marked “this branch seems wrong”. Its entry is the
+straightforward generalization — the <code>x4</code> index math with
+8-byte runs — and no released file is known to carry the id.</p>
+<p>Two properties follow from the row interleaving. The conversion is
+eager, not lazy: a row’s blocks are strided across its 4- or 8-row
+group, so there is no row-shaped slice of the mapped file to defer —
+<code>TensorLocation</code> holds an owned buffer for these tensors
+instead of an <code>Mmap</code> slice (both behind the
+<code>TensorBytes</code> trait object, so readers are unchanged). And
+<code>quant::dequantize</code> refuses these ids outright rather than
+decoding a “row”, since bytes for one row are not a thing that exists in
+this layout.</p>
+<p>Correctness is pinned by
+<code>testdata/ggml-dequant-reference.bin</code>: random blocks of every
+quantized type paired with the <code>f32</code>s ggml’s own
+<code>ggml_get_type_traits(t)-&gt;to_float</code> produced from them,
+compared bit-for-bit. Regenerate it with
+<code>testdata/ggml-dequant-reference.c</code> (see
+<code>quant.rs</code>’s <code>read_ggml_reference</code> for the
+command) when adding a type — appending to that file’s type list leaves
+every existing entry byte-identical.</p>
+<h3 id="the-fused-int8-cpu-path-enginevecdot">The fused
+<code>int8</code> CPU path (<code>engine::vecdot</code>)</h3>
+<p>The obvious way to multiply a quantized weight matrix on the CPU is
+to dequantize each row to <code>f32</code> and take an <code>f32</code>
+dot product. <code>engine::vecdot</code> does neither: it quantizes the
+<em>activations</em> to <code>int8</code> once (32 elements per shared
+<code>f32</code> scale), then dots them against the weight bytes while
+those are still quantized, using integer SIMD. That removes the
+dequantize, removes the per-row allocation, and replaces scalar
+<code>f32</code> multiplies with 16- or 32-wide <code>int8</code> ones
+(NEON <code>vmull_s8</code>/<code>sdot</code> on aarch64; AVX-512 VNNI,
+AVX2 or SSE4.1 on x86-64, all chosen by runtime feature detection).</p>
+<p>Five types have a fused kernel — <code>Q8_0</code>,
+<code>Q5_0</code>, <code>IQ4_NL</code>, <code>Q4_K</code>,
+<code>Q6_K</code>. Anything else returns <code>false</code> from
+<code>vecdot::supports</code> and the caller keeps the ordinary
+dequantize path, so the module is strictly additive.</p>
+<p><code>supports</code> takes the row length as well as the type, and
+that second check is load-bearing rather than defensive. A GGUF row is
+only guaranteed to be a whole number of blocks, and the block sizes
+differ: <code>Q8_0</code>, <code>Q5_0</code> and <code>IQ4_NL</code>
+need <code>32 | in_dim</code>, while <code>Q4_K</code> and
+<code>Q6_K</code> need <code>256 | in_dim</code>. Real small models mix
+both within one file — <code>Qwen2.5-0.5B</code> is 896 wide and
+<code>SmolLM2-360M</code> 960, each a whole number of 32-element blocks
+but neither a multiple of 256, so their attention weights take the
+32-block kernels while only the <code>256</code>-divisible
+<code>ffn_down</code> reaches a K-quant one.</p>
+<p>Every supported type reduces to the same shape, which is what lets
+one dot loop serve all five:</p>
+<pre class="text"><code>weight[i] = scale[i / GROUP] * q[i]  -  min[i / GROUP]</code></pre>
+<p><code>min</code> is zero for the symmetric types (<code>Q8_0</code>,
+<code>Q5_0</code>, <code>Q6_K</code> and <code>IQ4_NL</code> all fold
+their bias — or, for <code>IQ4_NL</code>, their codebook level —
+straight into the signed <code>int8</code> weight, so no correction term
+survives); only <code>Q4_K</code> is genuinely asymmetric.
+<code>GROUP</code> is 16 because <code>Q6_K</code> carries one scale per
+16 weights; every other type repeats its scale across the two halves of
+its 32-element block, which the dot loop exploits.</p>
+<p>There are two entry points, because decode and prefill want different
+things. <code>dot_row</code> (GEMV) walks a row’s blocks once for a
+single token. <code>unpack_row</code> + <code>dot_unpacked_multi</code>
+(GEMM) unpack a row into plain <code>int8</code> plus per-group scale
+metadata <strong>once per matmul rather than once per (row,
+token)</strong>, which is what stops prefill from re-unpacking the same
+row for every token in the batch.</p>
+<p>Quantizing activations to <code>int8</code> is lossy, exactly as it
+is in llama.cpp — that is the accepted tradeoff of this kernel family,
+not an oversight. The tests check every kernel against
+<code>quant::dequantize</code> plus an exact <code>f32</code> dot, to
+within the error <code>int8</code> activation quantization can
+introduce, and separately require the two entry points to agree with
+each other far more tightly than either agrees with the reference (they
+quantize identically, so only summation order differs).</p>
+<h3 id="model-forward-passes">Model forward passes</h3>
+<p>One <code>ModelForward</code> implementor per architecture family
+(<code>engine::arch:: mod</code>), so adding a family is additive rather
+than a rewrite:</p>
+<ul>
+<li><p><code>llama.rs</code> — grouped-query attention, RoPE, RMSNorm,
+SwiGLU: the shape shared by
+<code>llama</code>/<code>qwen2</code>/<code>qwen3</code>/<code>mistral</code>/<code>qwen3vl</code>
+GGUFs (tensor names confirmed against
+<code>llama.cpp/src/llama-arch.cpp</code>’s
+<code>LLM_TENSOR_NAMES</code> table for
+<code>LLM_ARCH_LLAMA</code>).</p>
+<p>These architectures share a block shape but <strong>do not share a
+RoPE pairing</strong>, and the module selects it per architecture
+(<code>rope_layout_for</code>), mirroring upstream’s
+<code>llama_model_rope_type</code>: <code>llama</code> and
+<code>mistral</code> rotate <em>consecutive</em> elements
+(<code>LLAMA_ROPE_TYPE_NORM</code>, pairs
+<code>2p</code>/<code>2p+1</code>), while <code>qwen2</code>,
+<code>qwen3</code> and <code>qwen3vl</code> rotate elements offset by
+half the rotary width (<code>LLAMA_ROPE_TYPE_NEOX</code>). Using one
+pairing for all of them is silently wrong rather than an error —
+position 0 is the identity under both and small positions rotate by
+small angles, so a short prompt still reads fine while a longer one
+collapses into repetition.</p>
+<p>A Llama-3.1/3.2 checkpoint additionally ships
+<code>rope_freqs.weight</code>, the per-pair frequency divisor its
+<code>"llama3"</code> RoPE scaling is baked into at conversion time;
+upstream applies it whenever present (<code>get_rope_factors</code>’
+first branch), and so does this module. It only moves the lowest
+frequencies, so it matters at long context rather than in a short
+prompt.</p></li>
+<li><p><code>gemma.rs</code> — targets <code>gemma4</code> (confirmed
+against upstream <code>llama.cpp</code>’s
+<code>src/models/gemma4.cpp</code>), with
+<code>gemma</code>/<code>gemma2</code>/<code>gemma3</code> as subsets of
+its hyperparameter set: soft-capping, sliding-window attention,
+per-layer embeddings (PLE), and GEGLU.</p></li>
+<li><p><code>qwen35moe.rs</code> — Qwen3.5/3.6-MoE (confirmed against
+upstream
+<code>src/models/qwen35moe.cpp</code>/<code>delta-net-base.cpp</code>):
+a genuinely different shape, with mixture-of-experts FFN
+routing.</p></li>
+<li><p><code>qwen35.rs</code> — Qwen3.5 dense (confirmed against
+upstream <code>src/models/ qwen35.cpp</code>),
+e.g. <code>unsloth/Ornith-1.0-9B-GGUF</code>: identical hybrid
+full-attention/gated-DeltaNet layer shape to <code>qwen35moe.rs</code>
+(they share <code>llm_build_delta_net_base</code> upstream), but a plain
+SwiGLU FFN in place of MoE routing.</p></li>
+<li><p><code>mistral.rs</code> — <code>mistral3</code> (Mistral 3 /
+Ministral-3), confirmed against upstream
+<code>src/models/mistral3.cpp</code>. The block shape is
+<code>llama.rs</code>’s node for node; what earns it a module is four
+hyperparameters that are wrong-by-default rather than absent: a head
+width read from <code>attention.key_length</code> (Ministral-3-3B
+declares 128 where <code>n_embd / n_head</code> would give 96, and its
+<code>attn_q.weight</code> really is <code>[3072, 4096]</code>), YaRN
+RoPE scaling, <code>NORM</code> rope pairing, and a Llama-4-style
+attention temperature scale — the last of which is exactly
+<code>1.0</code> below the trained context, so a short prompt cannot
+tell whether it is implemented at all.</p></li>
+<li><p><code>phi.rs</code> — <code>phi3</code>, covering both Phi-3 and
+Phi-4-mini (e.g. <code>unsloth/Phi-4-mini-instruct-GGUF</code>),
+confirmed against upstream <code>src/models/phi3.cpp</code> and the ggml
+kernels it calls. Llama-shaped attention and SwiGLU, but with four
+details that each silently corrupt output if guessed: query/key/value
+fused into one <code>attn_qkv.weight</code> sliced Q-then-K-then-V; the
+FFN gate and up projections fused into one <code>[n_embd, 2*n_ff]</code>
+<code>ffn_up.weight</code> whose <strong>first</strong> half is the
+activated one; partial NEOX RoPE carrying LongRoPE
+<code>rope_factors_long</code>/ <code>rope_factors_short</code>
+divisors; and a <code>rope.scaling.attn_factor</code> magnitude scale on
+cos/sin. Sliding-window attention is deliberately <em>not</em>
+implemented, matching upstream, which disables it for this architecture
+even when the GGUF declares a window.</p>
+<p>Which LongRoPE factor tensor applies is a property of the serving
+context, not of a request: upstream picks <code>long</code> when the
+context exceeds <code>rope.scaling.original_context_length</code> and
+<code>short</code> otherwise, once, so every key already in the KV cache
+was rotated the same way as the query reading it. This server has no
+separate context knob — <code>engine::generate</code> caps a sequence at
+the model’s own <code>n_ctx_train</code> — so <code>n_ctx_train</code>
+is what the comparison uses. For Phi-4-mini (131072 trained, 4096
+original) that selects the long factors, matching
+<code>llama-server -c 0</code>; note upstream’s CLI default of
+<code>-c 4096</code> selects the short ones instead, so a logit-level
+comparison has to pass a matching <code>-c</code>.</p></li>
+</ul>
+<h3 id="request-scheduling-and-continuous-batching">Request scheduling
+and continuous batching</h3>
+<p><code>engine::scheduler</code>’s <code>SlotPool</code> bounds how
+many requests generate concurrently (<code>slots</code> in the config)
+and tracks each one’s progress for <code>/slots</code>. Each slot’s
+prefill+decode loop (<code>engine::generate::run</code>) runs on its own
+blocking-pool thread against its own KV cache — real concurrency,
+bounded fairly by slot count, but not a single fused multi-sequence GEMM
+by default.</p>
+<p><code>engine::batch::BatchCoordinator</code> is an opt-in alternative
+for that last part: when <code>slots &gt; 1</code> and the
+<code>ORANGU_BATCH_DECODE</code> environment variable is set,
+concurrently-decoding requests within a short window are collected and
+handed to <code>ModelForward::forward_batch_decode</code> as one call,
+fusing every sequence’s QKV/<code>wo</code>/FFN/PLE/<code>lm_head</code>
+matmuls into a single backend call each (attention, RoPE, and the
+KV-cache write stay per-sequence, since each sequence has its own cache
+and position). Correctness-verified against independent per-sequence
+<code>forward</code> calls, but <strong>off by default</strong>: under
+concurrent load (4 requests, 100 tokens each, <code>slots=4</code>) it
+measured around 60% <em>slower</em> than the unbatched path — the
+generic <code>Backend::matmul</code>/ <code>matmul_batch</code>
+interface reads results back to the CPU between steps, reintroducing
+per-layer round trips the Vulkan backend’s own fused decode path (below)
+was specifically built to eliminate, and that cost outweighs the
+weight-bandwidth savings batching provides at this scale on the hardware
+this was measured on. Left available behind the flag rather than
+removed, since a genuinely GPU-resident batched-and-fused pipeline could
+plausibly flip this positive on different hardware or at higher
+concurrency.</p>
+<h3 id="durable-slot-persistence-engineslot_store">Durable slot
+persistence (<code>engine::slot_store</code>)</h3>
+<p><code>orangu-server</code> implements the
+<code>POST /slots/{id_slot}?action=save|restore</code> endpoints — its
+equivalent of llama.cpp’s <code>--slot-save-path</code> prompt-cache
+save/restore, and the receiving end of the orangu client’s per-session
+slot persistence (<code>orangu::llm::SlotRegistry</code>, driven from
+tab park/activate).</p>
+<p>The important structural difference from llama.cpp is that an
+orangu-server slot is a <em>concurrency permit</em>
+(<code>SlotPool</code>), not a long-lived owner of one KV cache. A
+completed request’s cache otherwise survives only inside the in-RAM
+<code>engine::prefix_cache</code> pool (opt-in, bounded, cross-slot).
+<code>engine::slot_store</code> adds the durable layer: each slot
+retains the <code>(tokens, KvCache)</code> of the last request that ran
+on it, and</p>
+<ul>
+<li><code>save</code> serializes that snapshot to
+<code>~/.orangu/server/&lt;fingerprint&gt;/slots/&lt;filename&gt;</code>
+— only the committed KV positions (not the whole allocated context
+window), written atomically (temp file + rename);</li>
+<li><code>restore</code> loads it back into the slot’s retained cache,
+so that slot’s <em>next</em> request reuses the prefix through the same
+<code>KvCache::copy_prefix_from</code> path (and the same
+<code>CachedPrefill::reusable_prefix_len</code> committed-length and
+recurrent-state rules) as the prefix pool, instead of
+re-prefilling.</li>
+</ul>
+<p>This is what survives the cases the RAM pool cannot: eviction under
+cache pressure, a server restart, and — most relevant behind
+<code>orangu-coordinator</code> — a model swap that tears the server
+down. The client saves a tab’s slot <em>before</em> the coordinator
+activates the next tab’s model, so the save reaches the still-active
+server and lands on disk; the later restore repopulates a freshly
+(re)started server.</p>
+<p><code>&lt;fingerprint&gt;</code> is a SHA-256 of the architecture,
+the model label, and the KV structure tag (layer count, per-layer
+<code>kv_dim</code>, recurrent specs). A snapshot saved for one model
+therefore resolves to a different directory than any other model’s, and
+every file also carries the fingerprint internally — a mismatched or
+corrupt file is treated as “nothing to restore”
+(<code>n_restored: 0</code>, a normal prefill next request), never a
+hard error, so a stale sidecar never trips the client’s fallback notice.
+Client-supplied filenames are validated to a single safe path component
+before touching the filesystem.</p>
+<p>The feature is <strong>on by default</strong>; set
+<code>ORANGU_NO_SLOT_SAVE</code> to disable it (it also stays off when
+<code>$HOME</code> can’t be resolved). While off, the endpoints report
+“not supported” exactly as a llama.cpp server started without
+<code>--slot-save-path</code> does — which the orangu client already
+degrades against, falling back to a full reprefill. The opt-out exists
+for the same reason <code>ORANGU_PREFIX_CACHE</code> is itself opt-in —
+a bug in prefix reuse would produce a silently <em>wrong</em>
+generation, not merely a slow one — but persistence is only ever
+exercised when a client explicitly saves or restores a slot, so it stays
+dormant unless used.</p>
+<p>Requests routed through <code>orangu-coordinator</code> carry the
+session’s <code>model</code> in the slots request body (the orangu
+client adds it), so the coordinator proxies each save/restore to that
+model’s backing server rather than its default profile; a direct
+orangu-server or plain OpenAI-compatible server ignores the extra
+field.</p>
+<p>Saved files accumulate one directory per distinct model.
+<code>orangu-server prune</code> sweeps slot files untouched for over 30
+days on every run (<code>slot_store::sweep_stale_slot_files</code>),
+alongside its empty-session sweep — see <a href="server.html">Session
+management</a>.</p>
+<h3 id="gpu-backend-architecture">GPU backend architecture</h3>
+<p><code>engine::backend::Backend</code> (<code>backend/mod.rs</code>)
+is the trait every backend implements —
+<code>matmul</code>/<code>matmul_batch</code> plus a downcast hook
+(<code>as_vulkan</code>) the model forward pass uses to reach
+<code>VulkanBackend</code>’s much larger fused surface when it’s the
+active backend. Five implementors exist: <code>CpuBackend</code> (scalar
+with runtime AVX2 dispatch via <code>engine::tensor::dot</code>,
+parallelized across output rows with <code>rayon</code>; always
+available, and the fallback when no GPU backend is found),
+<code>VulkanBackend</code>, <code>CudaBackend</code>,
+<code>OpenClBackend</code>, and <code>RocmBackend</code>.</p>
+<p><code>main.rs</code>’s <code>select_backend</code> implements the
+<code>backend = auto</code> cascade: Vulkan, then CUDA, then OpenCL,
+then ROCm (if built with the <code>rocm</code> feature), falling back to
+<code>CpuBackend</code> if none of them initialize. An explicit
+<code>backend = &lt;name&gt;</code> instead calls that one backend’s
+<code>try_init</code> directly and fails to start if it returns
+<code>None</code>, rather than falling back — useful when GPU inference
+was asked for specifically and a silent CPU fallback would be the wrong
+failure mode.</p>
+<h3 id="the-vulkan-backend">The Vulkan backend</h3>
+<p><code>VulkanBackend</code> (<code>engine::backend::vulkan</code>, via
+<code>wgpu</code>’s Vulkan backend — <code>ash</code> dlopens the system
+Vulkan loader at runtime, so no Vulkan SDK is needed to build, only a
+driver to run against a GPU) is the mature, hardware-verified backend.
+Each supported <code>ggml_type</code> gets two WGSL compute pipelines
+sharing the same per-type dequantization math
+(<code>dequant_element</code> in <code>vulkan_shaders.rs</code>, a
+line-for-line port of <code>engine::quant</code>’s dequant algorithm
+restated in WGSL), dispatched differently by <code>n_tokens</code>:</p>
+<ul>
+<li><strong>Small <code>n_tokens</code></strong> (decode’s
+<code>n_tokens == 1</code>, the dominant case for interactive
+generation): <code>MAIN_REDUCE_SUFFIX</code> dispatches one workgroup
+per <code>(output row group, token)</code> pair —
+<code>REDUCE_N_ROWS</code> (4) output rows computed per workgroup,
+reusing each activation read across all four and combining partial sums
+via a tree reduction, with adjacent threads reading adjacent elements of
+the same row for memory coalescing.</li>
+<li><strong>Large <code>n_tokens</code></strong> (<code>&gt;= 64</code>,
+e.g. a long prompt’s prefill): a cooperative/tiled dispatch, one
+workgroup per output row, that dequantizes each weight block once per
+workgroup into shared memory and shares it across up to 64 tokens
+instead of redoing that dequant per token.</li>
+</ul>
+<p>A weight tensor is uploaded once (still quantized) and cached on the
+GPU for the model’s lifetime. For Gemma-family models,
+<code>VulkanBackend:: fused_attention</code> chains QKV projection,
+Q/K-norm, RoPE, the KV-cache write, and the attention kernel itself into
+one GPU submission; <code>fused_post_attention</code> similarly chains
+the residual add, RMSNorm, and GEGLU;
+<code>record_fused_layer</code>/<code>fused_layer</code> fold a whole
+layer (attention + FFN) into one command encoder; and
+<code>GemmaModel::forward</code> chains every layer plus
+<code>output_norm</code>/<code>lm_head</code> into one shared encoder
+per decode step. Together these collapse the number of GPU submissions
+per decode token from one per matmul/op down to a small constant (as low
+as one for a fully-fused Gemma decode step), removing the per-submission
+submit/poll/ readback latency that otherwise dominates a many-layer
+forward pass. With round trips largely eliminated, the remaining cost is
+per-kernel compute and weight-memory bandwidth, which the alternative
+decode kernels below target.</p>
+<h4 id="vulkan-backend-environment-variables">Vulkan backend environment
+variables</h4>
+<p>The Vulkan backend reads these environment variables at startup to
+select between alternative compute kernels. Each is read once when the
+backend initializes; changing one takes effect on the next server start.
+All are correctness-verified against <code>CpuBackend</code>. Values are
+checked for presence only (set to <code>1</code>), except where
+noted.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_MLP_UNROLL</code></td>
+<td style="text-align: left;">unset (block-unroll
+<strong>on</strong>)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> the
+block-unroll reduce kernel for K-quant
+(<code>Q4_K</code>/<code>Q5_K</code>/<code>Q6_K</code>) decode and fall
+back to the scalar per-element reduce kernel. The block-unroll iterates
+whole super-blocks, loading each block header once and issuing several
+weight/activation loads before the dependent dot; it is the default
+decode path.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_DUAL_NIBBLE</code></td>
+<td style="text-align: left;">unset (dual <strong>on</strong> for
+<code>Q4_K</code> and <code>Q6_K</code> decode)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> the dual
+decode kernels for both <code>Q4_K</code> and <code>Q6_K</code> and fall
+back to the two-wave block-unroll. Each two-wave kernel splits a
+64-thread workgroup into two halves that re-read shared weight bytes —
+<code>Q4_K</code> streams every qs byte twice (once per nibble half),
+<code>Q6_K</code> re-reads every <code>qh</code> byte (once per
+<code>w_lo</code> half). The dual kernels use a 32-thread
+(single-subgroup) workgroup that loads each such byte once, cutting
+decode GPU-execution time (~22% for <code>Q4_K</code>, a further ~4–8%
+for <code>Q6_K</code>) with identical greedy output. They reorder the
+per-lane float adds, so they cross-check against the CPU backend within
+a tolerance rather than bit-for-bit. No effect on <code>Q4_K</code> when
+<code>ORANGU_PACKED_DOT=1</code>, or on either when
+<code>ORANGU_NO_MLP_UNROLL=1</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_Q6K_DUAL</code></td>
+<td style="text-align: left;">unset (<code>Q6_K</code> dual
+<strong>on</strong>)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> only the
+<code>Q6_K</code> dual kernel (reverting <code>Q6_K</code> tensors —
+e.g. <code>ffn_down</code> — to the two-wave block-unroll) while leaving
+the <code>Q4_K</code> dual kernel on. For A/B isolation of the
+<code>Q6_K</code> kernel; <code>ORANGU_NO_DUAL_NIBBLE=1</code> disables
+both.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_Q4K_CONTIG</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Set to select an alternative
+<code>Q4_K</code> decode kernel with a contiguous thread→element
+mapping: each lane loads a <code>u32</code> of four consecutive qs bytes
+(all used) plus two <code>vec4&lt;f32&gt;</code> activations, ~3× fewer
+VMEM load instructions than the default dual kernel.
+Correctness-verified (byte-identical greedy output) but measured
+<strong>no faster</strong> on this hardware — the <code>Q4_K</code>
+matmul is memory-latency-bound rather than load-issue-bound — so it is
+off by default. Kept for other GPUs where issue rate may bind.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_REDUCE_N_ROWS</code></td>
+<td style="text-align: left;"><code>2</code> (integer, not a presence
+flag)</td>
+<td style="text-align: left;">Output rows one decode matmul-vec
+workgroup computes (reusing each activation element across all of them).
+Lower values launch more, smaller workgroups — more independent
+wavefronts in flight per compute unit to hide VRAM latency — at the cost
+of re-reading each activation in more workgroups. Clamped
+<code>1..=16</code>. Was <code>4</code> historically; re-swept to
+<code>2</code> after the dual-nibble kernel and chunked submission made
+GPU occupancy (not CPU submission cost) the decode critical path.
+Applies to every K-quant reduce/block-unroll kernel and its
+dispatch-count math together.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NORM_WG</code></td>
+<td style="text-align: left;"><code>128</code> (must be <code>64</code>,
+<code>128</code>, or <code>256</code>)</td>
+<td style="text-align: left;">Workgroup size (thread count) of the
+default tree-reduce RMSNorm and RMSNorm+residual-add kernels. These run
+one <code>dispatch_workgroups(1,1,1)</code> workgroup over the whole
+<code>n_embd</code> row, so they are occupancy-starved; more threads
+shorten each thread’s grid-stride loop and light up more of one
+work-group processor’s SIMDs. Raised from <code>64</code> to
+<code>128</code> after measurement (halving to <code>32</code> had
+previously <em>doubled</em> the time, so these are compute/load-bound,
+not launch-bound): decode GPU-execution time dropped ~11% (35.4 → 31.5
+ms/token) on real <code>E2B</code>/<code>RX 5500M</code> with
+byte-identical output; <code>256</code> was no better than
+<code>128</code> (deeper reduction tree, more barriers). Only affects
+the default (non-subgroup) norm path.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_BUSY_POLL</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Spin-poll the decode-path GPU readback
+instead of blocking on it. The blocking wait parks the decode thread
+while the GPU runs (~30 ms/token), so its CPU core can drop clock or be
+migrated off — leaving the next token’s recording/submission to start on
+a cold core. Spinning keeps that core at its boost clock and returns
+within microseconds of the GPU finishing rather than after a scheduler
+wake-up. Measured <strong>+8% decode throughput</strong> (27.4 → 29.6
+tok/s) on real <code>E2B</code>/<code>RX 5500M</code>, byte-identical
+output. Trades one busy-spun core (power) for latency — recommended for
+a dedicated single-stream inference server, less so under many
+concurrent slots or on a shared machine.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_ATTN_SPLIT_K</code></td>
+<td style="text-align: left;"><code>8</code> (must be a power of two,
+<code>1..=32</code>)</td>
+<td style="text-align: left;">Split-k factor for decode attention: how
+many workgroups each query head’s KV-position range is split across
+(<code>n_head × k_num</code> phase-1 workgroups, merged by a phase-2
+pass). Each head attends a KV range that <em>grows with context</em>, so
+more splits expose more parallelism the longer a generation runs, at the
+cost of more phase-2 merge overhead when the range is short. Raised from
+<code>4</code> to <code>8</code> after re-sweeping in the full decode
+chain at real context lengths (the earlier sweep was on the isolated
+dispatch at short context): on real
+<code>E2B</code>/<code>RX 5500M</code>, <code>k_num=8</code> cut
+per-token GPU time at ~245 tokens of context from 35.6 to 32.4 ms while
+staying neutral at short context, and had the best end-to-end throughput
+of <code>{4,8,16}</code>; <code>16</code> wins only once context is very
+long. Byte-identical output across values. Workloads dominated by very
+long contexts may prefer <code>16</code>. Pure runtime uniform — no
+shader rebuild.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_PACKED_DOT</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Dequantizes <code>Q4_K</code> weight
+elements in pairs and accumulates the dot product as
+<code>vec2&lt;f16&gt;</code> instead of two scalar <code>f32</code>
+multiplies. Requires an adapter with WGSL <code>f16</code> support. When
+set together with the block-unroll, selects the combined unroll+packed
+<code>Q4_K</code> decode kernel.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_WIDE_LOAD</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Binds the weight buffer as
+<code>array&lt;vec4&lt;u32&gt;&gt;</code> (16-byte reads) instead of
+<code>array&lt;u32&gt;</code> (byte-wise reads), consolidating each
+<code>Q4_K</code>/<code>Q5_K</code> block header into one 16-byte read.
+Covers all supported quant types.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_KV_F16</code></td>
+<td style="text-align: left;">unset (<code>f16</code>
+<strong>on</strong> when the adapter supports it)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> storing
+the per-request KV-cache GPU mirror as <code>f16</code> and fall back to
+<code>f32</code>. <code>f16</code> (the default on an adapter with WGSL
+<code>f16</code> support) halves KV-read memory traffic per attention
+dispatch, with a per-write cast, and matches llama.cpp’s own default KV
+cache type.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_KV_Q8_0</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Set to store the per-request KV-cache GPU
+mirror as <code>q8_0</code> (8-bit block-quantized) instead of
+<code>f16</code>, dequantized inline in the attention shader. Halves
+KV-read bytes again vs <code>f16</code>, directly cutting attention’s
+cost at long context — measured <strong>−32%</strong> attention GPU time
+at ~295 tokens on real <code>E2B</code>/<code>RX 5500M</code> (5.87 →
+3.99 ms), the saving growing with context, at a slight cost at short
+context (per-write quantize overhead). Takes precedence over
+<code>f16</code>. <strong>Lossy</strong> (unlike <code>f16</code>), so
+off by default; the recommended lever for long-context / long-generation
+workloads, where per-token decode slows as the KV cache grows.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_TILED_PREFILL</code></td>
+<td style="text-align: left;">unset (tiled prefill
+<strong>on</strong>)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> the
+<code>16×64</code>-output-tile GEMM for prefill
+(<code>n_tokens &gt;= 64</code>) and fall back to the plain cooperative
+kernel (one workgroup per output row, looping over the whole prompt
+internally) — measured on real hardware to drive real requests into
+GPU-driver hangs at ordinary prompt lengths (~170-450 tokens) and, even
+where both complete, ~10x slower. Not recommended; kept for A/B
+comparison.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_COOP_MIN_TOKENS</code></td>
+<td style="text-align: left;"><code>64</code> (integer,
+<code>&gt;= 1</code>)</td>
+<td style="text-align: left;">The token count at or above which a matmul
+takes the weight-amortizing tiled-GEMM path instead of the reduce
+family. The reduce kernels dispatch <code>n_row_groups × n_tokens</code>
+workgroups, so <strong>each token re-streams the whole weight
+matrix</strong> (their cost grows with <code>n_tokens</code>); the tiled
+kernel loads a <code>16×in_dim</code> weight tile into shared memory
+once and reuses it across a <code>64</code>-wide token tile (cost ~flat
+in <code>n_tokens</code>). Below the threshold the per-token re-stream
+is cheaper because it keeps far more wavefronts in flight to hide this
+GPU’s weight-load latency. Lowering it to route the “missing middle” (K
+≈ 2…63, e.g. speculative or small-chunk prefill) onto the tiled path was
+measured <strong>slower on <code>RX 5500M</code></strong> (this matmul
+is latency-bound, not bandwidth-bound — see
+<code>SERVER_ROADMAP.md</code> Step 13), so the default keeps that split
+at <code>64</code>; exposed as a knob for GPUs where the crossover sits
+lower and as the A/B harness for a future small-K kernel. <code>1</code>
+forces every matmul tiled; a value past the longest batch keeps
+everything on the reduce path.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_GPU_SAMPLE</code></td>
+<td style="text-align: left;">unset (GPU sampling
+<strong>on</strong>)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> running
+greedy (temperature-0) argmax sampling with repeat penalty on the GPU in
+the same submission as the forward pass (reading back one token id
+instead of the full <code>[n_vocab]</code> logits vector) and fall back
+to a CPU-side readback + sample.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_DECODE_CHUNKS</code></td>
+<td style="text-align: left;"><code>7</code> (integer, not a presence
+flag)</td>
+<td style="text-align: left;">How many <code>queue.submit()</code> calls
+one decode step’s layer loop is split across. <code>1</code> records the
+whole token and submits once (the historical behaviour);
+<code>&gt; 1</code> submits the first <code>chunks - 1</code> groups of
+layers as soon as they are recorded, so the GPU starts executing them
+while the CPU is still recording and validating the later ones —
+overlapping the CPU-side submission cost with GPU execution instead of
+serialising it. Clamped to <code>1..=n_layers</code>. On real
+<code>E2B</code>/<code>RX 5500M</code> this raised decode throughput
+from 14.4 tok/s (<code>1</code>) to 18.8 tok/s (<code>7</code>, the
+default), with byte-identical output; <code>35</code> (one submit per
+layer) reaches 19.4 tok/s but adds per-submission overhead for a
+marginal gain.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_BATCH_DECODE</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Fuses the matmul steps of concurrent
+requests that submit a decode step within a short window into one
+batched call (attention/RoPE/KV-write stay per-sequence). Only takes
+effect when <code>slots &gt; 1</code>.</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>ORANGU_PREFILL_FUSED_ATTN</code></td>
+<td style="text-align: left;">unset (<strong>off</strong>)</td>
+<td style="text-align: left;">Set to <strong>enable</strong> running a
+prefill layer’s whole pre-attention half as one submission — the Q/K/V
+projections, the per-head Q/K norms, RoPE, V’s weightless norm, the
+KV-cache write for the whole batch, and attention itself — and fall back
+to the step-by-step path (projections read back to the CPU, norms and
+RoPE on the CPU, a per-token cache push, then a separate attention
+dispatch). The fused path keeps everything between the projections and
+attention in GPU memory, so nothing but attention’s output and the K/V
+rows for the host mirror crosses the bus. Correctness-verified against
+the step-by-step path, but currently <strong>slower</strong>:
+re-measured against correct output it loses ~10% at a 158-token prompt
+and is a wash at 1120. Off until the transfers it removes pay for the
+work it adds. Automatically declined (with the same fallback) under
+<code>ORANGU_Q4K_MMVQ</code> and for a non-causal batch longer than one
+submission chunk.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_PREFILL_ATTN</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Set to run the <strong>standalone</strong>
+prefill attention dispatch where the fused path above declines, instead
+of the CPU attention loop. Unlike the fused path this pays a Q upload
+and an attention-output readback per layer, which the CPU loop does not,
+so it wins only at long prompts. A measurement aid rather than a
+recommended setting.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_NO_PREFILL_GQA</code></td>
+<td style="text-align: left;">unset (GQA sharing
+<strong>on</strong>)</td>
+<td style="text-align: left;">Set to <strong>disable</strong> sharing
+each KV head’s reads across the query heads that use it in the prefill
+attention kernel, falling back to one workgroup per
+<code>(head, query)</code>. Only affects models whose
+<code>n_head</code> exceeds <code>n_head_kv</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_GQA_HEADS</code></td>
+<td style="text-align: left;">unset (chosen by register budget)</td>
+<td style="text-align: left;">Pins how many query heads of one KV group
+a prefill attention workgroup owns. Must divide the group size. Sharing
+a KV read across more heads and keeping enough waves resident to hide
+that read pull in opposite directions; the default picks from inside the
+measured band. A tuning knob for other GPUs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_GPU_TRACE</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Logs the number of GPU submissions per
+decode step to stdout — a diagnostic for round-trip counting, no effect
+on the computation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_DUMP_SHADERS</code></td>
+<td style="text-align: left;">unset (a directory path)</td>
+<td style="text-align: left;">Set to a directory to write the generated
+WGSL of the decode-path kernels (Q4_K/Q6_K matmul-vec, RMSNorm,
+split-attention) into it as <code>.wgsl</code> files at startup, then
+continue normally. A profiling aid: pair it with the driver’s own
+<code>RADV_DEBUG=shaders,shaderstats</code> (which dumps the compiled
+ACO ISA and register/occupancy stats for this GPU), or hand the WGSL to
+an offline analyzer such as Radeon GPU Analyzer on an RDNA3+ machine. No
+effect on the computation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_SPECULATIVE</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Enables prompt-lookup speculative
+decoding: each step drafts the next few tokens by matching recent output
+against an earlier point in the context and verifies the whole draft in
+one forward, so the weights stream once for several tokens. Greedy-only
+(the output is identical to non-speculative greedy decoding); ignored
+for non-greedy sampling and for multi-slot batched decode.
+<strong>Currently slower on this GPU</strong> — see
+<code>SERVER_ROADMAP.md</code> Step 12 — because the multi-token verify
+runs the CPU-orchestrated forward; kept for hardware/paths where a
+resident multi-position forward makes it a win. Off by default.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_SPEC_NGRAM</code></td>
+<td style="text-align: left;"><code>2</code></td>
+<td style="text-align: left;">With <code>ORANGU_SPECULATIVE</code>, how
+many trailing tokens must match an earlier point in the context to
+trigger a draft. Lower drafts more often (more speculative work, more
+misses); higher drafts only on a longer exact echo.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_SPEC_DRAFT</code></td>
+<td style="text-align: left;"><code>4</code></td>
+<td style="text-align: left;">With <code>ORANGU_SPECULATIVE</code>, how
+many tokens to draft (and verify in one forward) once a match is found.
+The ceiling on tokens a single accepted step can produce.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_GPU_TIMESTAMPS</code></td>
+<td style="text-align: left;">unset (off)</td>
+<td style="text-align: left;">Logs a per-decode-step GPU timing
+breakdown to stderr — the per-layer-embedding (PLE) projection, the
+sum/average/slowest across all model layers, and the
+output-norm-plus-<code>lm_head</code> tail, in milliseconds. Also logs a
+<code>[gpu-op-breakdown]</code> line splitting each token into
+<strong>qkv-side</strong> (Q/K/V matmuls + norm/RoPE + KV write),
+<strong>attention</strong> (split-k), and <strong>ffn-side</strong>
+(wo/gate/up/down matmuls + their norms + GELU/mul + PLE + copies) — so
+matmul vs attention vs overhead is measured, not estimated. Requires an
+adapter with <code>TIMESTAMP_QUERY</code> and
+<code>TIMESTAMP_QUERY_INSIDE_ENCODERS</code>; a diagnostic, no effect on
+the computation.</td>
+</tr>
+</tbody>
+</table>
+<p>Shader compilation is cached to disk across restarts
+(<code>~/.orangu/server/&lt;adapter-key&gt;/cache.bin</code>, keyed by a
+vendor/device- derived string so a cache built for one GPU is never
+handed to another) — a startup-time optimization only, with no effect on
+decode/prefill throughput once running.</p>
+<h3 id="cuda-opencl-and-rocm-backends">CUDA, OpenCL, and ROCm
+backends</h3>
+<p><code>engine::backend::cuda::CudaBackend</code>,
+<code>engine::backend::opencl:: OpenClBackend</code>, and
+<code>engine::backend::rocm::RocmBackend</code> each implement the same
+<code>Backend</code> trait, at a deliberately smaller scope than Vulkan:
+one dequantizing matmul kernel per <code>ggml_type</code>, a direct port
+of <code>vulkan_shaders</code>’s <code>MAIN_REDUCE_SUFFIX</code>
+reduction strategy restated per kernel language (CUDA-C, OpenCL-C,
+HIP-C), cross-checked against <code>CpuBackend</code> the same way
+<code>VulkanBackend</code>’s own tests are. Deliberately
+<strong>not</strong> ported: <code>VulkanBackend</code>’s
+cooperative/tiled dispatch, GPU-resident attention/RoPE/norm fusion,
+fused whole-layer submissions, GPU-side argmax sampling, and the disk
+pipeline cache — none of the three has been run against real hardware
+during development (no NVIDIA GPU, no ROCm install, no OpenCL ICD on the
+project’s dev machine), so correctness rests on the kernel math matching
+<code>engine::quant</code>’s already-verified dequant code
+line-for-line, plus the same CPU cross-check test pattern
+<code>vulkan.rs</code> uses (which, like those tests, skips gracefully
+rather than fails when no matching device is found).</p>
+<p>Their <code>ggml_type</code> coverage is a subset of what
+<code>engine::quant</code> reads on the CPU, and each backend’s
+<code>SUPPORTED_TYPES</code> is the authority: the float types, the
+legacy quants, <code>Q2_K</code> through <code>Q6_K</code>, and
+<code>IQ4_NL</code>. The remaining <code>IQ*</code> types are absent
+because each indexes a lattice codebook that would need its own uploaded
+buffer — <code>VulkanBackend</code> has one
+(<code>vulkan_shaders</code>’s <code>IQ_GRID_PRELUDE</code>, bound at
+<code>@binding(4)</code>) and these three do not. <code>IQ4_NL</code> is
+the exception that fits: a 16-entry level table, small enough to inline
+into the kernel source, and the reason a <code>Q2_K</code> download of a
+model whose rows aren’t 256-divisible (see the Scope section of the
+server chapter) is runnable here at all.</p>
+<p><code>VulkanBackend</code>’s own coverage is a subset too — it has no
+shader for <code>IQ1_S</code>, <code>IQ1_M</code>, or
+<code>IQ2_XXS</code>. Every GPU backend therefore overrides
+<code>Backend::supports_type</code>, and
+<code>engine::backend::unsupported_tensor_types</code> walks every
+shard’s tensor directory once at startup so a gap is reported as an
+error naming each missing type. Before that check existed, the gap
+surfaced as a panic from inside <code>matmul</code> partway through the
+first request.</p>
+<p><code>cudarc</code> and the resolved <code>opencl3</code> version
+both dlopen their vendor library
+(<code>libcuda.so</code>/<code>libnvrtc.so</code>,
+<code>libOpenCL.so</code>) at runtime and return a real error if it
+can’t be found, so <code>cuda</code>/<code>opencl</code> are always
+compiled in — nothing extra is needed to <em>build</em>
+<code>orangu-server</code>. <code>cubecl-hip-sys</code> (ROCm’s
+underlying bindings) is different: it directly links
+<code>-lamdhip64 -lhiprtc</code> at <em>build</em> time whenever its
+build script finds a ROCm install, which would break a plain build on a
+machine without ROCm — so <code>rocm</code> sits behind its own Cargo
+feature, off by default (see <a
+href="https://github.com/mnemosyne-systems/orangu/blob/main/BUILDING.md">BUILDING.md</a>).</p>
+<p><code>cudarc</code> has one notable wrinkle: unlike every other
+fallible step here, it <code>panic!</code>s (rather than returning a
+<code>Result</code>) the first time a driver/NVRTC call is made and no
+<code>libcuda.so</code> is found. <code>CudaBackend::try_init</code>
+runs <code>try_init_inner</code> under
+<code>std::panic::catch_unwind</code> (with the panic hook silenced for
+the call) specifically so a non-NVIDIA machine gets the same graceful
+<code>None</code>/CPU-fallback outcome every other missing-backend path
+already has, not a crashed server.</p>
+<h3 id="correctness-testing">Correctness testing</h3>
+<p><code>VulkanBackend</code>’s dequant math (each quant type,
+bit-for-bit against the CPU backend, across both dispatch paths), fused
+post-attention chain (including a dedicated test that calls it twice for
+one layer with different inputs each time, to catch cache-reuse bugs
+specifically), and fused attention (including GQA head-grouping,
+sliding-window attention, proportional RoPE, and Gemma4’s cross-layer
+KV-donor case — two different layers sharing one KV cache) are covered
+by cross-check tests in <code>engine::backend::vulkan::tests</code>, run
+on real Vulkan hardware whenever it’s present and skipped otherwise. The
+CUDA/OpenCL/ROCm backends follow the same skip-if-no-device pattern.</p>
+<p>A second set of tests runs a full forward pass against a real
+downloaded model and is marked <code>#[ignore]</code> so the normal
+suite doesn’t require one. These read the model path from an environment
+variable, and each panics with a clear message if its variable is unset
+when the test is run (<code>cargo test -- --ignored</code>):</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Used by</th>
+<th style="text-align: left;">Points to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>ORANGU_TEST_MODEL</code></td>
+<td style="text-align: left;">Gemma/qwen35moe/qwen35 real-model
+forward-pass tests</td>
+<td style="text-align: left;">A local <code>.gguf</code> chat model
+file</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>ORANGU_TEST_EMBEDDING_MODEL</code></td>
+<td style="text-align: left;">embedding-model tests</td>
+<td style="text-align: left;">A local <code>.gguf</code> embedding model
+file</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>ORANGU_TEST_QWEN3VL_MODEL</code></td>
+<td style="text-align: left;">qwen3vl tokenizer/embedding tests</td>
+<td style="text-align: left;">A local qwen3vl <code>.gguf</code>
+file</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_TEST_LLAMA_MODEL</code></td>
+<td style="text-align: left;"><code>llama</code>-architecture
+forward-pass test</td>
+<td style="text-align: left;">A local Llama-3.x Instruct
+<code>.gguf</code> file</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>ORANGU_TEST_MISTRAL_MODEL</code></td>
+<td style="text-align: left;"><code>mistral3</code> forward-pass
+test</td>
+<td style="text-align: left;">A local Ministral-3 <code>.gguf</code>
+file</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_TEST_PHI_MODEL</code></td>
+<td style="text-align: left;">phi3 real-model forward-pass test</td>
+<td style="text-align: left;">A local Phi-3/Phi-4-mini
+<code>.gguf</code> file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="http-layer-and-web-ui">HTTP layer and web UI</h3>
+<p><code>http::mod</code> assembles the router and shared
+<code>AppState</code> (model, scheduler handle, config, workspace root,
+start time); <code>http::openai</code> and <code>http::native</code>
+hold the OpenAI-compatible and native handlers respectively;
+<code>http::files</code> holds the file-lifecycle API (see the next
+section); <code>/v1/shutdown</code> lives in <code>http::mod</code>
+itself since it’s neither. Ctrl+C, <code>SIGINT</code>, and
+<code>POST /v1/shutdown</code> all converge on the same shutdown path
+via <code>tokio::select!</code>, mirroring
+<code>orangu-coordinator</code>’s own pattern.</p>
+<p><code>web::mod</code> serves a small server-rendered chat UI (vanilla
+HTML/CSS/JS, no build step) on its own <code>web</code> port, sharing
+the same in-process <code>Engine</code> as the API so a chat turn never
+makes an HTTP hop. <code>web::render</code> renders markdown to HTML
+(including syntax-highlighted code blocks) with the same
+<code>markdown</code>/<code>syntect</code> crates <code>orangu</code>’s
+terminal UI uses. <code>web::sessions</code> persists each chat as
+<code>~/.orangu/server/sessions/&lt;uuid&gt;/chat.json</code>.</p>
+<h3 id="file-lifecycle-api-httpfiles">File-lifecycle API
+(<code>http::files</code>)</h3>
+<p>Served on the <strong>API port</strong>, alongside the
+OpenAI-compatible and native endpoints, eight dedicated endpoints cover
+the whole life cycle of a file, plus the directories it lives in:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>POST /v1/create_file</code></td>
+<td style="text-align: left;">write a new file, with optional
+permissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/modify_file</code></td>
+<td style="text-align: left;">replace named line ranges, returning a
+diff</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/move_file</code></td>
+<td style="text-align: left;">rename a file, optionally re-setting
+permissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/delete_file</code></td>
+<td style="text-align: left;">delete a file</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/show_file</code></td>
+<td style="text-align: left;">return a file’s entire content</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/create_directory</code></td>
+<td style="text-align: left;">create one directory, with optional
+permissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/move_directory</code></td>
+<td style="text-align: left;">move an entire directory tree</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/delete_directory</code></td>
+<td style="text-align: left;">delete an empty directory</td>
+</tr>
+</tbody>
+</table>
+<p>Every one is <code>POST</code> with a JSON body and a JSON reply,
+including <code>show_file</code> — one request shape across the whole
+API is worth more than matching HTTP verbs to intent for a single
+read.</p>
+<p>Nothing here is recursive except <code>move_directory</code>, which
+moves a tree because a rename inherently does. Everything else touches
+exactly one file or one directory, so a mistyped path costs one
+entry.</p>
+<p><strong>In a Git repository, these are Git operations</strong> — a
+file is created, modified, moved and deleted with <code>git add</code>,
+<code>git mv</code> and <code>git rm</code>, so the change is staged
+rather than only written to disk. <strong>Nothing is ever
+committed</strong>; see <strong>Git integration</strong> below.</p>
+<p>The implementation lives in <code>orangu::files</code>, shared with
+<code>orangu</code>’s own local tools and typed commands of the same
+names (<code>create_file</code>, <code>modify_file</code>,
+<code>/delete_file</code>, “create myfile.txt with 0644”, …), so a tool
+call, a typed command and an API request are the same operation with the
+same fields, defaults and errors. This chapter is where those fields are
+documented for all three.</p>
+<p><strong>Everything is confined to the workspace.</strong> Each path
+in a request is resolved against the server’s workspace root
+(<code>-w</code>/<code>--workspace</code>, default the current working
+directory — see the Workspace section of the Inference server chapter)
+and refused if it lands outside it. A path may be given relative to the
+workspace (<code>src/main.rs</code>) or as an absolute path that is
+itself inside it; anything else — a <code>..</code> that climbs out, an
+absolute path elsewhere on the machine, or a symlink inside the tree
+pointing out of it — is a <code>403 outside_workspace</code> before any
+file is touched. Two checks back that up: the lexical one
+(<code>orangu::tools::resolve_workspace_path</code>, the same resolution
+<code>orangu</code>’s own file tools use, which folds <code>..</code>
+away before comparing) and a physical one that canonicalizes the nearest
+<em>existing</em> ancestor of the target — the nearest existing one, so
+it works for <code>create_file</code>, whose target does not exist yet
+by definition.</p>
+<p>Paths come back in replies relative to the workspace, in the same
+shape a client sent them, never as the server’s absolute layout.</p>
+<p>Three types recur across the endpoints below:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">a string, either relative to the workspace
+(<code>src/main.rs</code>) or an absolute path inside it. Never
+empty</td>
+</tr>
+<tr>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">in a <strong>request</strong>: an octal
+string (<code>"0644"</code>, <code>"644"</code>, <code>"0o644"</code>)
+or the number <code>chmod</code> takes (<code>420</code>); at most
+<code>0o7777</code>. In a <strong>response</strong>: always the
+four-digit octal string (<code>"0644"</code>), or <code>null</code> on a
+non-Unix platform</td>
+</tr>
+<tr>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">the object described under <strong>Git
+integration</strong> below, or <code>null</code> when the workspace is
+not a repository or the request passed <code>"git": false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Unknown fields in a request body are rejected by neither serde nor
+these handlers — they are ignored. A missing required field, a wrong
+type, or malformed JSON is a <code>400 bad_request</code> carrying
+serde’s own message.</p>
+<h4 id="post-v1create_file"><code>POST /v1/create_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to write</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>content</code></td>
+<td style="text-align: left;">optional, default <code>""</code></td>
+<td style="text-align: left;">the file’s full content</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits, as an octal string
+(<code>"0644"</code>) or the number <code>chmod</code> takes
+(<code>420</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwrite</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">replace the file if it already exists;
+<code>false</code> for create-if-absent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_file <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;, &quot;content&quot;: &quot;print(1)\n&quot;, &quot;mode&quot;: &quot;0640&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes_written&quot;</span><span class="fu">:</span><span class="dv">9</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0640&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file written, relative to the
+workspace</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bytes_written</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">byte length of <code>content</code> as
+written</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">the file’s permission bits after the
+write</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwritten</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;"><code>true</code> when an existing file
+was replaced (only possible with <code>overwrite</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>An existing path is <strong>overwritten</strong> — creating a file
+that is already there is an override, and the same is true of
+<code>orangu</code>’s own <code>create_file</code> tool and its typed
+<code>/create_file</code>, which share this implementation. Pass
+<code>"overwrite": false</code> for create-if-absent, which turns an
+existing path into a <code>409 already_exists</code>. Without
+<code>parents</code>, a missing parent directory is a
+<code>404 not_found</code> rather than a quietly-created tree.
+<code>mode</code> is parsed and validated <em>before</em> anything is
+written, so a bad mode never leaves a file behind with the wrong
+permissions. Leaving <code>mode</code> out lets the process umask
+decide, exactly as an ordinary <code>create</code> would.</p>
+<h4 id="post-v1modify_file"><code>POST /v1/modify_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to edit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits</code></td>
+<td style="text-align: left;">required, non-empty</td>
+<td style="text-align: left;">the changes, each naming the lines it
+replaces</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits[].start_line</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">first line replaced, 1-based</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits[].end_line</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">last line replaced, inclusive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits[].replacement</code></td>
+<td style="text-align: left;">optional, default <code>""</code></td>
+<td style="text-align: left;">the lines to put in their place</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<p>Every range refers to the file <strong>as it was read</strong>, not
+to the numbering left behind by an earlier edit in the same request —
+edits are applied last-first internally so a caller never has to
+re-number around its own changes. Ranges must not overlap, and must
+address real lines; the one exception is an insert at
+<code>start_line = &lt;line count&gt; + 1</code>, which appends.</p>
+<ul>
+<li><code>end_line = start_line - 1</code> inserts before
+<code>start_line</code> without replacing anything.</li>
+<li><code>"replacement": ""</code> deletes the range.</li>
+<li>The file’s trailing-newline state is preserved — a file that ended
+without a newline still does afterwards.</li>
+</ul>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/modify_file <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">       &quot;edits&quot;: [{&quot;start_line&quot;: 2, &quot;end_line&quot;: 2, &quot;replacement&quot;: &quot;TWO\n&quot;},</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="st">                 {&quot;start_line&quot;: 4, &quot;end_line&quot;: 3, &quot;replacement&quot;: &quot;four\n&quot;}]}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;lines_before&quot;</span><span class="fu">:</span><span class="dv">3</span><span class="fu">,</span><span class="dt">&quot;lines_after&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;edits_applied&quot;</span><span class="fu">:</span><span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;diff&quot;</span><span class="fu">:</span><span class="st">&quot;--- a/a.txt</span><span class="ch">\n</span><span class="st">+++ b/a.txt</span><span class="ch">\n</span><span class="st">@@ -2,1 +2,1 @@</span><span class="ch">\n</span><span class="st">-two</span><span class="ch">\n</span><span class="st">+TWO</span><span class="ch">\n</span><span class="st">@@ -3,0 +4,1 @@</span><span class="ch">\n</span><span class="st">+four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file edited</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lines_before</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">line count before the edits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lines_after</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">line count after them</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits_applied</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">how many entries of <code>edits</code>
+were applied — always all of them, since any invalid range rejects the
+whole request</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>diff</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">a zero-context unified diff of exactly
+what changed (see below)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>diff</code> is a <strong>zero-context unified diff</strong>
+— what <code>diff -U0</code> prints. No diff algorithm is involved: the
+caller said exactly which lines it was replacing, so each edit is one
+exact hunk, and adjacent edits never end up with two hunks fighting over
+the same context lines. The <code>+++</code> side’s line numbers carry
+the running length change from the hunks before them, the same way real
+unified diff output does.</p>
+<p>A file that isn’t valid UTF-8 has no line structure to edit, so it is
+a <code>400 not_utf8</code> rather than a mangled write.</p>
+<h4 id="post-v1move_file"><code>POST /v1/move_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to move</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">its new path</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits to set at the destination;
+unset keeps what the file already had</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwrite</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">replace the destination if it exists</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories of the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_file <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;a.txt&quot;, &quot;to&quot;: &quot;docs/b.txt&quot;, &quot;mode&quot;: &quot;0600&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0600&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where the file was</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where it now is</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its permission bits at the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwritten</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;"><code>true</code> when an existing
+destination was replaced</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>Both paths are workspace-checked, so a move can neither read from nor
+write to anything outside the tree.</p>
+<h4 id="post-v1delete_file"><code>POST /v1/delete_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to delete</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git rm -f src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file deleted</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>deleted</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">always <code>true</code> — a failure is an
+error response, not <code>false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>Only regular files: a directory is a <code>400 not_a_file</code>.
+This API is a <em>file’s</em> life cycle, and a recursive delete behind
+one JSON field is a much bigger gun than anything else here hands
+out.</p>
+<h4 id="post-v1show_file"><code>POST /v1/show_file</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to read</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/show_file <span class="dt">\</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;content&quot;</span><span class="fu">:</span><span class="st">&quot;one</span><span class="ch">\n</span><span class="st">TWO</span><span class="ch">\n</span><span class="st">three</span><span class="ch">\n</span><span class="st">four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes&quot;</span><span class="fu">:</span><span class="dv">19</span><span class="fu">,</span><span class="dt">&quot;lines&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file read</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>content</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">the whole file, verbatim</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bytes</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">its byte length</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lines</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">its line count — a trailing newline does
+not add an empty last line</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its current permission bits</td>
+</tr>
+</tbody>
+</table>
+<p>The only endpoint that changes nothing, so it has no <code>git</code>
+field and takes no <code>git</code> flag. A file that isn’t valid UTF-8
+has no JSON representation here, so it is a <code>400 not_utf8</code>
+rather than a lossy conversion.</p>
+<h4
+id="post-v1create_directory"><code>POST /v1/create_directory</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">directory to create</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits, as an octal string
+(<code>"0755"</code>) or the number <code>chmod</code> takes
+(<code>493</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories too</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_directory <span class="dt">\</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;, &quot;mode&quot;: &quot;0750&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0750&quot;</span><span class="fu">,</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the directory created</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its permission bits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">always
+<code>skipped: "nothing_to_stage"</code> in a repository — Git tracks no
+directories</td>
+</tr>
+</tbody>
+</table>
+<p><code>mode</code> applies to the directory named by
+<code>path</code>; parents created along the way keep the umask’s own
+permissions, the same way <code>mkdir -p -m</code> behaves. Leaving
+<code>mode</code> out lets the umask decide for all of them, exactly as
+an ordinary <code>mkdir</code> would. Like <code>create_file</code>, the
+mode is parsed and validated before anything is created.</p>
+<p>An existing path — file or directory — is a
+<code>409 already_exists</code>. There is deliberately no
+<code>overwrite</code> counterpart: replacing a directory that is
+already there would mean deleting whatever it holds, which is precisely
+what <code>delete_directory</code> refuses to do.</p>
+<h4 id="post-v1move_directory"><code>POST /v1/move_directory</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">directory to move</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">its new path</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits to set on the moved
+directory; unset keeps what it had</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories of the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_directory <span class="dt">\</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;src&quot;, &quot;to&quot;: &quot;lib/src&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;src&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0755&quot;</span><span class="fu">,</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv src lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where the directory was</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where it now is</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its permission bits at the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">one <code>git mv</code> covering every
+tracked file in the subtree — or <code>skipped: "untracked"</code> when
+the directory holds nothing Git tracks</td>
+</tr>
+</tbody>
+</table>
+<p>The whole subtree moves — everything under <code>from</code> comes
+along — in a single <code>rename</code>, so it is atomic, and a move
+that would cross filesystems fails outright (<code>EXDEV</code>,
+reported as <code>io_error</code>) rather than half-copying a tree.
+<code>mode</code> applies to the moved directory itself, never to
+anything inside it.</p>
+<p>The destination must not exist (<code>409 already_exists</code>):
+there is no <code>overwrite</code> here, for the same reason
+<code>create_directory</code> has none. Moving a directory into itself
+(<code>{"from": "src", "to": "src/nested"}</code>) is a
+<code>400 bad_request</code> rather than the kernel’s bare “Invalid
+argument”, and the workspace root itself cannot be moved.</p>
+<h4
+id="post-v1delete_directory"><code>POST /v1/delete_directory</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">directory to delete</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_directory <span class="dt">\</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the directory deleted</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>deleted</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">always <code>true</code> — a failure is an
+error response, not <code>false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">always
+<code>skipped: "nothing_to_stage"</code> in a repository — an empty
+directory holds nothing Git tracks</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The directory has to be empty.</strong> Anything still in it
+— files or subdirectories — is a <code>409 not_empty</code>, and nothing
+is removed. Emptiness is checked explicitly rather than left to
+<code>remove_dir</code>’s own errno, so the refusal is one stable code
+on every platform. A path that isn’t a directory is a
+<code>400 not_a_directory</code>, and the workspace root itself cannot
+be deleted: every later request resolves against it.</p>
+<p>There is no recursive form. Deleting a tree is the caller’s to do,
+one <code>delete_file</code>/<code>delete_directory</code> at a time,
+which keeps the blast radius of a single mistyped path to a single
+directory.</p>
+<h4 id="git-integration-git.rs">Git integration
+(<code>git.rs</code>)</h4>
+<p>When the workspace sits inside a Git repository, every endpoint above
+performs its change <strong>with the matching Git command</strong>, so
+the result is staged rather than merely written:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;">Git command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>create_file</code>,
+<code>modify_file</code></td>
+<td style="text-align: left;"><code>git add &lt;path&gt;</code> — after
+the write, so the staged content is what is now on disk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>move_file</code>,
+<code>move_directory</code></td>
+<td
+style="text-align: left;"><code>git mv &lt;from&gt; &lt;to&gt;</code> —
+Git performs the move itself, so the index records a
+<strong>rename</strong> rather than a delete plus an add</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>delete_file</code></td>
+<td style="text-align: left;"><code>git rm -f &lt;path&gt;</code> — Git
+deletes the file and stages the deletion in one step</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>create_directory</code>,
+<code>delete_directory</code></td>
+<td style="text-align: left;">none — Git tracks files, not
+directories</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nothing is ever committed.</strong> Every operation stops at
+the index; what to commit, when, and with what message is the user’s
+decision, and this API gives no way to make it for them.
+<code>git rm</code> is forced (<code>-f</code>) because the endpoint’s
+contract is that the file goes away — without it Git refuses whenever
+the working copy differs from the index, which is exactly when a
+deletion is most likely to be wanted. <code>git mv</code> is forced only
+when the request itself passed <code>"overwrite": true</code>.</p>
+<p>Each reply carries a <code>git</code> object saying what happened, or
+<code>null</code> when the workspace isn’t a repository:</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/orangu&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>repo_root</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">absolute path of the repository the
+workspace resolved to</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>forge</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td
+style="text-align: left;"><code>"github"</code>/<code>"gitlab"</code>,
+and only when that forge’s CLI (<code>gh</code>/<code>glab</code>) is
+installed</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>staged</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">whether the change reached the index</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>command</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td style="text-align: left;">the Git command that ran, verbatim;
+<code>null</code> when none was run</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>skipped</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td style="text-align: left;">why nothing was staged:
+<code>"untracked"</code>, <code>"ignored"</code>, or
+<code>"nothing_to_stage"</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>error</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td style="text-align: left;">Git’s own stderr, when its command
+failed</td>
+</tr>
+</tbody>
+</table>
+<p>Exactly one of <code>staged: true</code>, <code>skipped</code>, or
+<code>error</code> describes the outcome: a staged change has both
+others <code>null</code>, a skip carries no <code>error</code>, and a
+failure carries no <code>skipped</code>.</p>
+<p>Three cases are skipped rather than treated as failures:</p>
+<ul>
+<li><strong><code>untracked</code></strong> — Git has no record of the
+path, so there is nothing for <code>git mv</code>/<code>git rm</code> to
+rewrite; the move or delete is a plain filesystem operation and the file
+stays untracked.</li>
+<li><strong><code>ignored</code></strong> — <code>.gitignore</code>
+covers the path. <code>git add</code> refuses an ignored path outright,
+so writing into e.g. <code>build/</code> succeeds and simply isn’t
+staged.</li>
+<li><strong><code>nothing_to_stage</code></strong> — the directory
+endpoints. Git tracks no directories of its own; a new one becomes
+visible to Git with the first file created inside it.</li>
+</ul>
+<p>Where the Git command <em>performs</em> the change
+(<code>git mv</code>, <code>git rm</code>), a failure means nothing
+happened, and the endpoint returns an <code>io_error</code>. Where it
+only stages an already-written change (<code>git add</code>), the file
+operation has already succeeded, so the reply is a normal
+<code>200</code> with <code>staged: false</code> and Git’s message in
+<code>git.error</code> — the response tells the truth about what
+happened rather than implying the write was rolled back.</p>
+<p>To bypass Git entirely for one request, pass
+<code>"git": false</code>:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;scratch.txt&quot;, &quot;git&quot;: false}&#39;</span></span></code></pre></div>
+<p>The file is removed from disk and the index is left alone. Outside a
+repository this is what every request does anyway, and <code>git</code>
+comes back <code>null</code>.</p>
+<p><code>gh</code>/<code>glab</code> are detected (by
+<code>origin</code>’s URL, and only when the matching CLI is on
+<code>PATH</code>) and reported as <code>forge</code>, so a client knows
+which platform it is working against. Neither CLI can touch the index —
+there is no <code>gh add</code> — so the staging itself always runs
+through plain <code>git</code>.</p>
+<h4 id="errors">Errors</h4>
+<p>Every failure — including a malformed request body — comes back with
+the same shape and a stable <code>code</code> a client can branch on,
+rather than message text:</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;error&quot;</span><span class="fu">:{</span><span class="dt">&quot;code&quot;</span><span class="fu">:</span><span class="st">&quot;outside_workspace&quot;</span><span class="fu">,</span><span class="dt">&quot;message&quot;</span><span class="fu">:</span><span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">../secret.txt</span><span class="ch">\&quot;</span><span class="st">: path escapes the configured workspace&quot;</span><span class="fu">}}</span></span></code></pre></div>
+<p>The body is always a single <code>error</code> object and nothing
+else:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>error.code</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">one of the stable codes below</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>error.message</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">a human-readable explanation, naming the
+path it concerns. Wording is not part of the contract — branch on
+<code>code</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>code</code></th>
+<th style="text-align: left;">HTTP</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>outside_workspace</code></td>
+<td style="text-align: left;">403</td>
+<td style="text-align: left;">the path resolves outside the workspace
+root</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_found</code></td>
+<td style="text-align: left;">404</td>
+<td style="text-align: left;">no such file, or a missing parent
+directory without <code>parents</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>already_exists</code></td>
+<td style="text-align: left;">409</td>
+<td style="text-align: left;">the target exists:
+<code>create_file</code> with <code>"overwrite": false</code>,
+<code>move_file</code> without <code>overwrite</code>, or
+<code>create_directory</code>/<code>move_directory</code>, which have no
+overwrite at all</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_a_file</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">the path exists but isn’t a regular
+file</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_a_directory</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">a directory endpoint was given a path that
+isn’t a directory</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_empty</code></td>
+<td style="text-align: left;">409</td>
+<td style="text-align: left;"><code>delete_directory</code> was given a
+directory that still has something in it</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bad_request</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">unparsable body, empty path, bad mode, an
+invalid/overlapping line range, a move into itself, or an attempt on the
+workspace root</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_utf8</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">the file isn’t valid UTF-8</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>io_error</code></td>
+<td style="text-align: left;">500</td>
+<td style="text-align: left;">the filesystem refused the operation</td>
+</tr>
+</tbody>
+</table>
+<h4 id="permissions-on-non-unix-platforms">Permissions on non-Unix
+platforms</h4>
+<p>Permission bits are a Unix concept. Elsewhere <code>mode</code> is
+reported as <code>null</code> in every reply, and a request that tries
+to <em>set</em> one is refused with <code>bad_request</code> rather than
+silently ignored.</p>
+<h3
+id="session-activity-tracking-and-prune-websessions-prune.rs">Session
+activity tracking and <code>prune</code> (<code>web::sessions</code>,
+<code>prune.rs</code>)</h3>
+<p><code>save_session</code> (called by both <code>create_session</code>
+and <code>append_turn</code>, so both creating a session and appending a
+turn to one trigger it) writes a second file alongside
+<code>chat.json</code>: <code>session.json</code>, recording this
+process’s own pid and — critically — its
+<code>sysinfo::Process::start_time()</code>. Recording pid alone would
+be enough as long as the writing process stays alive, but not once it
+exits: the OS is free to hand that same pid number to an unrelated later
+process, and without a way to tell the two apart, <code>is_active</code>
+would read the old session as still active forever.
+<code>start_time</code> is what closes that gap — a different process at
+the same pid almost never has the same start time down to the second, so
+a mismatch (or the pid not running at all) both read as “not active,”
+never as an error. <code>mark_active</code>’s own write is best-effort:
+a failure doesn’t fail the session save itself, since
+<code>chat.json</code> — already written by the time
+<code>mark_active</code> runs — is the data that actually matters; a
+session that never got a marker (or whose marker write failed) just
+reads as not active, the same as one from a build predating this.</p>
+<p><code>is_active</code> is read from an entirely separate process:
+<code>orangu-server prune</code> (<code>prune.rs</code>), a plain CLI
+invocation with no connection to whatever server process actually owns a
+session. That separation is the whole point — it’s what makes “keep
+track of which sessions are active” correct even for a session created
+long after some other still-running server’s own startup:
+<code>is_active</code> re-queries the live process table every time
+<code>prune</code> runs, rather than consulting anything cached or
+computed once earlier, so the answer is always current relative to
+<em>this</em> invocation, not relative to whenever the server happened
+to start.</p>
+<p><code>prune</code> itself needs no config file and loads no model — a
+pure filesystem operation against a fixed path, the same shape as
+<code>system</code>/<code>suggest</code>. Every invocation first calls
+<code>sweep_empty_sessions</code> (deletes every non-active session
+whose <code>chat.json</code> is empty, missing, or fails to parse — the
+last two read as “empty” too, so an interrupted-write leftover doesn’t
+linger forever uncleaned), then lists what’s left via
+<code>list_sessions_for_prune</code> (unlike <code>list_sessions</code>,
+the web UI’s History source, this includes zero-message sessions too —
+only ones <code>is_active</code> protected from the sweep, which
+<code>prune</code> needs to show, not hide) and hands off to one of
+three flows: no argument (prints the table, prompts for an
+<code>NR</code> or <code>all</code>), <code>all</code> (deletes every
+remaining non-active session, <code>partition</code>-ing active from
+inactive first), or a specific <code>NR</code>/id (resolved against the
+same listing). <code>main.rs</code>’s <code>confirm</code> — the same
+Yes/No stdin reader <code>delete</code> uses — is reused here rather
+than duplicated (<code>pub(crate)</code> in <code>main.rs</code>);
+<code>prune</code>’s own relative-time formatter
+(<code>format_relative</code>, “2h ago”) is hand-rolled rather than
+pulling in a date/time dependency, the same reasoning
+<code>web::current_year</code> already used for the copyright year.</p>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

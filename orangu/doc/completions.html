@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage Tools — orangu</title>
+  <title>Shell Completions — orangu</title>
   <link rel="stylesheet" href="doc.css" />
   <style>
     .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
@@ -49,7 +49,7 @@
         <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
-        <li><a href="usage-tools.html" class="active">Usage Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
         <li><a href="workspaces.html">Workspaces</a></li>
         <li><a href="skills.html">Skills</a></li>
         <li><a href="extra.html">External Tools</a></li>
@@ -63,7 +63,7 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
-        <li><a href="completions.html">Shell Completions</a></li>
+        <li><a href="completions.html" class="active">Shell Completions</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -81,13 +81,8 @@
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
 <ul>
-<li><a href="#usage-tools" id="toc-usage-tools">Usage tools</a>
-<ul>
-<li><a href="#manual" id="toc-manual">/manual</a></li>
-<li><a href="#usage" id="toc-usage">/usage</a></li>
-<li><a href="#clear" id="toc-clear">/clear</a></li>
-<li><a href="#quit" id="toc-quit">/quit</a></li>
-</ul></li>
+<li><a href="#shell-completions" id="toc-shell-completions">Shell
+completions</a></li>
 </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -102,80 +97,104 @@
   </aside>
 
   <main class="doc-content">
-<h1 id="usage-tools">Usage tools</h1>
-<p>The usage tools cover the session-level housekeeping commands:
-reading the built-in manual, inspecting how much the current session has
-used, clearing the conversation, and leaving the client. Like the other
-local commands, they are handled locally and keep working even when the
-server or model status in the header is red.</p>
-<h2 id="manual">/manual</h2>
-<p>Opens this manual in a full-screen, two-pane viewer: the text of the
-selected section in the left pane and the table of contents in the right
-pane. The manual text is embedded into the binary at compile time, so it
-is always available — no external files are read. Pressing
-<code>Alt+S</code> opens a search window that searches the entire manual
-(<code>Enter</code> jumps to the next match, <code>Esc</code> closes
-it).</p>
-<p>The viewer, its layout, and its key bindings are described in the
-Built-in manual section of the Terminal interface chapter.</p>
-<p>It is handled locally and works regardless of server or model
-state.</p>
-<h3 id="examples">Examples</h3>
-<pre class="text"><code>/manual</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>manual
-show manual
-open manual</code></pre>
-<h2 id="usage">/usage</h2>
-<p>Shows usage statistics for the current session.</p>
-<p>The report covers:</p>
-<ul>
-<li>total application time,</li>
-<li>total time spent waiting for LLM responses,</li>
-<li>total tool execution time,</li>
-<li>total tokens generated (counted with the bundled tokenizer),</li>
-<li>average tokens per second,</li>
-<li>context cache statistics (reads, hits, misses, rate, bytes
-saved),</li>
-<li>context compression statistics (lines saved, patterns applied),</li>
-<li>tool invocation statistics (counts, percentages), and</li>
-<li>skill invocation statistics (counts, percentages).</li>
-</ul>
-<h3 id="examples-1">Examples</h3>
-<pre class="text"><code>/usage</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>usage
-show usage</code></pre>
-<h2 id="clear">/clear</h2>
-<p>Clears the current conversation.</p>
-<p>The in-memory conversation history is dropped so the next prompt
-starts a fresh exchange. The session itself is preserved — only the
-conversation context is cleared. (To also return to the configured model
-and server, use <code>/reload</code>.)</p>
-<h3 id="examples-2">Examples</h3>
-<pre class="text"><code>/clear</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>clear
-clear conversation
-reset conversation</code></pre>
-<h2 id="quit">/quit</h2>
-<p>Exits the client.</p>
-<p><code>/quit</code> exits immediately, whereas <code>Ctrl+C</code>
-uses a two-step confirmation (press it once to arm quit mode, then again
-within two seconds to exit). On exit the full resume command is printed
-— for example:</p>
-<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
-<p>so you can return to exactly this session later. The resume command
-is not printed when the session had no LLM interaction (zero tokens
-generated) and was on <code>main</code>, <code>master</code>, or outside
-a Git repository; in that case the session directory is deleted
-silently. See the Sessions section of the Terminal interface chapter for
-the full cleanup rules.</p>
-<h3 id="examples-3">Examples</h3>
-<pre class="text"><code>/quit</code></pre>
-<p>Natural-language forms:</p>
-<pre class="text"><code>quit
-exit</code></pre>
+<h1>Shell Completions</h1>
+<h2 id="shell-completions">Shell completions</h2>
+<p><strong>orangu</strong> has shell completion built in. Run
+<code>orangu -s</code> to print the completion script for the shell
+detected from <code>$SHELL</code>, then source it:</p>
+<table>
+<thead>
+<tr>
+<th>Short</th>
+<th>Long</th>
+<th>Completion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-c</code></td>
+<td><code>--config</code></td>
+<td>files</td>
+</tr>
+<tr>
+<td><code>-t</code></td>
+<td><code>--theme</code></td>
+<td>theme names and <code>.theme</code> files</td>
+</tr>
+<tr>
+<td><code>-w</code></td>
+<td><code>--workspace</code></td>
+<td>directories</td>
+</tr>
+<tr>
+<td><code>-r</code></td>
+<td><code>--resume</code></td>
+<td>session UUIDs</td>
+</tr>
+<tr>
+<td><code>-a</code></td>
+<td><code>--all</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-p</code></td>
+<td><code>--prompt</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-q</code></td>
+<td><code>--quiet</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-l</code></td>
+<td><code>--list</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-i</code></td>
+<td><code>--init</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-s</code></td>
+<td><code>--shell-completions</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-h</code></td>
+<td><code>--help</code></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Completion for <code>--resume</code> scans
+<code>~/.orangu/sessions/</code> for the available session UUIDs and
+offers them newest first. The in-app <code>/session</code> Tab
+completion offers the same UUIDs, then the distinct workspace paths
+recorded across sessions, and finally — when the typed text matches
+neither — falls back to filesystem directory completion (expanding
+<code>~</code>) so a brand-new workspace can be navigated to.</p>
+<h3 id="bash">bash</h3>
+<p>Add to <code>~/.bashrc</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">orangu</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span></span></code></pre></div>
+<p>Or write once to the <code>bash-completion</code> drop-in
+directory:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.local/share/bash-completion/completions/orangu</span></code></pre></div>
+<h3 id="zsh">zsh</h3>
+<p>Add to <code>~/.zshrc</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">orangu</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span></span></code></pre></div>
+<p>Or write once to a directory on your <code>$fpath</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/.zsh/completions</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.zsh/completions/_orangu</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ~/.zshrc</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="va">fpath</span><span class="op">=</span><span class="va">(</span>~/.zsh/completions <span class="va">$fpath)</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">autoload</span> <span class="at">-Uz</span> compinit <span class="kw">&amp;&amp;</span> <span class="ex">compinit</span></span></code></pre></div>
+<h3 id="fish">fish</h3>
+<p>Add to <code>~/.config/fish/config.fish</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-s</span> <span class="kw">|</span> <span class="bu">source</span></span></code></pre></div>
+<p>Or write once to the fish completions directory:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.config/fish/completions/orangu.fish</span></code></pre></div>
   </main>
 </div>
 

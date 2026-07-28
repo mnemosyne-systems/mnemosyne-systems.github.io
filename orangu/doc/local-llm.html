@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Local LLM — orangu</title>
+  <title>Serving Models per Role — orangu</title>
   <link rel="stylesheet" href="doc.css" />
   <style>
     .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
@@ -42,25 +42,48 @@
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="workspaces.html">Workspaces</a></li>
-        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html" class="active">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
-      <ul>
-      <li><a href="#openai-platform">OpenAI platform</a></li>
-      </ul>
+<ul>
+<li><a href="#serving-models-per-role"
+id="toc-serving-models-per-role">Serving models per role</a></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -74,111 +97,66 @@
   </aside>
 
   <main class="doc-content">
-<h2 id="openai-platform">OpenAI platform</h2>
-<h3 id="llama.cpp">llama.cpp</h3>
-<p><a href="https://github.com/ggml-org/llama.cpp"><strong>llama.cpp</strong></a> is an OpenAI compatible platform.</p>
-<p>Please, look at their documentation for further information.</p>
-<p><strong>Building</strong></p>
-<p>Clone the repository</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/ggml-org/llama.cpp.git</span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">-DCMAKE_C_COMPILER</span><span class="op">=</span>clang <span class="at">-DCMAKE_CXX_COMPILER</span><span class="op">=</span>clang++ <span class="dt">\</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>      <span class="at">-DCMAKE_INSTALL_PREFIX</span><span class="op">=</span>/usr/local/ <span class="at">-DGGML_VULKAN</span><span class="op">=</span>1 <span class="at">-B</span> build</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cmake</span> <span class="at">--build</span> build <span class="at">--config</span> Debug <span class="at">-j</span> 12</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> build</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">su</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span> install</span></code></pre></div>
-<p>for example for an AMD/Vulkan based platform.</p>
-<p><strong>Running</strong></p>
-<p>Small model</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> ggml-org/gemma-4-E4B-it-GGUF <span class="dt">\</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 65536 <span class="dt">\</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-sm</span> layer <span class="dt">\</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
-<p>Coding model</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> yuxinlu1/gemma-4-12B-coder-fable5-composer2.5-v1-GGUF <span class="dt">\</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 131072 <span class="dt">\</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on <span class="dt">\</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--image-min-tokens</span> 1024 <span class="dt">\</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">--tools</span> all</span></code></pre></div>
-<p>or</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF <span class="dt">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 262144 <span class="dt">\</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-sm</span> layer <span class="dt">\</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
-<p>Big model</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> bartowski/Qwen_Qwen3.6-27B-GGUF <span class="dt">\</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 65536 <span class="dt">\</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-t</span> 4 <span class="dt">\</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">--webui-mcp-proxy</span> <span class="dt">\</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
-<p>Review model</p>
-<p><a href="https://huggingface.co/collections/ggml-org/gemma-4">Gemma4</a> models will work locally.</p>
-<p>For example</p>
-<ul>
-<li>gemma-4-E4B-it-GGUF</li>
-<li>gemma-4-12B-it-GGUF</li>
-<li>gemma-4-31B-it-GGUF</li>
-</ul>
-<p>depending on your machine size, and then</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> ggml-org/gemma-4-12B-it-GGUF <span class="dt">\</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 262144 <span class="dt">\</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-np</span> 1 <span class="dt">\</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-fa</span> on <span class="dt">\</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ctk</span> q8_0 <span class="dt">\</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ctv</span> q8_0 <span class="dt">\</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">-b</span> 2048 <span class="dt">\</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ub</span> 2048 <span class="dt">\</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">--cache-reuse</span> 256 <span class="dt">\</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">--reasoning-budget</span> 0 <span class="dt">\</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">--reasoning</span> off <span class="dt">\</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">--temp</span> 0.7 <span class="dt">\</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">--top-p</span> 0.8 <span class="dt">\</span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">--top-k</span> 20 <span class="dt">\</span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">--min-p</span> 0 <span class="dt">\</span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>             <span class="at">--jinja</span> <span class="dt">\</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
-<p>Or, you can use a Qwen model which might give more feedback, but many more false positives</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> bartowski/Qwen_Qwen3.6-35B-A3B-GGUF <span class="dt">\</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 32768 <span class="dt">\</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">-np</span> 1 <span class="dt">\</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">-fa</span> on <span class="dt">\</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ctk</span> q8_0 <span class="at">-ctv</span> q8_0 <span class="dt">\</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">-b</span> 2048 <span class="at">-ub</span> 2048 <span class="dt">\</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">--cache-reuse</span> 256 <span class="dt">\</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">--reasoning-budget</span> 0 <span class="dt">\</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">--chat-template-kwargs</span> <span class="st">&#39;{&quot;enable_thinking&quot;: false}&#39;</span> <span class="dt">\</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">--temp</span> 0.7 <span class="at">--top-p</span> 0.8 <span class="at">--top-k</span> 20 <span class="at">--min-p</span> 0 <span class="dt">\</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">--jinja</span> <span class="dt">\</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
-<p>Embedding model</p>
-<p>Semantic <code>/search</code> needs a server serving an embedding model. Start one with <code>--embedding</code> (switches the server to the embeddings endpoint), <code>--pooling last</code> (the pooling strategy the model expects), <code>-np N</code> (the number of requests the server processes in parallel), and a physical batch size (<code>-b</code>/<code>-ub</code>) large enough for embedding requests that batch several chunks together:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-hf</span> ggml-org/embeddinggemma-300M-GGUF <span class="dt">\</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--port</span> 8100 <span class="dt">\</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--embedding</span> <span class="dt">\</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pooling</span> last <span class="dt">\</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">--ctx-size</span> 8192 <span class="dt">\</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">-np</span> 8 <span class="dt">\</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">-b</span> 2048 <span class="dt">\</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">-ub</span> 2048 <span class="dt">\</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">--fit</span> on</span></code></pre></div>
-<p><code>8100</code> matches the port used throughout this chapter's other examples. If you are running this alongside one of them (a chat server and the embeddings server at the same time), give the embeddings server its own free port instead (e.g. <code>8300</code>) so the two do not collide.</p>
-<p><code>-np N</code> sets how many embedding requests the server handles at the same time. <code>/search</code> uploads several files at once (up to eight), so matching <code>-np</code> to that (<code>-np 8</code>) lets those requests run truly in parallel and makes the first index build markedly faster; with <code>-np 1</code> they queue and the upload is effectively sequential.</p>
-<p><code>orangu</code> keeps each embedding request within a conservative token budget on its own side, but that budget is still shared across every one of the <code>-np</code> slots processing requests at the same moment — so with several requests in flight, the server's default physical batch size (<code>-b</code>/<code>--batch-size</code>, <code>-ub</code>/<code>--ubatch-size</code>, 512 tokens) can still be too small. Raising both to <code>2048</code>, as above, gives enough headroom for <code>-np 8</code> requests to run at once without hitting "input is too large to process".</p>
-<p>Give this server its own section with <code>role = embeddings</code> (see the Configuration chapter). orangu probes it at startup and enables <code>/search</code> when it responds; if the probe fails it prints the reason (connection refused, timed out, or an error status) so you can tell why, rather than a silent "not detected". <code>-hf</code> downloads the model from Hugging Face the first time it is used — start <code>llama-server</code> and wait for its "server is listening" line <strong>before</strong> starting orangu, since a server that is still downloading or loading the model will not yet accept connections and the probe will report it unreachable.</p>
-<p>The cached vectors are specific to the embedding model that produced them, and are keyed by the endpoint you configured. If you restart the embedding server with a <strong>different model</strong> (or point <code>role = embeddings</code> at a different endpoint), the cache no longer matches — delete <code>~/.orangu/embeddings/</code> and run <code>/search</code> again to re-index. Restarting with the <strong>same</strong> model reuses the cache and only re-embeds files that changed.</p>
+<h1>Serving Models per Role</h1>
+<h2 id="serving-models-per-role">Serving models per role</h2>
+<p><code>orangu-server</code> is the inference engine
+<code>orangu</code> connects to. It loads a GGUF model and serves an
+OpenAI-compatible API; the <em>Inference server</em> chapter covers its
+full command set, host/port/backend configuration, and model-inventory
+subcommands. This chapter lists a good starting model for each role and
+how to serve it.</p>
+<p>The model argument resolves the same way
+<code>orangu-server show</code>/<code>download</code> do: an existing
+local <code>.gguf</code> path, an <code>NR</code>/<code>MODEL</code>
+label under the configured <code>models</code> directory, or a
+<code>&lt;user&gt;/&lt;model&gt;[:quant]</code> Hugging Face repo
+(fetched on first use). The role flag
+(<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>,
+mutually exclusive, <code>--all</code> by default) selects how the
+server presents itself; give each running server its own port in
+<code>orangu-server.conf</code> when you run more than one at a
+time.</p>
+<p><code>role = all</code></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--all</span> unsloth/gemma-4-26B-A4B-it-qat-GGUF:UD-Q4_K_XL</span></code></pre></div>
+<p><code>role = code</code></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--code</span> yuxinlu1/gemma-4-12B-coder-fable5-composer2.5-v1-GGUF</span></code></pre></div>
+<p><code>role = review</code></p>
+<p>For the fastest reviews, disable thinking with
+<code>--reasoning-budget 0 --reasoning off</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--review</span> unsloth/gemma-4-26B-A4B-it-qat-GGUF:UD-Q4_K_XL <span class="dt">\</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">--reasoning-budget</span> 0 <span class="at">--reasoning</span> off</span></code></pre></div>
+<p><code>role = explorer</code></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--explorer</span> bartowski/gemma-4-12B-it-GGUF</span></code></pre></div>
+<p>Host, port, web-UI port, GPU backend, and the <code>models</code>
+directory are set in the <code>[orangu-server]</code> section of
+<code>orangu-server.conf</code> (see the <em>Inference server</em>
+chapter) rather than as per-run flags. Session KV-cache persistence
+across tab park/close/quit and reload is handled by the server’s own
+default slot behavior — no flag to enable, no directory to create in
+advance.</p>
+<h3 id="embedding-model">Embedding model</h3>
+<p>Semantic <code>/search</code> needs a server serving an embedding
+model. Start one with the <code>--embedding</code> role flag:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--embedding</span> ggml-org/embeddinggemma-300M-GGUF</span></code></pre></div>
+<p>Give it its own port if you run it alongside a chat server, and its
+own config section with <code>role = embeddings</code> (see the
+<em>Configuration</em> chapter). <code>orangu</code> probes it at
+startup and enables <code>/search</code> when it responds; if the probe
+fails it prints the reason (connection refused, timed out, or an error
+status) so you can tell why, rather than a silent “not detected”. The
+model is fetched from Hugging Face on first use — wait for the server’s
+“listening” line <strong>before</strong> starting <code>orangu</code>,
+since a server still downloading or loading the model will not yet
+accept connections and the probe will report it unreachable.</p>
+<p>The cached vectors are specific to the embedding model that produced
+them, and are keyed by the endpoint you configured. If you restart the
+embedding server with a <strong>different model</strong> (or point
+<code>role = embeddings</code> at a different endpoint), the cache no
+longer matches — delete the workspace’s <code>embeddings/</code>
+subdirectory under <code>~/.orangu/workspace/&lt;hash&gt;/</code> and
+run <code>/search</code> again to re-index. Restarting with the
+<strong>same</strong> model reuses the cache and only re-embeds files
+that changed.</p>
   </main>
 </div>
 

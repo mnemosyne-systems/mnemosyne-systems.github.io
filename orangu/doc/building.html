@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building — orangu</title>
+  <title>Developer Information — orangu</title>
   <link rel="stylesheet" href="doc.css" />
   <style>
     .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
@@ -42,31 +42,60 @@
       <div class="sidebar-section-title">User Manual</div>
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
-        <li><a href="building.html">Building</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
         <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
         <li><a href="core-tools.html">Core Tools</a></li>
-        <li><a href="workspaces.html">Workspaces</a></li>
-        <li><a href="skills.html">Skills</a></li>
         <li><a href="git-tools.html">Git Tools</a></li>
         <li><a href="usage-tools.html">Usage Tools</a></li>
-        <li><a href="local-llm.html">Local LLM</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html" class="active">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
-      <ul>
-      <li><a href="#developer-information">Developer information</a>
-      <ul>
-      <li><a href="#main-components">Main components</a></li>
-      <li><a href="#development-workflow">Development workflow</a></li>
-      <li><a href="#documentation-workflow">Documentation workflow</a></li>
-      <li><a href="#orangu-files">Orangu files</a></li>
-      </ul></li>
-      </ul>
+<ul>
+<li><a href="#developer-information"
+id="toc-developer-information">Developer information</a>
+<ul>
+<li><a href="#main-components" id="toc-main-components">Main
+components</a></li>
+<li><a href="#prompt-construction-kv-caching"
+id="toc-prompt-construction-kv-caching">Prompt Construction &amp; KV
+Caching</a></li>
+<li><a href="#development-workflow"
+id="toc-development-workflow">Development workflow</a></li>
+<li><a href="#documentation-workflow"
+id="toc-documentation-workflow">Documentation workflow</a></li>
+<li><a href="#orangu-files" id="toc-orangu-files">Orangu files</a></li>
+</ul></li>
+</ul>
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
@@ -83,24 +112,60 @@
 <h1 id="developer-information">Developer information</h1>
 <h2 id="main-components">Main components</h2>
 <ul>
-<li><code>src/bin/orangu.rs</code> - terminal loop, command handling, history, connection state, and waiting state</li>
-<li><code>src/bin/orangu/manual.rs</code> - built-in manual viewer (<code>/manual</code>); embeds the <code>doc/manual/en</code> chapters at compile time, so a new chapter file must be added to its <code>MANUAL_SOURCES</code> list</li>
+<li><code>src/bin/orangu.rs</code> - terminal loop, command handling,
+history, connection state, and waiting state</li>
+<li><code>src/bin/orangu/manual.rs</code> - built-in manual viewer
+(<code>/manual</code>); embeds the <code>doc/manual/en</code> chapters
+at compile time, so a new chapter file must be added to its
+<code>MANUAL_SOURCES</code> list</li>
 <li><code>src/config.rs</code> - INI parsing and normalization</li>
-<li><code>src/llm/openai.rs</code> - OpenAI-compatible client for llama.cpp-style backends</li>
+<li><code>src/llm/openai.rs</code> - OpenAI-compatible client for
+<code>orangu-server</code></li>
 <li><code>src/session.rs</code> - tool-calling conversation flow</li>
-<li><code>src/tools.rs</code> - workspace-scoped local tool execution</li>
-<li><code>src/tui.rs</code> - header, prompt frame, and status rendering</li>
+<li><code>src/tools.rs</code> - workspace-scoped local tool
+execution</li>
+<li><code>src/tui.rs</code> - header, prompt frame, and status
+rendering</li>
 </ul>
+<h2 id="prompt-construction-kv-caching">Prompt Construction &amp; KV
+Caching</h2>
+<p>Orangu is specifically optimized for local LLMs (served by
+<code>orangu-server</code>) which rely on exact token prefix matching to
+reuse KV cache and avoid massive prefill latencies. When developing
+features that touch <code>ChatSession</code>, you must preserve this
+cache:</p>
+<ol type="1">
+<li><strong>Append-Only System Updates</strong>: When updating the
+system prompt mid-session (e.g., changing workspaces or verbosity),
+<code>ChatSession::set_system_prompt()</code> appends the new
+instructions as a <code>user</code> message with a
+<code>[System Update]</code> prefix. It <strong>never</strong> mutates
+the initial system message (<code>messages[0]</code>). Mutating the
+first message would instantly destroy the prefix cache for the entire
+conversation.</li>
+<li><strong>In-Place Tool Eviction</strong>: When context limits are
+reached, <code>compact_transcript</code> replaces old tool outputs with
+a tiny stub <code>[Tool output evicted...]</code>. Because this mutation
+happens in-place further down the array, it perfectly preserves the KV
+cache prefix for all messages that preceded it.</li>
+</ol>
 <h2 id="development-workflow">Development workflow</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> fmt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div>
 <h2 id="documentation-workflow">Documentation workflow</h2>
 <ol type="1">
 <li><p>Download dependencies</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnf</span> install pandoc texlive-scheme-basic</span></code></pre></div></li>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnf</span> install pandoc texlive-scheme-basic</span></code></pre></div></li>
 <li><p>Download Eisvogel</p>
-<p>Use the command <code>pandoc --version</code> to locate the user data directory. On Fedora systems, this directory is typically located at <code>$HOME/.local/share/pandoc</code>.</p>
-<p>Download the <code>Eisvogel</code> template for <code>pandoc</code>, please visit the <a href="https://github.com/Wandmalfarbe/pandoc-latex-template">pandoc-latex-template</a> repository. For a standard installation, you can follow the steps outlined below.</p></li>
+<p>Use the command <code>pandoc --version</code> to locate the user data
+directory. On Fedora systems, this directory is typically located at
+<code>$HOME/.local/share/pandoc</code>.</p>
+<p>Download the <code>Eisvogel</code> template for <code>pandoc</code>,
+please visit the <a
+href="https://github.com/Wandmalfarbe/pandoc-latex-template">pandoc-latex-template</a>
+repository. For a standard installation, you can follow the steps
+outlined below.</p></li>
 </ol>
 <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">wget</span> https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/v3.4.0/Eisvogel-3.4.0.tar.gz</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tar</span> <span class="at">-xzf</span> Eisvogel-3.4.0.tar.gz</span>
@@ -108,7 +173,8 @@
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mv</span> Eisvogel-3.4.0/eisvogel.latex <span class="va">$HOME</span>/.local/share/pandoc/templates/</span></code></pre></div>
 <ol start="3" type="1">
 <li><p>Add package for LaTeX</p>
-<p>Download the additional packages required for generating PDF and HTML files.</p></li>
+<p>Download the additional packages required for generating PDF and HTML
+files.</p></li>
 </ol>
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dnf</span> install <span class="st">&#39;tex(footnote.sty)&#39;</span> <span class="st">&#39;tex(footnotebackref.sty)&#39;</span> <span class="st">&#39;tex(pagecolor.sty)&#39;</span> <span class="st">&#39;tex(hardwrap.sty)&#39;</span> <span class="st">&#39;tex(mdframed.sty)&#39;</span> <span class="st">&#39;tex(sourcesanspro.sty)&#39;</span> <span class="st">&#39;tex(ly1enc.def)&#39;</span> <span class="st">&#39;tex(sourcecodepro.sty)&#39;</span> <span class="st">&#39;tex(titling.sty)&#39;</span> <span class="st">&#39;tex(csquotes.sty)&#39;</span> <span class="st">&#39;tex(zref-abspage.sty)&#39;</span> <span class="st">&#39;tex(needspace.sty)&#39;</span> <span class="st">&#39;tex(selnolig.sty)&#39;</span> texlive-collection-latexextra</span></code></pre></div>
 <p>Then</p>
@@ -116,8 +182,10 @@
 <p>which will produce a HTML and PDF manual.</p>
 <h2 id="orangu-files">Orangu files</h2>
 <ul>
-<li>The default config lookup path is <code>~/.orangu/orangu.conf</code></li>
-<li>Command history is stored in <code>~/.orangu/orangu.history</code></li>
+<li>The default config lookup path is
+<code>~/.orangu/orangu.conf</code></li>
+<li>Command history is stored in
+<code>~/.orangu/orangu.history</code></li>
 </ul>
   </main>
 </div>
