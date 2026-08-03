@@ -104,15 +104,15 @@ third binary in the same Cargo package as <code>orangu</code> and
 <code>orangu-coordinator</code>. Besides serving a GGUF model, it’s also
 the machine’s GGUF inventory tool
 (<code>system</code>/<code>suggest</code>/
-<code>list</code>/<code>show</code>/<code>download</code>/<code>delete</code>)
-— stateless between runs for those six: every invocation re-detects
+<code>list</code>/<code>show</code>/<code>download</code>/<code>delete</code>/<code>refresh</code>)
+— stateless between runs for those seven: every invocation re-detects
 hardware and re-scans the models directory from scratch, so there is no
 cache, config-reload, or background process to reason about for them.
 <code>system</code>/<code>suggest</code>/<code>show</code>/<code>delete</code>
-stay entirely offline; <code>download</code> always talks to the Hub,
-and <code>list</code> does too, before printing its table, to check each
-Hugging Face-backed model for a newer commit (see
-<code>latest_commits</code> below) — swallowing the lookup silently
+stay entirely offline; <code>download</code> and <code>refresh</code>
+always talk to the Hub, and <code>list</code> does too, before printing
+its table, to check each Hugging Face-backed model for a newer commit
+(see <code>latest_commits</code> below) — swallowing the lookup silently
 rather than failing when the Hub can’t be reached. It does real tensor
 computation itself for serving — GGUF loading, dequantization, the
 transformer forward pass, sampling, and request scheduling are
@@ -122,24 +122,39 @@ code.</p>
 <ul>
 <li><code>main.rs</code> — CLI parsing (serving plus the
 <code>system</code>/<code>suggest</code>/<code>list</code>/
-<code>show</code>/<code>download</code>/<code>delete</code>/<code>prune</code>
+<code>show</code>/<code>download</code>/<code>delete</code>/<code>refresh</code>/<code>prune</code>
 subcommands), model-spec resolution, GPU backend selection
 (<code>select_backend</code>), <code>format_show</code>/
 <code>DEFAULT_ARRAY_PREVIEW</code> (for <code>show</code>),
 <code>select_model_for_deletion</code>/ <code>confirm</code> (for
-<code>delete</code>, and reused by <code>prune</code>), workspace-root
-resolution (<code>resolve_workspace</code>, over the shared
-<code>orangu::workspaces::resolve_workspace_root</code> that
+<code>delete</code>, and reused by
+<code>prune</code>/<code>refresh</code>), the two helpers every
+table-printing subcommand shares (<code>check_for_updates</code>, one
+Hub lookup per distinct repo; <code>dimming</code>, which downgrades a
+<code>Dimming</code> mode to <code>Dimming::Off</code> off a terminal),
+workspace-root resolution (<code>resolve_workspace</code>, over the
+shared <code>orangu::workspaces::resolve_workspace_root</code> that
 <code>orangu</code>’s own <code>-w</code>/<code>--workspace</code>
 uses), and process wiring
 (Ctrl+C/<code>SIGINT</code>/<code>--daemon</code>).</li>
+<li><code>reexec.rs</code> — replacing this process with one serving a
+different model, for the web console’s <strong>Load</strong> button:
+descriptor hand-over, <code>argv</code> reconstruction, the header
+pre-check, and the one-shot fallback. See below.</li>
+<li><code>refresh.rs</code> — <code>refresh</code>’s own CLI logic: the
+confirmation, the delete-then-download ordering, and the interactive
+picker that greys every already-current row; see below.</li>
 <li><code>prune.rs</code> — <code>prune</code>’s own CLI logic (listing,
 <code>NR</code>/id resolution, the
 <code>all</code>/interactive/explicit-identifier flows), built on
 <code>web::sessions</code>’s activity tracking; see below.</li>
 <li><code>config.rs</code>, <code>init.rs</code> —
 <code>orangu-server.conf</code> loading and the <code>--init</code>
-wizard.</li>
+wizard. The web console has its own <code>[web]</code> section, whose
+<em>presence</em> is what enables it; <code>[web].host</code> falls back
+to <code>[orangu-server].host</code>, and the pre-section
+<code>[orangu-server].web</code> key is still honored when no
+<code>[web]</code> section is there to take precedence over it.</li>
 <li><code>suggest.rs</code> — <code>suggest</code>: a hardware-based
 model-size estimate built on top of <code>orangu::hardware</code>’s own
 detection; see below.</li>
@@ -163,8 +178,8 @@ RMSNorm, softmax, RoPE, SwiGLU/GEGLU) a forward pass needs, on plain
 <li><code>engine/arch/{mod,llama,gemma,phi,mistral,qwen35moe,qwen35}.rs</code>
 — one <code>ModelForward</code> implementor per architecture
 family.</li>
-<li><code>engine/backend/{mod,cpu,vulkan,vulkan_shaders,cuda,opencl,rocm}.rs</code>
-— the <code>Backend</code> trait and its five implementors; see
+<li><code>engine/backend/{mod,cpu,vulkan,vulkan_shaders,metal,cuda,opencl,rocm}.rs</code>
+— the <code>Backend</code> trait and its six implementors; see
 below.</li>
 <li><code>engine/tokenizer.rs</code> — a from-scratch BPE
 tokenizer.</li>
@@ -178,12 +193,14 @@ buffers.</li>
 <code>engine/batch.rs</code> — the multi-slot request scheduler and
 continuous-batching machinery.</li>
 <li><code>http/{mod,openai,native}.rs</code> — the HTTP surface.</li>
-<li><code>web/{mod,render,sessions}.rs</code> — the built-in chat UI.
-<code>sessions.rs</code> also owns the <code>session.json</code>
-activity marker (<code>mark_active</code>/<code>is_active</code>) and
-the prune-facing listing/sweep (<code>list_sessions_for_prune</code>/
-<code>sweep_empty_sessions</code>/<code>delete_session_dir</code>)
-<code>prune.rs</code> calls into.</li>
+<li><code>web/{mod,render,sessions,models,attachments}.rs</code> — the
+built-in chat UI. <code>sessions.rs</code> also owns the
+<code>session.json</code> activity marker
+(<code>mark_active</code>/<code>is_active</code>) and the prune-facing
+listing/sweep
+(<code>list_sessions_for_prune</code>/<code>sweep_empty_sessions</code>/<code>delete_session_dir</code>)
+<code>prune.rs</code> calls into. <code>models.rs</code> is the model
+manager’s own HTTP surface; see below.</li>
 </ul>
 <p>The GGUF-inventory subcommands lean on library modules shared with
 the rest of the workspace rather than binary-local ones:
@@ -191,16 +208,16 @@ the rest of the workspace rather than binary-local ones:
 <code>orangu::model_spec</code> (directory scan, shard grouping, and the
 Hugging Face repo-id/quant-tag reconstruction behind <code>list</code>’s
 <code>MODEL</code> column), <code>orangu::model_download</code>
-(<code>download</code>’s fetch logic), and <code>orangu::hardware</code>
-(CPU/GPU detection). Living in <code>src/</code> alongside
-<code>orangu</code>’s and <code>orangu-coordinator</code>’s own shared
-code, rather than nested under <code>src/bin/orangu-server/</code>, is
-what let <code>orangu-server</code> absorb these subcommands from the
-now-removed <code>orangu-gguf</code> binary without duplicating any of
-this logic — <code>orangu-server</code>’s <code>main.rs</code> was
-already calling straight into
-<code>orangu::model_spec::resolve_or_fetch_model</code> for its own
-positional <code>model</code> argument, so
+(<code>download</code>’s fetch logic), <code>orangu::os</code> (OS
+detection) and <code>orangu::hardware</code> (CPU/GPU detection). Living
+in <code>src/</code> alongside <code>orangu</code>’s and
+<code>orangu-coordinator</code>’s own shared code, rather than nested
+under <code>src/bin/orangu-server/</code>, is what let
+<code>orangu-server</code> absorb these subcommands from the now-removed
+<code>orangu-gguf</code> binary without duplicating any of this logic —
+<code>orangu-server</code>’s <code>main.rs</code> was already calling
+straight into <code>orangu::model_spec::resolve_or_fetch_model</code>
+for its own positional <code>model</code> argument, so
 <code>list</code>/<code>show</code>/<code>download</code> calling the
 same modules directly was additive, not a rewrite.</p>
 <h3 id="gguf-parsing-orangugguf">GGUF parsing
@@ -446,6 +463,64 @@ by an <code>NR</code> prompt — the delete-time counterpart of
 to pick a model to <em>serve</em>), returning a full
 <code>ModelGroup</code> rather than just a path/label pair since that’s
 what <code>delete_model</code> needs.</p>
+<h3 id="refreshing-a-model-refresh.rs">Refreshing a model
+(<code>refresh.rs</code>)</h3>
+<p><code>refresh</code> is <code>delete</code> followed by
+<code>download</code> of the same spec — the command that acts on a
+<code>(Refresh)</code> marker. It is its own module rather than another
+<code>main.rs</code> arm because three of its decisions are specific to
+it:</p>
+<p><strong>Delete first, then download.</strong> The reverse order would
+be safer against an interrupted transfer, but a refresh exists precisely
+because the repo’s files changed, so the new revision is a full second
+copy on disk rather than the blob-sharing symlink a re-download of the
+<em>same</em> commit produces. Downloading first would mean a 17 GiB
+model needing 34 GiB free to refresh. The cost — an interrupted download
+leaving the model missing rather than stale — is recovered by re-running
+<code>refresh</code> or <code>download</code>, which resumes from the
+<code>.part</code> file <code>download_attempt</code> left behind, and
+is stated up front in the confirmation line rather than discovered
+afterwards.</p>
+<p><strong>An ambiguous <code>MODEL</code> name is an error.</strong>
+<code>model_spec::resolve_refresh_target</code> mirrors
+<code>resolve_delete_target</code> (path, then <code>NR</code>, then
+<code>MODEL</code> label) with exactly one difference: where
+<code>delete</code> takes the first of several rows sharing a
+<code>MODEL</code> cell and names the quantization it picked in its
+confirmation line, <code>refresh</code> refuses and lists the
+quantizations on disk. It has to — <code>refresh</code> deletes what it
+then downloads, so a first-match would refresh the wrong quantization
+<em>and</em> leave the one the user meant untouched, which no
+confirmation line can undo. The error only suggests the
+<code>&lt;repo&gt;:&lt;quant&gt;</code> spelling when naming a
+quantization would actually disambiguate (two rows of the same repo
+<em>and</em> the same quant, two snapshots deep, can only be told apart
+by <code>NR</code>). A path that resolves to no group at all is a
+companion mmproj sidecar — <code>delete</code> synthesizes a one-file
+group for it, but <code>download</code> only ever fetches one
+<em>alongside</em> its base model, so <code>refresh</code> points at
+that model instead.</p>
+<p><strong>The download spec comes off the filename, not
+<code>QUANT</code>.</strong> <code>ModelGroup::download_spec</code>
+rebuilds <code>&lt;user&gt;/&lt;model&gt;[:tag]</code> from the
+representative path’s own <code>hf_tag_from_label</code> tag rather than
+from <code>quantization</code>: the <code>QUANT</code> column falls back
+to the dominant ggml type for a file whose name carries no tag, and that
+type names no file in the repo, so <code>select_files_to_download</code>
+would reject it as an unknown quant instead of re-fetching the model
+that is actually on disk. A group with no <code>hf_repo</code> at all
+has no spec, and <code>run</code> bails on it <em>before</em> deleting
+anything — a hand-copied <code>.gguf</code> has no repo to come back
+from.</p>
+<p>With no argument, <code>select_model_to_refresh</code> prints the
+same <code>format_groups</code> table <code>list</code> does, with
+<code>Dimming::UpToDate</code> and the same
+<code>check_for_updates</code> lookup, so the un-greyed rows are exactly
+the <code>(Refresh)</code> ones — then prompts for an <code>NR</code>,
+the counterpart of <code>select_model_for_deletion</code>. An
+unreachable Hub greys nothing (no row is <em>known</em> to be behind),
+which reads correctly: with no update information, no row is a better
+pick than another.</p>
 <h3 id="downloading-from-hugging-face-orangumodel_download">Downloading
 from Hugging Face (<code>orangu::model_download</code>)</h3>
 <p><code>download_model</code> implements
@@ -633,20 +708,23 @@ having no network at all). An empty repo list short-circuits before even
 building a client.</li>
 </ul>
 <p><code>main.rs</code>‘s <code>Command::List</code> arm wires the two
-together: <code>group_models</code> runs first, its groups’ distinct
-<code>hf_repo</code> ids feed <code>latest_commits</code>, which returns
-a <code>repo -&gt; commit</code> map — not a “these repos are stale” set
-— and <code>format_groups</code> (the renderer <code>format_list</code>
-itself now delegates to) compares each row’s <em>own</em>
-<code>local_commit</code> against that map when deciding whether to
-append <code>(Refresh)</code> after <code>SIZE</code>. Comparing per row
-rather than per repo matters: a repo can have two
-<code>ModelGroup</code> rows cached at different commits
-(e.g. <code>:Q4_K_M</code> downloaded weeks ago, <code>:Q8_0</code>
-downloaded today), and only the one actually behind should be marked — a
-<code>HashSet</code> of “stale repos” would incorrectly mark both just
-because they share a repo id. The marker sits deliberately
-<em>after</em> <code>SIZE</code> rather than folded into
+together through <code>check_for_updates</code> (which does the
+dedupe-by-repo and is shared with <code>refresh</code>, so both commands
+agree on what’s stale): <code>group_models</code> runs first, its
+groups’ distinct <code>hf_repo</code> ids feed
+<code>latest_commits</code>, which returns a
+<code>repo -&gt; commit</code> map — not a “these repos are stale” set —
+and <code>format_groups</code> (the renderer <code>format_list</code>
+itself now delegates to) asks <code>ModelGroup::is_behind</code> to
+compare each row’s <em>own</em> <code>local_commit</code> against that
+map when deciding whether to append <code>(Refresh)</code> after
+<code>SIZE</code>. Comparing per row rather than per repo matters: a
+repo can have two <code>ModelGroup</code> rows cached at different
+commits (e.g. <code>:Q4_K_M</code> downloaded weeks ago,
+<code>:Q8_0</code> downloaded today), and only the one actually behind
+should be marked — a <code>HashSet</code> of “stale repos” would
+incorrectly mark both just because they share a repo id. The marker sits
+deliberately <em>after</em> <code>SIZE</code> rather than folded into
 <code>MODEL</code>, so the shell completion scripts (above), which only
 ever read <code>list</code>’s first two whitespace-separated columns,
 stay unaffected by a row growing a trailing marker.</p>
@@ -657,9 +735,9 @@ row — so a user sees which models this build can actually load
 <em>before</em> selecting one, rather than only discovering it can’t
 once it’s loaded. <code>model_spec::format_groups</code> renders the
 column (and <code>format_list</code>’s signature carries the
-<code>support</code>/<code>colorize</code> parameters through), but the
-lib deliberately doesn’t decide <em>what</em> is supported: that
-judgement lives in <code>orangu-server</code>, in
+<code>support</code>/<code>dim</code> parameters through), but the lib
+deliberately doesn’t decide <em>what</em> is supported: that judgement
+lives in <code>orangu-server</code>, in
 <code>engine::loader::model_load_support</code>. So
 <code>main.rs</code>’s <code>model_support</code> opens each group’s
 representative file (header only — no tensor data, the same cheap read
@@ -702,17 +780,76 @@ chosen, and the same file that one backend refuses runs on
 <p>A <code>No</code> row is <em>greyed</em> (dim ANSI SGR), not hidden:
 a user can still pick it and will hit the same clear “not yet supported”
 error <code>prepare</code> gives for any other unsupported model — the
-greying just deprioritizes it visually. Crucially, the escapes are only
-emitted when <code>format_groups</code>’ <code>colorize</code> flag is
-set, which every call site derives from
+greying just deprioritizes it visually.</p>
+<p><em>Which</em> rows are greyed is <code>format_groups</code>’
+<code>dim</code> parameter, a <code>model_spec::Dimming</code> rather
+than the boolean it started as, because <code>refresh</code> wants the
+same table deprioritizing a different set of rows:
+<code>Dimming::Unsupported</code> greys what this build can’t load
+(<code>list</code>, <code>show</code>, <code>delete</code>, the
+serve-time picker), <code>Dimming::UpToDate</code> greys what isn’t
+behind its repo (<code>refresh</code>), and <code>Dimming::Off</code>
+emits no escapes at all. Every call site passes its mode through
+<code>main.rs</code>’s <code>dimming</code> helper, which returns
+<code>Dimming::Off</code> unless
 <code>std::io::stdout().is_terminal()</code>. Piped or redirected output
 — including what the shell completion scripts parse with
-<code>awk '{print $1; print $2}'</code> — stays escape-free, so an ANSI
-prefix can never corrupt the <code>NR</code>/<code>MODEL</code> columns
-those scripts read. This is the same renderer the interactive serve-time
-picker (<code>select_model_interactively</code>) and the
-<code>show</code>/<code>delete</code> pickers use, so all four tables
-carry the column consistently.</p>
+<code>awk '{print $1; print $2}'</code> — therefore stays escape-free,
+so an ANSI prefix can never corrupt the
+<code>NR</code>/<code>MODEL</code> columns those scripts read. One
+renderer serves every table this binary prints, so they all carry the
+column consistently.</p>
+<h3 id="os-detection-oranguos">OS detection
+(<code>orangu::os</code>)</h3>
+<p><code>orangu::os::detect</code> gathers the <code>OS</code> section
+<code>orangu::hardware:: format_report</code> prints first, and
+<code>orangu::os::format_section</code> formats it — the report’s other
+two sections stay in <code>orangu::hardware</code>, so neither module
+has to know how the other’s fields are gathered. <code>OsInfo</code> is
+a flat struct of <code>Option</code> fields precisely because platform
+coverage is uneven: <code>format_section</code> skips any field that
+came back <code>None</code>, which is what lets one formatter serve
+three platforms without a <code>cfg</code> in it.</p>
+<p>Nothing here runs a subprocess. Every field comes from a Rust
+API:</p>
+<ul>
+<li><strong>Portable</strong> (<code>sysinfo</code>, all three
+platforms): name, version, long version, kernel version, distribution
+id, hostname, uptime, swap total/used, and — everywhere but Windows,
+where <code>sysinfo</code> documents it as not working — load
+average.</li>
+<li><strong>POSIX</strong> (<code>libc</code>, Linux and macOS):
+<code>sysconf(_SC_PAGESIZE)</code> for the page size and
+<code>getrlimit(RLIMIT_NOFILE)</code> for the open-file limit. The
+<code>as u64</code> casts on <code>rlim_cur</code>/<code>rlim_max</code>
+carry an <code>#[allow(clippy::unnecessary_cast)]</code>:
+<code>rlim_t</code> is <code>u64</code> on Linux and macOS, where clippy
+sees a no-op, but it’s <code>i64</code> on the BSDs and
+<code>c_ulong</code> on some 32-bit targets that
+<code>#[cfg(unix)]</code> also covers.</li>
+<li><strong>Linux</strong> (plain file reads):
+<code>/sys/class/dmi/id/sys_vendor</code> and <code>product_name</code>
+for <code>Machine</code> (world-readable, unlike the serial/UUID
+attributes beside them, which are root-only and not read), and
+<code>/sys/kernel/mm/transparent_hugepage/enabled</code> for the
+hugepage policy (<code>parse_selected_option</code> returns the
+bracketed entry out of <code>always [madvise] never</code>).</li>
+<li><strong>macOS</strong> (<code>libc::sysctlbyname</code>, wrapped in
+<code>sysctl_string</code>): <code>hw.model</code> for
+<code>Machine</code>. The wrapper makes the usual two calls — a null
+buffer to learn the length, then one of that length — and trims the
+trailing NUL.</li>
+</ul>
+<p><code>is_redundant_long_version</code> decides whether the
+<code>Full name</code> line is worth printing. <code>sysinfo</code>’s
+long version is <code>Linux (Fedora Linux 44)</code> on Linux —
+<code>Name</code> and <code>Version</code> rearranged, plus the kernel
+name and punctuation — but <code>MacOS 15.1 Sequoia</code> and
+<code>Windows 11 Pro</code> on the other two, where the codename and
+edition appear nowhere else. Comparing word by word (ignoring
+punctuation, and treating <code>linux</code> as already-known) drops the
+first and keeps the other two, without a <code>cfg</code> deciding it
+per platform.</p>
 <h3 id="cpugpu-detection-oranguhardware">CPU/GPU detection
 (<code>orangu::hardware</code>)</h3>
 <p>CPU statistics (brand, vendor, architecture, physical/logical core
@@ -720,7 +857,8 @@ counts, peak frequency, total/available RAM) come from <a
 href="https://docs.rs/sysinfo"><code>sysinfo</code></a>, used with only
 its <code>system</code> feature (no
 <code>disk</code>/<code>network</code>/<code>component</code>/<code>user</code>)
-to keep the dependency footprint minimal.</p>
+to keep the dependency footprint minimal — the same dependency, and the
+same feature, <code>orangu::os</code> uses above.</p>
 <p>GPU detection has no single cross-platform API, so
 <code>detect_gpus</code> layers several best-effort, independent sources
 and concatenates whatever each finds — a card no source recognizes
@@ -831,17 +969,18 @@ distinct figure from the override, unlike the total.</p>
 <h3 id="hardware-based-model-size-suggestion-suggest.rs">Hardware-based
 model-size suggestion (<code>suggest.rs</code>)</h3>
 <p><code>main.rs</code>’s <code>Command::Suggest</code> arm calls the
-same <code>orangu::hardware:: detect_cpu</code>/<code>detect_gpus</code>
-pair <code>Command::System</code> does, then passes the result to
+same <code>orangu::os::detect</code> and
+<code>orangu::hardware::detect_cpu</code>/<code>detect_gpus</code> trio
+<code>Command::System</code> does, then passes the result to
 <code>suggest::format_suggestion</code>, which appends two
 size-suggestion tables after
-<code>orangu::hardware::format_report</code>’s own CPU/GPU listing (via
-the shared <code>push_suggestion_block</code> helper). There is no
+<code>orangu::hardware::format_report</code>’s own OS/CPU/GPU listing
+(via the shared <code>push_suggestion_block</code> helper). There is no
 separate detection path — <code>suggest</code> is purely a second
-interpretation of the same hardware inventory <code>system</code>
-already knows how to gather (and the same report printed at the top of
-every attached <code>orangu-server</code> startup — see the Inference
-server chapter’s Quick start section).</p>
+interpretation of the same inventory <code>system</code> already knows
+how to gather (and the same report printed at the top of every attached
+<code>orangu-server</code> startup — see the Inference server chapter’s
+Quick start section).</p>
 <p><strong>The memory-estimation formula.</strong>
 <code>estimate_total_vram_bytes</code> mirrors <a
 href="https://smcleod.net/vram-estimator/">Sam McLeod’s GGUF VRAM
@@ -904,7 +1043,7 @@ context length and bits-per-weight) fits within the budget, or
 <code>format_suggestion</code> computes two separate budgets and prints
 a labeled <code>push_suggestion_block</code> for each,
 <code>"Suggested model size (Dedicated)"</code> and
-<code>"Suggested model size (Combined)"</code>. Both sum each eligible
+<code>"Suggested model size (Total)"</code>. Both read each eligible
 GPU’s own <code>vram_total_bytes</code> — deliberately <em>not</em>
 reduced by <code>vram_used_bytes</code>, since <code>suggest</code>
 estimates the hardware’s own capability (this file’s module doc —
@@ -914,29 +1053,41 @@ whatever else is transiently using VRAM (a compositor, a browser, an
 already-running <code>orangu-server</code>) shouldn’t shrink a
 hardware-based estimate:</p>
 <ul>
-<li><code>dedicated_vram_budget_bytes</code> sums every GPU
-<code>is_dedicated_for_budget</code> accepts (multiple dedicated cards
-add up) — <code>0</code> when there’s none at all. The
-<code>Dedicated</code> block itself is skipped in that case
+<li><p><code>dedicated_vram_budget_bytes</code> takes the maximum over
+every GPU <code>is_dedicated_for_budget</code> accepts — <code>0</code>
+when there’s none at all. The maximum rather than the sum for the same
+reason <code>total_budget_bytes</code> uses one: a model is loaded onto
+a single device, and nothing here splits its tensors across two, so two
+24 GiB cards are a 24 GiB budget. The <code>Dedicated</code> block
+itself is skipped in the <code>0</code> case
 (<code>gpus.iter().any(is_dedicated_for_budget)</code> gates the call to
 <code>push_suggestion_block</code>), rather than printing a
 <code>0 B</code> budget and a table where
 <code>suggest_param_count</code> correctly, but uselessly, reports
-nothing on the ladder fitting for every single cell.</li>
-<li><code>combined_gpu_budget_bytes</code> sums every GPU
-<code>is_combined_budget_eligible</code> accepts (a <code>Shared</code>
+nothing on the ladder fitting for every single cell.</p></li>
+<li><p><code>total_budget_bytes</code> takes the
+<strong>maximum</strong> of every GPU
+<code>is_total_budget_eligible</code> accepts (a <code>Shared</code>
 GPU’s <code>vram_total_bytes</code> is already the system RAM total via
-<code>apply_shared_memory_total</code>, described above) — the more
-permissive figure, representing every device this server could spread
-layers across at once. Falls back to the CPU’s own
-<code>total_memory_bytes</code> when that sum is <code>0</code> (no GPU
-detected at all). Always printed, even when it just reduces to system
-RAM alone — unlike <code>Dedicated</code>, this budget is never
-literally <code>0</code> on a real machine.</li>
+<code>apply_shared_memory_total</code>, described above) and the CPU’s
+own <code>total_memory_bytes</code> — the largest single pool a run
+could use. System RAM being a candidate rather than a fallback is what
+covers a machine with no GPU at all, and it makes this budget a superset
+of <code>dedicated_vram_budget_bytes</code>: the <code>Dedicated</code>
+table is the fast subset of this one. Always printed, even when it just
+reduces to system RAM alone — unlike <code>Dedicated</code>, this budget
+is never literally <code>0</code> on a real machine.</p>
+<p>The maximum, <strong>not</strong> the sum:
+<code>select_backend</code> picks one backend for the whole model and
+there is no partial-offload split of layers between a GPU and the CPU,
+so no single run can draw on a discrete card’s VRAM <em>and</em> system
+RAM together. Summing them printed budgets nothing could reach — on a
+3.98 GiB card beside 62.19 GiB of RAM, a 66.17 GiB sum suggested a ~110B
+model needing 62.69 GiB, which neither pool holds.</p></li>
 </ul>
 <p><strong><code>Unknown</code>-kind GPUs: a Windows-specific
 path.</strong> On Linux/macOS,
-<code>is_dedicated_for_budget</code>/<code>is_combined_budget_eligible</code>
+<code>is_dedicated_for_budget</code>/<code>is_total_budget_eligible</code>
 only ever see <code>Dedicated</code>/<code>Shared</code> GPUs —
 <code>MemoryKind</code> is already reliably known there (see above), so
 both functions have a plain, <code>cfg</code>-free body for those
@@ -954,9 +1105,8 @@ functions trust an <code>Unknown</code> GPU’s own
 comfortably above a typical integrated carve-out, comfortably below any
 real discrete card). Below the threshold it’s treated like a
 <code>Shared</code> GPU: excluded from both budgets, since its real
-ceiling is system RAM, which <code>combined_gpu_budget_bytes</code>’s
-own <code>total_memory_bytes</code> fallback already supplies once
-nothing else in the sum counts it.</p>
+ceiling is system RAM, which <code>total_budget_bytes</code> already
+considers on its own.</p>
 <h3 id="shell-completions-shell.rs">Shell completions
 (<code>shell.rs</code>)</h3>
 <p>Mirrors <code>orangu</code>’s own
@@ -966,18 +1116,18 @@ nothing else in the sum counts it.</p>
 hand-written bash/zsh/ fish scripts embedded as <code>&amp;str</code>
 constants, selected by inspecting <code>$SHELL</code>, rather than
 clap-generated completions. The positional <code>model</code> argument,
-and <code>show</code>’s and <code>delete</code>’s own arguments,
-complete the same way <code>orangu</code>’s own scripts complete session
-UUIDs — the shell function shells back out to
-<code>orangu-server list</code> itself (<code>2&gt;/dev/null</code>, so
-a missing config yields no candidates rather than an error) and reads
-its first two columns with <code>awk</code>. This keeps the completion
-logic entirely in the shell script, depending on nothing but
-<code>orangu-server</code> itself being on <code>$PATH</code> — no
-dynamic-completion protocol or extra binary flag is needed. The bash and
-fish scripts also list the six subcommand names as literal completion
-candidates alongside the dynamic model list at the first argument
-position; the zsh script achieves the same with
+and <code>show</code>’s, <code>delete</code>’s and
+<code>refresh</code>’s own arguments, complete the same way
+<code>orangu</code>’s own scripts complete session UUIDs — the shell
+function shells back out to <code>orangu-server list</code> itself
+(<code>2&gt;/dev/null</code>, so a missing config yields no candidates
+rather than an error) and reads its first two columns with
+<code>awk</code>. This keeps the completion logic entirely in the shell
+script, depending on nothing but <code>orangu-server</code> itself being
+on <code>$PATH</code> — no dynamic-completion protocol or extra binary
+flag is needed. The bash and fish scripts also list the subcommand names
+as literal completion candidates alongside the dynamic model list at the
+first argument position; the zsh script achieves the same with
 <code>_alternative</code> combining a <code>_values</code> list
 (subcommand names) and a <code>compadd</code>-based function (model
 candidates) for that position.</p>
@@ -988,11 +1138,12 @@ precedent was found, since introducing a genuinely unstable
 (semver-exempt) dependency wasn’t warranted when a small, self-contained
 shell script does the same job with zero new dependencies.</p>
 <p><code>prune</code>’s own argument completes differently from
-<code>model</code>/<code>show</code>/<code>delete</code> above: directly
-against <code>~/.orangu/server/sessions/*</code> (each entry a UUID
-directory) plus the literal <code>all</code>, with no process invocation
-at all — this time genuinely the same trick <code>orangu</code>’s own
-<code>-r</code>/<code>--resume</code> completion uses
+<code>model</code>/<code>show</code>/<code>delete</code>/<code>refresh</code>
+above: directly against <code>~/.orangu/server/sessions/*</code> (each
+entry a UUID directory) plus the literal <code>all</code>, with no
+process invocation at all — this time genuinely the same trick
+<code>orangu</code>’s own <code>-r</code>/<code>--resume</code>
+completion uses
 (<code>_orangu_sessions</code>/<code>__orangu_sessions</code> in
 <code>src/bin/orangu/shell.rs</code>), not just the same general shape.
 Shelling out to <code>orangu-server prune</code> itself the way model
@@ -1337,23 +1488,34 @@ management</a>.</p>
 <p><code>engine::backend::Backend</code> (<code>backend/mod.rs</code>)
 is the trait every backend implements —
 <code>matmul</code>/<code>matmul_batch</code> plus a downcast hook
-(<code>as_vulkan</code>) the model forward pass uses to reach
+(<code>as_wgpu</code>) the model forward pass uses to reach
 <code>VulkanBackend</code>’s much larger fused surface when it’s the
-active backend. Five implementors exist: <code>CpuBackend</code> (scalar
+active backend. Six implementors exist: <code>CpuBackend</code> (scalar
 with runtime AVX2 dispatch via <code>engine::tensor::dot</code>,
 parallelized across output rows with <code>rayon</code>; always
 available, and the fallback when no GPU backend is found),
-<code>VulkanBackend</code>, <code>CudaBackend</code>,
-<code>OpenClBackend</code>, and <code>RocmBackend</code>.</p>
+<code>VulkanBackend</code>, <code>MetalBackend</code>,
+<code>CudaBackend</code>, <code>OpenClBackend</code>, and
+<code>RocmBackend</code>.</p>
+<p>The hook is named for <code>wgpu</code> rather than for Vulkan
+because two backends answer <code>Some</code> to it:
+<code>VulkanBackend</code> and <code>MetalBackend</code>, which is that
+same engine on another <code>wgpu</code> API (see <strong>The Metal
+backend</strong> below). Every fused path reached through it is
+therefore live on Apple GPUs too.</p>
 <p><code>main.rs</code>’s <code>select_backend</code> implements the
 <code>backend = auto</code> cascade: Vulkan, then CUDA, then OpenCL,
 then ROCm (if built with the <code>rocm</code> feature), falling back to
-<code>CpuBackend</code> if none of them initialize. An explicit
-<code>backend = &lt;name&gt;</code> instead calls that one backend’s
-<code>try_init</code> directly and fails to start if it returns
-<code>None</code>, rather than falling back — useful when GPU inference
-was asked for specifically and a silent CPU fallback would be the wrong
-failure mode.</p>
+<code>CpuBackend</code> if none of them initialize. On Apple targets the
+cascade starts with Metal instead — not a preference but a cost: macOS
+ships no Vulkan driver, so leading with Vulkan there is four retry
+rounds of guaranteed failure before reaching the API the machine
+actually has, and <code>MetalBackend</code> gives up nothing, being the
+same kernels. An explicit <code>backend = &lt;name&gt;</code> instead
+calls that one backend’s <code>try_init</code> directly and fails to
+start if it returns <code>None</code>, rather than falling back — useful
+when GPU inference was asked for specifically and a silent CPU fallback
+would be the wrong failure mode.</p>
 <h3 id="the-vulkan-backend">The Vulkan backend</h3>
 <p><code>VulkanBackend</code> (<code>engine::backend::vulkan</code>, via
 <code>wgpu</code>’s Vulkan backend — <code>ash</code> dlopens the system
@@ -1418,6 +1580,38 @@ noted.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align: left;"><code>ORANGU_PREFILL_BATCH</code></td>
+<td style="text-align: left;"><code>512</code> (integer, not a presence
+flag)</td>
+<td style="text-align: left;"><strong>Ceiling</strong> on how many
+prompt tokens go into one forward pass; the actual width is chosen per
+chunk by <code>ORANGU_PREFILL_CHUNK_MS</code> below and never exceeds
+this. <code>0</code> disables chunking entirely — the whole prompt in
+one submission, which is what prefill did unconditionally before this
+existed and which loses the device on any long prompt. Measured on a 4
+GiB RX 5500M holding 2.5 GiB of weights, with a 17.5k-token prompt — no
+chunking: device lost after 21s; <code>2048</code>: device lost after
+3m54s; <code>512</code>: completed in 4m13s, with peak VRAM identical
+(3.67 GiB) in all three. Not a throughput tax: at 8k tokens on the same
+card <code>512</code> prefilled at 115.4 tok/s against 105.5 unchunked,
+since a smaller working set pages less.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ORANGU_PREFILL_CHUNK_MS</code></td>
+<td style="text-align: left;"><code>3000</code> (integer)</td>
+<td style="text-align: left;">Wall-clock target for one prefill
+submission. A chunk is timed and the next is scaled by the rate just
+measured, because cost per token climbs with context: a fixed 512-token
+chunk measured 2.3 s at position 512 and <strong>10.1 s at position 6
+656</strong>, past the ~10 s <code>amdgpu</code> allows before it resets
+the device (see <em>Losing the GPU device</em>). A token-count limit
+alone therefore stops protecting anything on a long prompt. With this, a
+48 000-token prompt that used to reset the device at position 7 680
+completes with a slowest submission of 3.3 s. Lower it if resets still
+happen; the default leaves room for the estimate to lag a rate that only
+rises.</td>
+</tr>
 <tr>
 <td style="text-align: left;"><code>ORANGU_NO_MLP_UNROLL</code></td>
 <td style="text-align: left;">unset (block-unroll
@@ -1779,6 +1973,92 @@ the computation.</td>
 vendor/device- derived string so a cache built for one GPU is never
 handed to another) — a startup-time optimization only, with no effect on
 decode/prefill throughput once running.</p>
+<h3 id="the-metal-backend">The Metal backend</h3>
+<p><code>engine::backend::metal::MetalBackend</code> is the section
+above, on Apple hardware. It is not a reimplementation of anything:
+nothing in <code>VulkanBackend</code> is Vulkan-specific. Every compute
+pipeline, every kernel in <code>vulkan_shaders</code>, the
+weight/op/uniform arenas, the fused decode and prefill submissions,
+split-k attention and GPU sampling are written against portable
+<code>wgpu</code> and WGSL, and only ever ran on Vulkan because
+<code>VulkanBackend::try_init</code> asked <code>wgpu</code> for a
+Vulkan adapter and nothing else.</p>
+<p>So <code>try_init</code> now delegates to
+<code>try_init_backends(wgpu::Backends)</code>, and
+<code>MetalBackend</code> calls that with <code>METAL</code> and wraps
+the result. <code>naga</code> translates the same WGSL to MSL rather
+than SPIR-V. <code>MetalBackend:: as_wgpu</code> returns the inner
+engine, so every fused submission <code>engine::arch</code> reaches for
+through that hook runs here too — the point of the newtype is to keep
+the two distinct at the type level while sharing all of the code.</p>
+<p>Bring-up is entirely feature-negotiated in
+<code>try_init_backends</code>, so the Metal module has no adapter logic
+of its own. On Apple silicon <code>SHADER_F16</code> (so the
+<code>f16</code> KV cache is on), <code>SUBGROUP</code> (so the
+cooperative-reduction attention kernel is on) and
+<code>TIMESTAMP_QUERY</code> (so <code>ORANGU_GPU_TIMESTAMPS</code>
+works) are all present. <code>PIPELINE_CACHE</code> is not:
+<code>wgpu::util::pipeline_cache_key</code> returns <code>None</code>
+for anything but Vulkan, so no on-disk pipeline cache is built and cold
+start recompiles the kernels, which Metal’s own shader cache largely
+absorbs.</p>
+<p>One kernel needs a different <em>form</em> on Metal, and it is a
+correctness difference rather than a tuning one. The tiled prefill GEMM
+is the only kernel that fills shared memory by having many threads each
+write a single dynamically-indexed <strong>component</strong> of a
+shared <code>vec4</code> (<code>store_w</code>/<code>store_x</code> into
+<code>tile_w</code>/<code>tile_x</code>; four different threads write
+the four components of each vector). On Vulkan/RADV that lowers to a
+4-byte store, which is what lets the read side take four values per
+load. On Metal it does not: a probe kernel on CI’s Apple Paravirtual
+device read back <code>[1, 0, 0, 0, 5, 0, 0, 0, …]</code> — exactly one
+surviving component per vector, the signature of a read-modify-write of
+the whole 16 bytes with the four writing threads clobbering one another.
+Every tiled-path cross-check disagreed with the CPU backend there,
+including plain <code>f32</code> with no dequantization in play, while
+every scalar-shared-memory kernel passed.</p>
+<p><code>vulkan_shaders::coop_vec4_tiles</code> therefore enables
+<code>vec4</code> tiles only where they are known-correct, and
+everything else gets a scalar tile: four loads where the
+<code>vec4</code> form takes one, same layout, same arithmetic, same
+results. An unrecognized backend defaults to the safe form on purpose.
+Whole-<code>vec4</code> stores would also have worked and are the
+faster-looking fix, but the tiled kernel cannot use them without
+changing its tile layout — <code>store_w</code>’s four consecutive slots
+are four consecutive <em>rows</em> at one <code>k</code>, while the fill
+deliberately gives one thread <code>RUN</code> consecutive
+<code>k</code> of one row so a quantized block’s scale and min hoist
+once per run.
+<code>tests::coop_tiles_are_vec4_only_where_component_stores_work</code>
+asserts the invariant, and its whole-<code>vec4</code> twin is the
+control that pins the fault to the component store rather than to shared
+memory or the barrier.</p>
+<p>Two further things genuinely are Vulkan-only, and both check the API
+rather than assuming:</p>
+<ul>
+<li><code>ORANGU_Q4K_GLSL</code>, a glslc-compiled Q4_K GEMV handed to
+the driver through shader passthrough. <code>PASSTHROUGH_SHADERS</code>
+<em>is</em> advertised by wgpu’s Metal backend, where it means
+<strong>MSL</strong> passthrough — so gating on the feature bit alone
+would have handed a Metal driver a SPIR-V blob.
+<code>try_init_backends</code> gates it on
+<code>wgpu::Backend::Vulkan</code> instead.</li>
+<li>The raw-Vulkan replay path (<code>ORANGU_REPLAY</code>,
+<code>vulkan_replay</code>), which reaches through <code>as_hal</code>
+for an <code>ash::Device</code>. It was already compiled out on Apple
+targets; setting the variable on macOS is a no-op, not a failure.</li>
+</ul>
+<p>Correctness rests on the same tests as the Vulkan path, not on a
+separate suite: <code>vulkan::shared_test_backend</code> asks for
+whichever <code>wgpu</code> API the platform has, so the
+per-<code>ggml_type</code> cross-checks against <code>CpuBackend</code>
+— ordinary tests, not <code>#[ignore]</code>d ones — run against a real
+Metal device on CI’s macOS runner. Two <code>#[ignore]</code>d
+real-model tests
+(<code>gemma4_predicts_paris_after_capital_of_france_metal</code>,
+<code>forward_batch_decode_matches_independent_forward_calls_metal</code>)
+add the whole-model claim on top, and CI fails rather than passes if
+either skips for want of an adapter.</p>
 <h3 id="cuda-opencl-and-rocm-backends">CUDA, OpenCL, and ROCm
 backends</h3>
 <p><code>engine::backend::cuda::CudaBackend</code>,
@@ -1834,7 +2114,7 @@ underlying bindings) is different: it directly links
 build script finds a ROCm install, which would break a plain build on a
 machine without ROCm — so <code>rocm</code> sits behind its own Cargo
 feature, off by default (see <a
-href="https://github.com/mnemosyne-systems/orangu/blob/main/BUILDING.md">BUILDING.md</a>).</p>
+href="https://github.com/mnemosyne-systems/orangu/blob/1.1.0/BUILDING.md">BUILDING.md</a>).</p>
 <p><code>cudarc</code> has one notable wrinkle: unlike every other
 fallible step here, it <code>panic!</code>s (rather than returning a
 <code>Result</code>) the first time a driver/NVRTC call is made and no
@@ -1844,6 +2124,65 @@ runs <code>try_init_inner</code> under
 the call) specifically so a non-NVIDIA machine gets the same graceful
 <code>None</code>/CPU-fallback outcome every other missing-backend path
 already has, not a crashed server.</p>
+<h3 id="losing-the-gpu-device-device_lost.rs">Losing the GPU device
+(<code>device_lost.rs</code>)</h3>
+<p>Every <code>wgpu</code> readback in <code>VulkanBackend</code>
+funnels its failure paths through one place,
+<code>crate::device_lost::fail</code>, which records the loss, writes
+the real detail to the server’s log, arms a
+<code>75</code>/<code>EX_TEMPFAIL</code> exit two seconds out, and
+panics to unwind the request that was in flight. Three things it
+replaced are worth naming, because each was a separate way the old code
+made a driver reset worse than it had to be:</p>
+<ul>
+<li><strong><code>map_async</code> callbacks called
+<code>.expect()</code> in place.</strong> <code>wgpu</code> runs that
+callback from inside <code>poll</code> — or, on the failure path a lost
+device takes, synchronously from inside <code>map_async</code> itself —
+while <code>wgpu-core</code> holds its own locks, so the unwind went
+straight through them. The callbacks now only record two bits
+(<code>MapWait</code>), and the waiter reports from its own frame, with
+a stack that names which readback was in flight.</li>
+<li><strong>A failed poll, a failed map, and the
+<code>READBACK_WAIT_TIMEOUT</code> deadline each panicked with their own
+wording.</strong> All three are the same event seen from three angles;
+all three now report it as one.</li>
+<li><strong>Two of the callbacks discarded their result
+entirely</strong> (the striped matmul and the batch readback’s
+<code>|_| {}</code>), so a device that died partway through a set of
+buffers was noticed only later, by whatever read the unmapped memory
+next. Each set now shares one <code>MapWait</code> and is checked once
+after its single poll.</li>
+</ul>
+<p>One funnel is not enough on its own, though, because
+<code>wgpu</code> does not always hand a lost device back as an
+<code>Err</code> at all: <code>Device::poll</code> routes it through
+<code>handle_error_fatal</code>, which <strong>panics from inside
+<code>wgpu</code></strong>
+(<code>Error in Device::poll: Validation Error / Caused by: Parent device is lost</code>),
+so the <code>Result</code> the engine checks never arrives. Every
+<code>wgpu</code> call made after the device dies ends that way.
+<code>panic_capture</code>’s hook therefore reads every panic’s message
+and calls <code>device_lost::note_panic</code>, which marks the loss and
+arms the same exit without panicking again — process-wide, so a
+<code>wgpu</code> panic on a thread nothing catches (a rayon worker)
+still takes the process down cleanly instead of leaving it up with a
+dead GPU. The message match is on the condition
+(<code>device is lost</code>, <code>DeviceLost</code>), not on any one
+call’s name.</p>
+<p><code>engine::generate</code>’s <code>catch_unwind</code> recognizes
+the loss (<code>device_lost:: is_lost</code>) and swaps the panic’s
+captured detail — meaningless to a caller, since the backtrace describes
+the driver rather than their request — for
+<code>device_lost::CLIENT_MESSAGE</code> (<code>panic_report</code>).
+Requests that arrive in the window before the process exits get that
+same sentence without being started at all.</p>
+<p>The exit code is the contract with <code>orangu-coordinator</code>,
+which names the same number
+(<code>process::SERVER_EXIT_DEVICE_LOST</code>) so it can report the
+restart as the recovery it is instead of an unexplained crash. Nothing
+about the mechanism is Vulkan-specific: <code>MetalBackend</code> is the
+same engine, so a lost Metal device takes the identical path.</p>
 <h3 id="correctness-testing">Correctness testing</h3>
 <p><code>VulkanBackend</code>’s dequant math (each quant type,
 bit-for-bit against the CPU backend, across both dispatch paths), fused
@@ -1853,8 +2192,12 @@ specifically), and fused attention (including GQA head-grouping,
 sliding-window attention, proportional RoPE, and Gemma4’s cross-layer
 KV-donor case — two different layers sharing one KV cache) are covered
 by cross-check tests in <code>engine::backend::vulkan::tests</code>, run
-on real Vulkan hardware whenever it’s present and skipped otherwise. The
-CUDA/OpenCL/ROCm backends follow the same skip-if-no-device pattern.</p>
+on real hardware whenever it’s present and skipped otherwise. Those same
+tests are the Metal backend’s tests: the device they run against comes
+from <code>shared_test_backend</code>, which asks for whichever
+<code>wgpu</code> API the platform has, so they are a Vulkan cross-check
+on Linux and a Metal one on macOS. The CUDA/OpenCL/ROCm backends follow
+the same skip-if-no-device pattern.</p>
 <p>A second set of tests runs a full forward pass against a real
 downloaded model and is marked <code>#[ignore]</code> so the normal
 suite doesn’t require one. These read the model path from an environment
@@ -1930,13 +2273,394 @@ itself since it’s neither. Ctrl+C, <code>SIGINT</code>, and
 via <code>tokio::select!</code>, mirroring
 <code>orangu-coordinator</code>’s own pattern.</p>
 <p><code>web::mod</code> serves a small server-rendered chat UI (vanilla
-HTML/CSS/JS, no build step) on its own <code>web</code> port, sharing
+HTML/CSS/JS, no build step) on its own <code>[web].port</code>, sharing
 the same in-process <code>Engine</code> as the API so a chat turn never
 makes an HTTP hop. <code>web::render</code> renders markdown to HTML
 (including syntax-highlighted code blocks) with the same
 <code>markdown</code>/<code>syntect</code> crates <code>orangu</code>’s
-terminal UI uses. <code>web::sessions</code> persists each chat as
-<code>~/.orangu/server/sessions/&lt;uuid&gt;/chat.json</code>.</p>
+terminal UI uses. <code>web::mermaid</code> draws
+<code>```mermaid</code> blocks (below). <code>web::sessions</code>
+persists each chat as
+<code>~/.orangu/server/sessions/&lt;uuid&gt;/chat.json</code>.
+<code>web::models</code> is the model manager (below).</p>
+<h3 id="mermaid-diagrams-webmermaid">Mermaid diagrams
+(<code>web::mermaid</code>)</h3>
+<p>Diagrams are rendered by <code>merman</code>, a headless Rust
+implementation of Mermaid that parses, lays out, and emits SVG without
+Node, Puppeteer, or a JavaScript runtime — the same requirement that
+made KaTeX a vendored asset rather than a CDN link. It is the opposite
+arrangement to the math path: <code>$...$</code> ships raw TeX to the
+browser because no server-side TeX engine exists in Rust, whereas a
+diagram is finished server-side and the client only ever receives a
+picture.</p>
+<p>Three decisions carry the design, each forced by something measured
+rather than assumed:</p>
+<p><strong>The SVG is embedded as an <code>&lt;img&gt;</code> data URI,
+never inlined.</strong> merman strips scripts and event-handler
+attributes from diagram labels, but it does not escape a literal
+<code>&lt;/svg&gt;</code> inside one: a label of
+<code>A["&lt;/svg&gt;…"]</code> emits that tag raw. Inlined, the HTML
+parser reads it as the real end tag, closes the diagram early, and lets
+the rest of the label escape into the transcript. An
+<code>&lt;img&gt;</code> makes the SVG a separate document — scripts
+inert, <code>id</code>s unable to collide with the page or with a second
+diagram on it — and keeps the same escape-everything stance
+<code>web::render</code> takes for every other node kind. Base64 rather
+than percent-encoding, because an SVG is full of <code>#</code>,
+<code>&lt;</code>, <code>"</code> and <code>&amp;</code>, and one missed
+escape silently truncates the image.</p>
+<p><strong>Labels are SVG <code>&lt;text&gt;</code>, not
+<code>&lt;foreignObject&gt;</code>.</strong> Mermaid’s usual HTML labels
+get no layout engine inside an <code>&lt;img&gt;</code> document and
+would render as nothing at all;
+<code>HostThemeOutput::resvg_safe_editor</code> is what converts them,
+and is therefore not optional. A test asserts no
+<code>foreignObject</code> survives, since dropping that setting fails
+silently as blank labels.</p>
+<p><strong>Each diagram is rendered twice, once per theme.</strong> An
+<code>&lt;img&gt;</code> cannot inherit the page’s CSS variables, so the
+palette is baked in and <code>app.css</code> shows whichever of the two
+finished pictures matches the current theme. The theme roles map onto
+the console’s own custom properties, so a diagram is styled like the
+transcript around it rather than arriving in Mermaid’s stock
+lavender.</p>
+<h5 id="sizing-alignment-and-getting-the-original-out">Sizing,
+alignment, and getting the original out</h5>
+<p>A message is <code>max-width: 50%</code> of the transcript and
+diagrams are large — the ER diagram used to shake this out measures
+2734×3571 — so the picture is scaled to fit with
+<code>max-width: 100%</code>. Rendering at natural size instead was
+tried and is wrong at this width: it puts most of the diagram behind a
+scrollbar inside a half-width bubble. The viewBox dimensions still go on
+the <code>&lt;img&gt;</code> as <code>width</code>/<code>height</code>,
+not to force full size but so the browser reserves the correct aspect
+ratio before the image decodes rather than reflowing the transcript when
+it lands.</p>
+<p>Scaling means the displayed picture is well below full resolution, so
+each diagram carries a download control — a plain anchor onto the same
+<code>data:</code> URI the <code>&lt;img&gt;</code> already holds, so
+saving needs no JavaScript and no round trip and the file is exactly
+what is displayed. One per theme, toggled by the same rules that pick
+the image, so the saved SVG matches the screen instead of always being
+the light variant. A test decodes the <code>href</code> and asserts it
+is both the image’s own URI and a complete SVG document, since a broken
+link here fails silently.</p>
+<p>Alignment: the <code>&lt;img&gt;</code> is
+<code>display: block</code>. As an inline element it sat in a line box,
+subject to inline alignment and carrying the baseline’s descender gap
+beneath it, which pulled diagrams off the left edge; the theme rules
+therefore switch between <code>block</code> and <code>none</code>, never
+<code>inline</code>. <code>.mermaid-diagram</code>’s
+<code>margin: 0.6em 0</code> also clears the UA stylesheet’s
+<code>margin-inline: 40px</code> on <code>&lt;figure&gt;</code>, which
+would indent every diagram.</p>
+<p>Two properties of the streaming path shape the rest. The transcript
+is re-rendered from scratch on <strong>every token</strong>, and a
+diagram costs roughly 2 ms to lay out — so completed diagrams are cached
+by source hash (failures too, or a mislabelled block would be retried
+once per token), and <code>render::unterminated_fence_start</code>
+withholds the one block the document ends inside of.</p>
+<p>That second guard matters more than it looks. A half-written diagram
+usually still parses — <code>flowchart TD</code> plus one edge is valid
+Mermaid — so without it the reader would watch a diagram redraw, reflow
+and jump on every token until the fence closed, each throwaway state
+costing a full layout the cache can never hit. The guard therefore keys
+on the fence, not on whether the source happens to parse.</p>
+<p>A source that doesn’t parse falls back to the ordinary highlighted
+code block. This is a common path, not an edge case — models emit
+near-miss Mermaid regularly — and it is why merman was chosen over
+<code>mermaid-rs-renderer</code>, the other pure-Rust candidate: the
+latter answers malformed input with a 16×16 blank SVG rather than an
+error, in strict mode as well as lenient, leaving no way to tell a
+diagram from a failure and putting an empty frame where the source
+should be.</p>
+<h4 id="detecting-a-diagram-without-a-tag">Detecting a diagram without a
+tag</h4>
+<p>A <code>```mermaid</code> tag is not always there — models emit
+diagrams into bare fences, and an attached <code>.mmd</code> file has no
+fence at all — so <code>mermaid::looks_like_diagram</code> decides from
+the content.</p>
+<p>It cannot simply ask merman. Mermaid’s parsers are extremely
+permissive, and merman inherits that faithfully: handed the sentence
+<code>graph is a data structure of nodes and edges</code>, it detects a
+flowchart and <strong>renders</strong> one, with <code>is</code> as a
+node. <code>classDiagram is what you want</code> and a log line reading
+<code>info: build succeeded</code> behave the same way. Measured over a
+corpus of realistic non-diagram blocks, merman’s own detector produced
+false positives on three of seventeen — and each would have turned
+someone’s prose or logs into a nonsense picture.</p>
+<p>The gate is therefore a table of the diagram headers with the tokens
+each may be followed by (<code>flowchart</code> takes a direction,
+<code>pie</code> takes <code>title</code> or <code>showData</code>, most
+stand alone). The first meaningful line — after front matter and
+<code>%%</code> comments, both legal above a header — must be a bare
+header and nothing else. That admits all 24 header forms tested,
+including <code>pie title A Very Long Descriptive Title</code>, and
+rejects all seventeen non-diagrams including the three merman renders.
+Successful rendering is still required on top.</p>
+<p>The gate applies only where there is no explicit tag. A block tagged
+<code>bash</code> or <code>json</code> is left alone even when its
+contents would parse: the tag is the author saying what they wrote, and
+overriding it is exactly how a shell transcript ends up drawn as a
+flowchart.</p>
+<h4 id="diagrams-in-attachments">Diagrams in attachments</h4>
+<p><code>mermaid::find_in_text</code> runs the same detection over an
+attachment’s extracted text, handling both a file that <em>is</em> a
+diagram (no fence — the case the header gate exists for) and a document
+that <em>contains</em> them (found by parsing as markdown, so fence
+lengths and info strings follow the same CommonMark rules as the
+transcript). Capped at <code>MAX_PER_ATTACHMENT</code>, with the cap
+reported to the reader rather than silently truncating.</p>
+<p>The results ride on <code>AttachmentView</code>, which
+<code>get_session</code> builds on load and <code>send_message</code>
+emits as an <code>attachments</code> SSE event before the first token —
+so a diagram is on screen while the reply is still generating, and a
+reload is not what makes it appear. Cost is bounded by construction:
+attachment text doesn’t change while a reply streams, so this runs once
+per send and once per load, never per token.</p>
+<p>The view also carries the extracted text, and the browser turns a
+chip into a collapsed disclosure holding it plus the diagrams.
+<code>text: None</code> — a binary or otherwise unreadable format — is
+what tells the client to render a bare chip with no expand control, so
+one is never offered with nothing behind it. The text is what the model
+received verbatim, already bounded by
+<code>attachments::MAX_TEXT_CHARS</code> which marks its own truncation
+inline, so displaying it adds no undisclosed cap.</p>
+<p>This closes a real gap rather than adding a flourish. An attachment
+is otherwise invisible to its sender — the text goes to the model and
+the UI shows only a chip with the file’s name and size — so a diagram
+someone attached was the one part of their own message they could not
+see.</p>
+<h4 id="fencing-an-attachment-into-the-prompt">Fencing an attachment
+into the prompt</h4>
+<p><code>compose_content</code> inlines an attachment’s text into the
+prompt as a fenced block, and the fence has to outgrow the body:
+<code>attachments::fence_width</code> returns one more backtick than the
+longest run inside it.</p>
+<p>Three backticks is only safe for a body containing no fences of its
+own, and the documents most worth attaching do contain them. CommonMark
+ends a fenced block at the first fence <em>at least as long</em> as the
+opening one, so a 3-backtick wrapper around a Markdown file holding a
+<code>```mermaid</code> block was closed by that file’s own closing
+fence — the rest of the document escaped the block, and the wrapper’s
+real closing fence went on to open a new, unterminated one. Measured on
+a real 200-line file, the model received four fence transitions where
+there should have been two, with the document split into fragments.
+Asked to render the diagram in it, the model described it instead. With
+the fence widened the same file parses back out of the composed prompt
+as exactly one code block with its <code>mermaid</code> fence
+intact.</p>
+<p>Whether the model then re-emits the diagram is still the model’s call
+— nothing here can force that — but it is now working from an intact
+document rather than a scrambled one.</p>
+<h4 id="putting-the-attachments-diagram-in-the-answer">Putting the
+attachment’s diagram in the answer</h4>
+<p>Measured across four sessions against the same file, the answer to
+“Please, render this” contained a Mermaid fence <strong>zero</strong>
+times. The replies open with “Here is the rendered content” and then
+describe the diagram in prose — a correct explanation, and no picture.
+Only an explicit follow-up (“You have a Mermaid diagram”) produced a
+fence. Fixing the prompt fencing above did not change this; it is how
+models answer that request.</p>
+<p><code>appendAttachedDiagramsToAnswer</code> in <code>app.js</code>
+therefore appends the turn’s attachment diagrams below the answer. Two
+rules keep it honest:</p>
+<ul>
+<li>It fires <strong>only when the answer contains no
+<code>.mermaid-diagram</code> of its own</strong>, so a model that does
+emit Mermaid is never second-guessed or duplicated.</li>
+<li>Each figure carries a <code>From &lt;file&gt;</code> caption, so a
+picture drawn from the attachment never reads as one the model
+produced.</li>
+</ul>
+<p>Nothing is written into the message. The persisted content stays
+exactly what the model generated, which is also what Save-as-Markdown
+exports and what the next turn’s context replays — this is a
+presentation-layer addition, not a rewrite of model output. It runs on
+the <code>done</code> event (every token reassigns
+<code>innerHTML</code>, which would wipe an earlier append) and again on
+session load, so a reloaded answer carries the same picture a live one
+did.</p>
+<h3 id="loading-a-different-model-reexec.rs">Loading a different model
+(<code>reexec.rs</code>)</h3>
+<p><code>POST /api/models/select</code> does not swap the model inside
+the process. It <code>execve</code>s this binary again with the new
+model in <code>argv</code>, which means the model is loaded by
+<code>main::prepare</code> — the code that already runs at startup — and
+there is never a second load path to keep in step with it. Three
+properties turn that from a restart into a handover:</p>
+<p><strong>The listening sockets survive.</strong> Rust opens every
+socket <code>SOCK_CLOEXEC</code>, so <code>Handover::exec</code> clears
+<code>FD_CLOEXEC</code> on both listeners before the exec and names
+their descriptors to the new image in <code>ORANGU_INHERIT_FDS</code>
+(<code>api:&lt;fd&gt;[,web:&lt;fd&gt;]</code>). <code>prepare</code>
+calls <code>reexec::adopt_or_bind</code> instead of
+<code>TcpListener::bind</code>: given a descriptor it verifies still
+open (<code>F_GETFD</code>, so a number recycled after a failed handover
+can’t be adopted by mistake) it takes it, otherwise it binds. The port
+is therefore never released — a client connecting mid-load is queued in
+the listen backlog rather than refused. A 400-request probe across a
+live handover saw every request answered but the single one already in
+flight.</p>
+<p><strong>The process identity survives.</strong> <code>execve</code>
+keeps the pid, so a supervisor goes on watching the same process, and a
+<code>--daemon</code> server inherits its own already-detached session.
+<code>Handover::argv</code> therefore deliberately omits
+<code>--daemon</code>: passing it again would fork a second time and
+orphan the pid being watched.</p>
+<p><code>argv</code> is rebuilt from what this process
+<em>resolved</em>, not from what it was given: the workspace as an
+absolute path (a <code>--daemon</code> process has since moved to
+<code>/</code>) and the role as an explicit flag (it may have been
+answered at an interactive prompt). <code>--config</code> is passed only
+if it was passed to this process, so a server that found its config by
+the default search makes the new image repeat that search rather than
+pinning a path it never chose.</p>
+<p><strong>A failed load falls back.</strong>
+<code>FALLBACK_MODEL_VAR</code> carries the previous model spec; if the
+new image’s <code>prepare</code> fails, <code>main</code> execs once
+more with it and <em>without</em> the variable, which is what bounds the
+retry to one. This matters because the pre-check cannot be exhaustive:
+<code>reexec::precheck</code> reads the header and applies the same
+judgement as the <code>SUPPORTED</code> column (architecture resolvable,
+every tensor type decodable), but a GPU backend with no kernel for one
+of those types, or a model too large for the machine, can only be found
+by loading it. <code>prepare</code> binds its listeners <em>after</em>
+loading the model precisely so that case leaves the inherited
+descriptors untouched for the fallback to hand on again.</p>
+<p>Both environment variables are read once, at the very top of
+<code>main</code>, by <code>reexec::take_inherited</code>, which also
+removes them — the same only-thread-that-exists-yet window that makes
+<code>main</code>’s own <code>set_var("RUST_BACKTRACE", ...)</code>
+sound. Nothing afterwards reads the environment for them, so a stale
+value can’t reach a child process or a second handover.</p>
+<p><code>select</code> answers <code>202</code> and arms the handover on
+a 300 ms timer, because <code>execve</code> leaves no “after” to answer
+from. The timer is best-effort UX, not correctness: a client whose
+connection is reset instead of receiving the <code>202</code> is looking
+at the same event, and its next poll lands on the new image either way.
+<code>WebState::arm_handover</code> allows one per process — there is
+only one process to replace.</p>
+<p><code>[web].reexec</code> (default <code>true</code>) and
+<code>reexec::supported()</code> (<code>cfg!(unix)</code>) gate the
+whole thing. When either is false <code>serve</code> builds no
+<code>Handover</code> and <code>GET /api/models</code> reports
+<code>can_load: false</code>.</p>
+<h3 id="model-manager-webmodels">Model manager
+(<code>web::models</code>)</h3>
+<p>Served on the <strong>web port</strong>:
+<code>orangu-server list</code> as the view, plus <code>show</code>,
+<code>download</code> and <code>delete</code> as the things that can be
+done from it. Each endpoint calls the same shared code the matching
+subcommand does — <code>orangu::model_spec</code> for the scan, grouping
+and delete, <code>crate::format_show</code> for the metadata dump,
+<code>orangu::model_download</code> for the fetch — rather than a second
+implementation that could drift from it.</p>
+<p>That extends to the table itself. <code>ModelView</code> is one row
+of <code>list</code>, column for column, and carries the <strong>strings
+the CLI would print</strong>, not the raw numbers: <code>quant</code>
+already fell back to <code>-</code>, <code>size</code> has been through
+<code>format_bytes</code>, and <code>supported</code> is
+<code>ModelSupport::cell</code> verbatim (<code>Yes (llama)</code>,
+<code>No (llama, TQ1_0)</code>) — which is why that method is
+<code>pub</code>. The client only decides layout. A row this build can’t
+load is greyed, an unreadable file’s <code>error:</code> replaces its
+last three cells, and a repo behind its Hub revision is marked, all
+exactly as <code>format_groups</code> does the same three things.</p>
+<p>Two things shape the module beyond that:</p>
+<p><strong>The download runs detached.</strong> It takes minutes to
+hours, so <code>POST</code> starts a <code>Job</code> on a blocking
+thread and returns <code>202</code> immediately; the panel polls
+<code>GET /api/models</code> for its progress. <code>ModelJobs</code>
+holds one job slot — a second <code>POST</code> while one runs is
+refused with the name of the one holding it, since two fetches into one
+models directory would compete for the same disk and the same free-space
+check. A <em>finished</em> job doesn’t hold the slot but stays readable,
+so a completed download’s result survives a page refresh;
+<code>DELETE /api/models/job</code> clears it. There is no cancel: the
+worker is detached precisely so a closed browser tab doesn’t abandon a
+download part-way.</p>
+<p>Progress comes from
+<code>orangu::model_download::DownloadProgress</code>, a sink the
+existing <code>ProgressBoard</code> publishes into. Passing one also
+turns <em>all</em> of the board’s printing off, interactive and logged
+alike: a running server has no terminal to draw an in-place-updating
+block on, and the per-file log lines would go somewhere nobody is
+watching.</p>
+<p><strong>The listing is cached, not re-scanned per request.</strong>
+<code>GET /api/models</code> costs a <code>scan_models_dir</code> plus a
+<code>model_support</code> pass, which between them open every GGUF
+header under the directory <em>and</em> every shard of every group —
+seconds on a directory holding a few dozen models. The panel polls once
+a second for download progress, and that progress is in memory, so
+<code>ModelCatalog</code> serves a cached scan and only rebuilds on
+<code>?rescan=true</code> (the panel opening, its
+<strong>Rescan</strong> button) or after <code>invalidate()</code> (a
+delete, a finished download). Which row is <code>loaded</code> is
+<em>not</em> cached — that is about this process, not about the
+directory, so it is decided per request against
+<code>WebState::model_path</code>.</p>
+<p><code>[web].delete</code> (default <code>true</code>) gates removal
+the same way, reported as <code>can_delete</code>.</p>
+<p><strong>It gates models only.</strong> History’s own
+<code>DELETE /api/sessions/{id}</code> and
+<code>DELETE /api/sessions</code> (its per-row cross and <strong>Clear
+all</strong> footer) are unconditional, and
+<code>GET /api/sessions</code> carries no capability flag for the page
+to check. The two are not the same kind of thing: a model is a file on
+disk that a download, or a human with <code>scp</code>, put there, and a
+deployment can reasonably want that directory read-only while still
+allowing a model switch. A chat session is this console’s own scratch
+data, written by the page that is now asking to delete it — a console
+unable to clear its own transcripts is not a posture worth a config
+key.</p>
+<p><code>Clear all</code> does not spare an active session the way
+<code>sweep_empty_sessions</code> does. The console’s own current chat
+is one of the rows being cleared, and leaving behind exactly the one the
+user is looking at is not what the button says; the browser starts a
+fresh session immediately afterwards, so nothing goes on writing into a
+directory that just went away. Both delete paths also replace the
+on-screen transcript when what went was the session it belongs to —
+otherwise the next message would <code>POST</code> against an id that no
+longer resolves. And both stop generation first when a reply is still
+streaming into the session being removed: <code>save_session</code> on
+the stream’s <code>done</code> event recreates the directory, so the
+chat would otherwise reappear seconds after being deleted.</p>
+<p>Both switches <strong>remove</strong> their button rather than
+disabling it. A disabled control with a tooltip is the right shape for
+something conditional — a handover already in flight, a model this build
+can’t load — where the same button works a moment later or on the row
+below. A capability the config has switched off is not a condition of
+any row; it is what this server does, and a column of permanently dead
+buttons explains less than their absence. When <code>can_load</code> is
+false the loaded row’s check mark goes too: which model is serving is
+already on the row, as the <code>loaded</code> badge beside its
+name.</p>
+<p>Three things are refused rather than attempted:</p>
+<ul>
+<li><strong>Loading a model while a slot is generating.</strong> The
+exec would cut the reply off mid-stream. Not airtight and cannot be — a
+request that has arrived but not yet acquired its slot isn’t
+<code>busy</code> yet — but closing that window would mean a barrier
+between accepting requests and running them, for a button a person
+presses.</li>
+<li><strong>Deleting the loaded model.</strong> Its weights are mapped
+by the running engine; removing the file leaves this process reading
+something with no name and the next request generating from whatever the
+kernel still has cached. <code>WebState</code> carries
+<code>model_path</code> for exactly this check (and to mark the
+row).</li>
+<li><strong>Deleting a row number that no longer means what the caller
+saw.</strong> The panel sends the <code>path</code> its listing showed
+alongside the <code>NR</code>, and
+<code>ModelRequest::check_still_matches</code> compares them before
+anything is removed — an <code>NR</code> is a position, and a download
+finishing while a confirmation dialog is open re-sorts the listing
+underneath it.</li>
+</ul>
+<p>These endpoints are neither authenticated nor loopback-restricted,
+matching the rest of the <code>web</code> port and the file-lifecycle
+API on the API port: the whole server assumes a trusted network.</p>
 <h3 id="file-lifecycle-api-httpfiles">File-lifecycle API
 (<code>http::files</code>)</h3>
 <p>Served on the <strong>API port</strong>, alongside the

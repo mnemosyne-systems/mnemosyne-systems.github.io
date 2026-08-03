@@ -198,6 +198,149 @@ row marked <code>no server timings (ttft only)</code>, carrying
 wall-clock time-to-first-token instead. That figure includes queueing
 and the first decode step, so it is not comparable with the rest — the
 row says so rather than quietly printing a smaller number.</p>
+<h3
+id="continuation-prefill-mode---pp-continue-the-narrow-batch-regime">Continuation-prefill
+mode (<code>--pp-continue</code>) — the narrow-batch regime</h3>
+<p><code>--pp</code> cannot reach small batch widths. It sends whole
+prompts with <code>cache_prompt: false</code>, and a whole prompt
+carrying a chat template is hundreds of tokens before any user text, so
+every <code>--pp</code> row exercises a <em>wide</em> batch. Real
+multi-turn chat does the opposite: the prefix cache supplies everything
+but the newest message, and the server prefills a handful of tokens.
+That is a different point on the batch-width curve, and it is the one
+that batch-width thresholds actually govern.</p>
+<p><code>--pp-continue</code> takes comma-separated
+<strong>added</strong> token counts. For each, it primes a base prompt
+(<code>--pp-continue-base</code>, default 512 tokens), then sends base +
+extension and reports the rate over the tokens the server says it
+actually processed:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pp-continue</span> 8,16,32,64,128</span></code></pre></div>
+<pre><code>   added |   n_tok |  cached | processed | prompt_ms |     best |        mean ± sd
+----------------------------------------------------------------------------------
+       8 |     582 |     572 |        10 |     275.9 |    36.24 |    34.74 ±  1.37
+      16 |     590 |     572 |        18 |     410.6 |    43.84 |    41.89 ±  1.38
+      32 |     606 |     572 |        34 |     616.1 |    55.32 |    54.94 ±  0.44
+      64 |     638 |     572 |        66 |     794.9 |    83.03 |    80.70 ±  1.67
+     128 |     702 |     572 |       130 |    1213.8 |   107.10 |   105.47 ±  1.20</code></pre>
+<p>This mode is the one place the tool sends
+<code>cache_prompt: true</code>, because a cache hit is the entire
+point. Two things keep that from becoming a lie:</p>
+<ul>
+<li><strong><code>processed</code></strong> (= <code>n_tok</code> −
+<code>cached</code>) is what the rate is computed from. Dividing by
+<code>n_tok</code> would credit the cached prefix with work nobody did
+and inflate every row by the cache ratio.</li>
+<li><strong>Each rep’s extension differs from the last in its
+<em>first</em> token.</strong> A prefix cache matches on the longest
+common token prefix, so two reps that extended the base with the same
+words would let the cache swallow the extension too, and the run would
+time a lookup instead of a prefill.</li>
+</ul>
+<p>A row whose <code>cached</code> column reads <code>0</code> is
+<strong>dropped with a note</strong> rather than recorded: no cache hit
+means the whole prompt was prefilled, which is an ordinary wide
+<code>--pp</code> row wearing a continuation’s label, and averaging the
+two together would be meaningless.</p>
+<p>Because the token counts are approximate (the tool has no tokenizer),
+<code>added</code> is a target and <code>processed</code> is the truth —
+history rows are recorded against <code>processed</code>.</p>
+<h3 id="decode-cpu-per-token---decode-cpu">Decode CPU per token
+(<code>--decode-cpu</code>)</h3>
+<p>Reports the <strong>server’s own CPU time per generated
+token</strong>, read from <code>/proc/&lt;pid&gt;/stat</code>, with
+prefill excluded. Useful when a change is expected to remove CPU work
+rather than wall-clock time — a throughput number can be too noisy to
+show a few percent, while CPU seconds are counted by the kernel.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 192 <span class="at">--decode-cpu</span></span></code></pre></div>
+<pre><code>   depth |   n_tok | prefilled |  cpu_ms/token |    tok/s
+----------------------------------------------------------
+       0 |      33 |         1 | 14.427 ± 0.052 |    22.06
+     512 |     572 |         1 | 15.313 ± 0.208 |    21.51
+    1024 |    1118 |         1 | 15.703 ± 0.286 |    21.46</code></pre>
+<p><strong>Why each depth is measured twice.</strong> The obvious
+implementation — read the CPU counter around a whole
+<code>--depths N</code> run and divide by the tokens generated — is
+wrong, because that run <em>prefills N tokens first</em>. Prefilling
+1024 tokens costs several CPU-seconds, and charging them to the
+generated tokens makes decode CPU appear to grow 58% with depth when the
+real figure is under 9%. The growth is the prefill’s, and it scales with
+depth because the prefill does.</p>
+<p>So the first request pays the prefill and leaves it in the prefix
+cache, the counter is read after it, and the second request’s prefill is
+a cache hit. The <strong><code>prefilled</code> column is the
+check</strong>: it must read <code>1</code> (the one token the cache
+deliberately re-processes). If it ever shows the whole prompt, the cache
+did not hit and the row is measuring prefill again.</p>
+<p>This needs the server to be a local process, since it reads
+<code>/proc</code> — <code>--flamegraph-pid</code> overrides the pid if
+the tool cannot work it out.</p>
+<p>Rows are recorded under a third history mode, <code>cpu</code>, and
+charted on their own panel: the unit is milliseconds and <strong>lower
+is better</strong>, so putting them on a tok/s axis would read as a
+collapse.</p>
+<p>Throughput does not need this treatment — the depth sweep already
+times from the first streamed token to the last, so prefill is outside
+its window either way.</p>
+<h3
+id="embedding-mode---embed-the-only-mode-an-embedding-model-answers">Embedding
+mode (<code>--embed</code>) — the only mode an embedding model
+answers</h3>
+<p>An embedding-only server serves <code>/v1/embeddings</code> and
+answers <code>/v1/completions</code> with <strong>HTTP 501</strong>, so
+the decode sweep and <code>--pp</code> both fail on one outright —
+warmup included. <code>--embed</code> sweeps prompt lengths against
+<code>/v1/embeddings</code> and reports forward-pass throughput, which
+is what <code>--pp</code> reports for a generative model: an embedding
+pass is prompt processing without the decode that follows it.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> embeddinggemma-300M-Q8_0.gguf <span class="at">--embedding</span> <span class="kw">&amp;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15  <span class="co"># the reference</span></span></code></pre></div>
+<pre><code>   embed |   n_tok |   wall_ms |     best |        mean ± sd
+------------------------------------------------------------
+      64 |      81 |    1163.3 |    70.49 |    68.33 ±  1.64
+     128 |     159 |    2401.3 |    66.21 |    63.99 ±  1.50
+     256 |     289 |    5003.7 |    59.47 |    57.95 ±  1.89</code></pre>
+<p><code>n_tok</code> is the count from the response’s
+<code>usage.prompt_tokens</code> — the length the forward pass actually
+ran, not the requested target — and both <code>orangu-server</code> and
+<code>llama-server</code> report it. A server that omits it gets a row
+marked <code>no usage.prompt_tokens (latency only)</code>: an embedding
+response carries no other clue to its token count, so there is no rate
+to print and the row is not recorded.</p>
+<p>Unlike <code>--pp</code>, the time is <strong>wall-clock for the
+whole request</strong>: neither server attaches a <code>timings</code>
+object to <code>/v1/embeddings</code>, so there is nothing to prefer
+over the clock. HTTP and the JSON encoding of an
+<code>n_embd</code>-long float array are therefore inside the number —
+small beside a forward pass, and identical on both engines, since the
+same client sends both.</p>
+<h3 id="a-sweep-can-contaminate-its-own-later-rows">A sweep can
+contaminate its own later rows</h3>
+<p>One measured caveat that applies to <code>--pp</code> and
+<code>--pp-continue</code> alike: the rows in a single invocation are
+<strong>not</strong> independent. They run against one long-lived server
+process, and what that process has already been asked to do can change
+what a later row measures.</p>
+<p>The reproducible case: a 130-token prefill measured 360 tok/s on a
+fresh server and on a server that had only seen wide widths, but
+<strong>94 tok/s</strong> on a server that had just been swept across
+eight narrow widths — the identical request, four runs out of four. The
+cause is not established (an arena-pressure hypothesis was implemented
+and measured neutral, see <code>PERF-GAP.md</code>).</p>
+<p>What to do about it:</p>
+<ul>
+<li><strong>Comparisons within one sweep order are still valid.</strong>
+If both arms of an A/B sweep the same widths in the same order, whatever
+the effect is applies to both, and the ratio survives. This is why the
+A/Bs in <code>PERF-GAP.md</code> pin the width list across arms.</li>
+<li><strong>A single absolute number is not.</strong> If a specific
+width’s rate is the result, measure that width on a fresh server rather
+than reading it off the end of a long sweep.</li>
+<li><strong>Restart between arms</strong>, which the harness scripts do
+— and if an arm can drift (thermals, clocks, a cold first run),
+interleave the arms rather than running all of one and then all of the
+other.</li>
+</ul>
 <h3 id="what-was-measured">What was measured</h3>
 <p>Every run opens with the server’s model and backend (from
 <code>GET /props</code>) and, on Linux with an AMD card, each GPU’s
@@ -218,6 +361,11 @@ Options:
       --url &lt;URL&gt;          Base URL of the server [default: http://127.0.0.1:8100]
       --depths &lt;DEPTHS&gt;    Comma-separated context depths to sweep [default: 0]
       --pp &lt;PP&gt;            Prefill mode: comma-separated prompt lengths to sweep, reporting prompt-processing throughput
+      --pp-continue &lt;LENS&gt; Continuation-prefill mode: comma-separated *added* token counts to sweep
+      --decode-cpu         Report the server&#39;s CPU time per generated token, with prefill excluded
+      --streams &lt;N&gt;        Concurrency mode: comma-separated stream counts; reports aggregate tok/s
+      --pp-continue-base &lt;N&gt;  Prompt length (tokens) to prime the prefix cache with for --pp-continue [default: 512]
+      --embed &lt;EMBED&gt;      Embedding mode: comma-separated prompt lengths to sweep against /v1/embeddings
       --gen &lt;N_GEN&gt;        Number of tokens to generate per timed run [default: 128]
       --curve &lt;CURVE&gt;      Curve mode: ONE generation of this many tokens, decode rate bucketed by context [default: 0]
       --bucket &lt;BUCKET&gt;    Bucket width (in context tokens) for --curve [default: 256]
@@ -230,6 +378,16 @@ Options:
       --label &lt;LABEL&gt;      Series name recorded in the history file
       --chart &lt;CHART&gt;      Render the history file to this SVG after measuring
       --chart-only         Only render the chart from an existing history file; measure nothing
+      --chart-png          Also render a PNG beside the chart SVG
+      --chart-scale &lt;MIN:MAX&gt;  Pin the chart&#39;s tok/s axis so a pair of charts compare
+      --chart-y-label &lt;TEXT&gt;   Label for the chart&#39;s y-axis [default: tok/s (log)]
+      --chart-x-label &lt;TEXT&gt;   Label for the chart&#39;s x-axis
+      --flamegraph &lt;FILE&gt;  Record a CPU flamegraph of the server over the measured window
+      --flamegraph-pid &lt;PID&gt;          Process to profile (default: the server&#39;s own, else the URL port&#39;s owner)
+      --flamegraph-freq &lt;HZ&gt;          Sampling frequency in Hz for --flamegraph [default: 999]
+      --flamegraph-call-graph &lt;MODE&gt;  Call-graph mode for --flamegraph: fp or dwarf [default: fp]
+      --flamegraph-png                Also render a PNG beside the flamegraph SVG
+      --compare-profiles &lt;FILES&gt;      Compare already-collapsed .folded profiles side by side; measure nothing
   -h, --help               Print help
   -V, --version            Print version</code></pre>
 <p>Notes: <code>--url</code> is the server base URL (the tool appends
@@ -239,6 +397,293 @@ best (fastest) run with mean ± standard deviation alongside; warmup (one
 short generation) is on unless <code>--no-warmup</code>;
 <code>--json</code> emits one JSON object per depth instead of the
 table.</p>
+<h3 id="profiling-what-was-measured---flamegraph">Profiling what was
+measured (<code>--flamegraph</code>)</h3>
+<p>A rate says <em>how</em> slow something is and never <em>where</em>
+the time went. Both questions get asked together during performance
+work, and they used to be answered by two different procedures: this
+tool for the number, a hand-assembled <code>perf record</code> pipeline
+for the profile. The profile then routinely covered a different workload
+than the number it was supposed to explain — a different prompt length,
+the warmup included, or a window that opened before the server was
+busy.</p>
+<p><code>--flamegraph FILE.svg</code> records a CPU profile of the
+server <strong>over exactly the measured window</strong>: sampling
+starts after warmup and stops when the last repetition finishes, so the
+flamegraph and the tok/s printed above it describe the same seconds of
+the same process. <code>llama-server</code> goes through the same path,
+so the two engines’ profiles are as comparable as their two rates.</p>
+<p>Collapsing and rendering are done <strong>in this binary</strong>, so
+<code>perf</code> is the only external program involved. The rendered
+SVG is interactive on its own: click a frame to zoom into it, click the
+title to reset, Ctrl-F to highlight every frame matching a substring and
+report what share of samples matched.</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server, decode: one profile of the 512-token generation that was timed</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-orangu-decode.svg <span class="at">--flamegraph-png</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># llama-server, the same workload through the same harness</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-llama-decode.svg <span class="at">--flamegraph-png</span></span></code></pre></div>
+<p>Three files come out of one <code>--flamegraph out.svg</code>:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">file</th>
+<th style="text-align: left;">what it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>out.svg</code></td>
+<td style="text-align: left;">the flamegraph, interactive (click to
+zoom, Ctrl-F to search)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>out.folded</code></td>
+<td style="text-align: left;">the collapsed stacks — a text file that
+diffs, and re-renders without re-running</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>out.meta.json</code></td>
+<td style="text-align: left;">pid, sampling frequency, duration,
+samples, cores busy</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>out.png</code></td>
+<td style="text-align: left;">a raster copy, with
+<code>--flamegraph-png</code>, for documents that cannot embed an
+SVG</td>
+</tr>
+</tbody>
+</table>
+<p>The transient <code>perf.data</code> is removed once collapsed: it is
+the largest artifact by an order of magnitude and nothing downstream
+reads it. The <code>.folded</code> file is the durable one.</p>
+<p>Beside the files the tool prints what the stacks say, so the common
+case needs no SVG viewer at all:</p>
+<pre class="text"><code>  profile  perf/gemma4-e2b-orangu-decode.svg (24140 samples over 25s)
+           perf/gemma4-e2b-orangu-decode.folded
+           kernel        33.5%
+           app/other     22.5%
+           kernel:gpu    16.3%
+           libc/alloc     9.4%
+           radv/vulkan    9.1%
+           wgpu           9.1%
+           top self-time frames:
+             5.0%  __memset_avx2_unaligned_erms
+             1.8%  amdgpu_vm_bo_update_[k]
+             …</code></pre>
+<p>Attribution is by <strong>leaf frame</strong> — a stack’s whole count
+is charged to the function that was actually executing, which is what a
+flamegraph’s plateau widths show. Kernel-mode frames carry a
+<code>_[k]</code> mark, taken from the <strong>object file</strong>
+<code>perf</code> reports rather than guessed from the symbol name, so
+<code>amdgpu_*</code> reached through an ioctl is never confused with
+the userspace <code>radv_*</code> that runs on the calling thread — and
+so <code>read_hpet</code>, an ordinary-looking symbol that lives in the
+kernel, is not filed as application code. Everything below that line is
+a heuristic over symbol names, and anything it cannot name stays visible
+as <code>app/other</code> rather than being dropped — which is what the
+leaf table beside it is for: a residual you can read is a claim you can
+check.</p>
+<h3 id="why---flamegraph-needs-the-warmup">Why <code>--flamegraph</code>
+needs the warmup</h3>
+<p><code>--flamegraph</code> is <strong>refused</strong> together with
+<code>--no-warmup</code>, and the reason is worth knowing because it
+applies to profiling any server this way.</p>
+<p><code>perf record -p PID</code> attaches to the threads that exist at
+the moment it attaches. It does not pick up threads created afterwards.
+A server builds its compute threads lazily, on its first request — and
+this tool deliberately starts the profiler <em>after</em> the warmup and
+<em>before</em> the timed window, so that the profile covers the
+measurement and nothing else. With no warmup, the profiler attaches
+while the server is idle and never sees a single compute thread.</p>
+<p>The failure is silent and plausible. It does not error; it produces a
+well-formed flamegraph, entirely of the HTTP thread doing TCP reads and
+futex waits, with a confident <code>cores busy</code> under it. Measured
+here: <strong>0.02 cores reported against 0.44 actually
+used.</strong></p>
+<p>So there are two guards:</p>
+<ul>
+<li>The flag combination is rejected outright, with that
+explanation.</li>
+<li>Every profile reads the target’s CPU time from
+<code>/proc/&lt;pid&gt;/stat</code> at both ends of its own window and
+compares. If the samples account for less than half of the CPU the
+kernel says was used, the run prints:</li>
+</ul>
+<pre class="text"><code>  WARNING: the profile accounts for 0.02 cores but /proc says the
+           process used 0.44. `perf record -p` does not follow threads
+           created after it attached — run a warmup before profiling so the
+           workload&#39;s threads already exist. This profile is not trustworthy.</code></pre>
+<p>The <code>/proc</code> figure is also stored in the
+<code>.meta.json</code> sidecar as <code>cores_from_proc</code>, so a
+saved profile carries the evidence for whether to trust itself. The
+kernel’s accounting cannot miss a thread, which is exactly what makes it
+the right thing to check sampling against.</p>
+<h3 id="comparing-two-profiles---compare-profiles">Comparing two
+profiles (<code>--compare-profiles</code>)</h3>
+<p>A flamegraph is normalised to its own total, so two of them side by
+side cannot be read against each other: the wider plateau belongs to
+whichever engine happened to be sampled more.
+<code>--compare-profiles</code> reads the <code>.folded</code> files
+back and puts them in one table — the <code>--chart-only</code> of
+profiling, no server and no re-run:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--compare-profiles</span> perf/gemma4-e2b-orangu-decode.folded,perf/gemma4-e2b-llama-decode.folded</span></code></pre></div>
+<pre class="text"><code>bucket         | gemma-orangu-decode | gemma-llama-decode
+------------------------------------------------------------
+app/other      |               22.5% |              66.2%
+kernel         |               33.5% |              10.4%
+kernel:gpu     |               16.3% |               3.9%
+ggml           |                0.0% |              14.5%
+radv/vulkan    |                9.1% |               4.4%
+libc/alloc     |                9.4% |               0.6%
+wgpu           |                9.1% |               0.0%
+samples        |                3288 |               1659
+gpu-wait       |                6.7% |              60.0%
+pool-idle      |               32.2% |               1.3%
+working        |               61.2% |              38.8%
+cores busy     |                0.47 |               0.42
+— working      |                0.29 |               0.16</code></pre>
+<p><strong><code>cores busy</code> is the row that makes the rest of the
+table mean anything.</strong> It is
+<code>samples / (freq × seconds)</code>: the mean number of the server’s
+threads that were on a CPU. Every other row is a share of <em>that</em>
+engine’s own CPU time, so without it “33.5% here against 10.4% there”
+compares two different totals. It is read from the
+<code>.meta.json</code> written beside the profile; a
+<code>.folded</code> carried off the machine alone shows
+<code>?</code>.</p>
+<p><strong><code>gpu-wait</code> and <code>pool-idle</code> are why an
+occupancy number was needed at all.</strong> The two engines wait for
+the GPU in different ways — <code>llama-server</code> spins on
+<code>_mm_pause</code>, <code>orangu-server</code> blocks — and a
+blocked thread produces no samples while a spinning one produces them at
+full rate. Read naively, that makes the engine wasting a whole core look
+busy with useful work and the one yielding it look idle. Both are
+therefore detected from the <strong>stack</strong>, not the leaf, and
+subtracted: <code>— working</code> is the cores actually spent on the
+model.</p>
+<p><code>pool-idle</code> is kept separate from <code>gpu-wait</code>
+because they have different remedies. Time under
+<code>wait_until_out_of_work</code> is a thread pool waking more workers
+than there is work for; time under a fence is the device owing an
+answer. Merging them would charge a threading problem to the GPU.</p>
+<p><strong>Requirements.</strong> <code>perf</code> — and, for the SVG,
+nothing else.</p>
+<ul>
+<li><p><code>perf</code>, with <code>kernel.perf_event_paranoid</code>
+low enough to attach to a process you own (<code>-1</code> on this
+project’s rig). It is the one piece that cannot be replaced: it reads
+the kernel’s perf events.</p></li>
+<li><p>Collapsing and rendering are <strong>in-process</strong>
+(<code>src/bin/orangu-bench/ flamegraph.rs</code>). There is no
+dependency on <code>stackcollapse-perf.pl</code>,
+<code>stackcollapse-recursive.pl</code> or <code>flamegraph.pl</code>,
+and nothing to install or point at. The rendered SVG is self-contained:
+no external stylesheet, script, font or image.</p></li>
+<li><p><code>rsvg-convert</code>, <strong>only</strong> for the optional
+<code>--flamegraph-png</code>. Missing, the SVG is still written and the
+run still succeeds.</p></li>
+<li><p><strong>Frame pointers in the profiled binary.</strong>
+<code>--call-graph fp</code> is the default and needs them; a stock
+<code>--release</code> build of <code>orangu-server</code> drops them
+and loses the call chain for most samples in the hot leaf, which renders
+as a flamegraph of a process doing nothing. Build the server being
+profiled with:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="va">CARGO_TARGET_DIR</span><span class="op">=</span>target-fp <span class="va">RUSTFLAGS</span><span class="op">=</span><span class="st">&quot;-C force-frame-pointers=yes&quot;</span> <span class="dt">\</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> build <span class="at">--profile</span> release-with-debug <span class="at">--bin</span> orangu-server</span></code></pre></div>
+<p>A binary you do not control needs
+<code>--flamegraph-call-graph dwarf</code> instead.
+(<code>llama-server</code> as packaged happens to keep frame pointers,
+so <code>fp</code> works for it too — worth checking rather than
+assuming, since a broken unwind looks like a real result.)</p></li>
+</ul>
+<p><code>--flamegraph-pid</code> is only needed when neither route to
+the pid works. The tool asks the server for its own pid first
+(<code>orangu-server</code> reports one), and otherwise asks the
+operating system which process owns the port under test — both of which
+identify the process that <em>answered these requests</em>, rather than
+one that merely has a matching name.</p>
+<h3 id="can-the-engine-fill-the-device---streams">Can the engine fill
+the device? (<code>--streams</code>)</h3>
+<p>Sweeps the number of <strong>concurrent</strong> decode streams and
+reports the aggregate tok/s across them — what a server’s capacity
+actually is, which no single-stream number shows.</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--streams</span> 1,2,4,8 <span class="at">--gen</span> 160</span></code></pre></div>
+<pre><code> streams |    aggregate |  per-stream |   tokens
+------------------------------------------------
+       1 |  37.76 ± 0.00 |       37.76 |      160
+       2 |  40.21 ± 0.00 |       20.10 |      320
+       8 |  45.02 ± 0.00 |        5.63 |     1280
+  gpu busy card1 engine 98%  memory 30% (mean while measuring)</code></pre>
+<p>Read it together with the <code>gpu busy</code> line, because there
+are two very different reasons the aggregate can stop rising:</p>
+<ul>
+<li><strong>aggregate flat, engine at ~100%</strong> — the device is
+full. This is the good case; per-stream falling as 1/n is just fair
+sharing of a saturated GPU.</li>
+<li><strong>aggregate flat, engine well under 100%</strong> — the engine
+cannot be filled. The work is serialising somewhere the extra requests
+cannot bypass, and there is capacity being left on the table.</li>
+</ul>
+<p>Measured on this rig, the two decode paths in this engine land on
+opposite sides of that: one reaches 98–99% engine occupancy with two
+streams, the other never passes 66% with eight. Same device.</p>
+<p>Each stream gets a distinct prompt so no two share a prefix-cache
+entry and get a free ride.</p>
+<h3 id="was-it-memory-bound-engine-and-memory-busy">Was it memory-bound?
+(<code>engine</code> and <code>memory</code> busy)</h3>
+<p>On Linux with an AMD card, every run also reports the mean occupancy
+of the two resources a kernel can run out of, sampled over the measured
+window from <code>amdgpu</code>’s <code>gpu_busy_percent</code> and
+<code>mem_busy_percent</code>:</p>
+<pre class="text"><code>  gpu peak card1 1700Mhz  card2 1600Mhz (while measuring)
+  gpu busy card1 engine 64%  memory 21% (mean while measuring)</code></pre>
+<p>This is printed beside the rate because a rate that looks low means
+completely different things at 20% memory occupancy and at 90%:</p>
+<ul>
+<li><strong>memory high, engine lower</strong> — bandwidth-bound. The
+kernel is moving as many bytes as the card will give it, and the only
+lever is moving fewer.</li>
+<li><strong>both moderate</strong> — <em>stalled</em>. Neither resource
+is exhausted; the work is waiting on latency, on a dependency chain, or
+on dispatches too small to fill the machine. Adding bytes or arithmetic
+will not show up.</li>
+<li><strong>engine high, memory low</strong> — compute-bound.</li>
+</ul>
+<p>For reference on the rig these docs were written on: a trivial
+coalesced streaming kernel at 204 GB/s reads <code>memory 84%</code>;
+<code>orangu-server</code>’s decode reads
+<code>engine 62% memory 20%</code>, and its prefill
+<code>engine 85% memory 14%</code>. Neither phase is bandwidth-bound,
+which took a separate experiment to establish every time before this
+line existed.</p>
+<p>Counters come from <code>/sys/class/drm/&lt;card&gt;/device/</code>;
+the line is omitted on hardware or kernels that do not publish them,
+rather than printing a zero.</p>
+<h3 id="the-clock-the-run-actually-reached">The clock the run actually
+reached</h3>
+<p>The header’s <code>gpu … sclk</code> line is read once, before the
+workload starts, and on an idle laptop dGPU that is its sleep state:
+<code>card1 sclk 0Mhz (high)</code> is what a <em>correctly</em> pinned
+card looks like between requests, and it reads exactly like a
+misconfigured one.</p>
+<p>So every run also samples each card’s core clock <strong>while
+measuring</strong> and prints the peak underneath the results:</p>
+<pre class="text"><code>  gpu peak card1 1700Mhz  card2 0Mhz (while measuring)</code></pre>
+<p>That is the line to check. A card that stayed parked at 300 MHz
+through a whole sweep produces entirely plausible numbers, and this is
+the only place that says so.</p>
 <h3 id="tracking-throughput-over-time---history---chart">Tracking
 throughput over time (<code>--history</code>, <code>--chart</code>)</h3>
 <p>A rate on its own says nothing. The two things it needs to be read
@@ -248,21 +693,25 @@ appends each measured point to a tab-separated file that accumulates
 across runs, and <code>--chart</code> draws the chart from <strong>that
 file</strong> rather than from the run that produced it. A run measuring
 only orangu still redraws llama.cpp’s line beside it.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;llama.cpp b10104&quot;</span> <span class="dt">\</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;llama.cpp b10104&quot;</span> <span class="dt">\</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
 <p>The file is plain TSV with a <code>#</code> header, so it diffs in
 review and is hand-editable; blank lines, comments and unparseable rows
 are skipped rather than fatal. Each row is <code>date</code>,
-<code>label</code>, <code>mode</code> (<code>pp</code> or
-<code>tg</code>), <code>n</code>, and the best / mean / sd of the run’s
+<code>label</code>, <code>mode</code> (<code>pp</code>, <code>tg</code>,
+<code>curve</code>, <code>cpu</code> or <code>embed</code> — each drawn
+as its own chart panel, since an embedding pass and a generative model’s
+prefill are not the same measurement, and two of the five are not even
+in tokens/second), <code>n</code>, and the best / mean / sd of the run’s
 repetitions:</p>
 <pre class="text"><code>#date   label   mode    n   best    mean    sd
 2026-07-25  orangu af7c767  pp  1120    81.75   81.40   0.26
@@ -317,7 +766,8 @@ avoids that entirely: it does <strong>one</strong> generation of
 instantaneous decode rate per <code>--bucket</code>-token context
 window. That is the cleanest way to see decode-vs-context scaling, and
 it works identically against orangu-server and llama-server.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
 <pre class="text"><code>orangu-bench → http://127.0.0.1:8100 (curve: 3072 tokens, bucket 256)
      ctx |    tok/s
 ------------------
@@ -328,6 +778,23 @@ it works identically against orangu-server and llama-server.</p>
 <p>Context position is approximated by the generated-token index (the
 prompt is short). <code>--json</code> emits
 <code>{"ctx":…,"tok_per_s":…,"tokens":…}</code> per bucket.</p>
+<p>Each bucket is also recorded to <code>--history</code> under its own
+<strong><code>curve</code></strong> mode and drawn on its own chart
+panel. That makes a decode-vs-context before/after affordable on a slow
+build: the depth sweep reaches a context by <em>padding the prompt</em>,
+so every row costs a full prefill at that depth <strong>per
+repetition</strong>, which on a model whose prefill is itself the thing
+under investigation is both slow and a measurement of the wrong phase.
+One generation gives the whole curve for one prefill.</p>
+<p>It is a separate panel from <code>tg</code> rather than extra points
+on it, even though both are decode rates against context in the same
+unit. A <code>tg</code> row is best-of-N; a curve bucket is a
+<strong>single-pass instantaneous rate</strong>, so <code>best</code>
+equals <code>mean</code> and <code>sd</code> is <code>0</code> by
+construction. Merging them would present two different statistics as one
+series — and since the chart reduces by <code>best</code> per
+<code>(label, n)</code>, the noisier single sample would win wherever
+the two overlapped.</p>
 <h3 id="confirm-you-are-measuring-the-build-you-think-you-are">Confirm
 you are measuring the build you think you are</h3>
 <p>The header line</p>
@@ -367,14 +834,14 @@ two runs minutes apart are not comparable (check
 <em>why</em> a compute kernel is slow — its register (VGPR) count and
 occupancy — there is a <strong>clock-independent</strong> measure: the
 RADV driver’s compile-time shader statistics.</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
 <p>To attribute a stats block to a specific kernel, capture with the
 kernel’s env flag on and off (e.g. <code>ORANGU_Q4K_LIGHT=1</code> vs
 unset) and diff the <code>VGPRs:</code> / <code>Code size:</code> blocks

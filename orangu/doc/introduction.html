@@ -193,11 +193,11 @@ than one server at once. See the <em>Coordinator</em> chapter.</li>
 inference engine: GGUF loading, tokenization, the transformer forward
 pass, sampling, and request scheduling implemented directly in Rust with
 no dependency on llama.cpp/ggml’s compiled code, running on CPU or GPU
-(Vulkan, CUDA, ROCm, OpenCL). Besides the OpenAI-compatible and native
-endpoints it offers a workspace-scoped file API and an optional browser
-chat console, and it serves as the machine’s GGUF inventory — listing,
-downloading, and deleting models, and reporting the hardware they have
-to run on. See the <em>Inference server</em> chapter.</li>
+(Vulkan, Metal, CUDA, ROCm, OpenCL). Besides the OpenAI-compatible and
+native endpoints it offers a workspace-scoped file API and an optional
+browser chat console, and it serves as the machine’s GGUF inventory —
+listing, downloading, and deleting models, and reporting the hardware
+they have to run on. See the <em>Inference server</em> chapter.</li>
 </ul>
 <p>A fourth binary, <code>orangu-bench</code>, is a developer tool
 rather than part of the stack: it measures decode and prefill throughput

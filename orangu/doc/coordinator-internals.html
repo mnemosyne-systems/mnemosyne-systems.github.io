@@ -199,6 +199,34 @@ returning <code>Option&lt;Vec&lt;String&gt;&gt;</code>
 both the <code>orangu</code> binary’s per-cycle header-status probe and
 library code with no <code>HeaderStatus</code> of its own (the explorer
 subagent, which reloads its own config from disk) need it.</p>
+<p><strong>Asked once, not every cycle.</strong> The client’s status
+refresh runs on a timer — every 60 s idle, every 500 ms while the
+startup git sync is in flight — and this path exists on nothing but a
+coordinator, so probing it each cycle is a 404 each cycle against a
+plain <code>orangu-server</code> (and against a hosted OpenAI-compatible
+endpoint). <code>models::probe_server_reachability</code> remembers what
+each endpoint answered: a known-plain one skips the probe entirely and
+lets <code>GET /v1/models</code> serve as both the model list and the
+health check, halving the requests a poll costs. Over one short session
+that is 4 coordinator probes down to 1, and the saving grows with
+session length.</p>
+<p>The memo is dropped the moment an endpoint stops answering, so a
+server restarted as a coordinator — or a coordinator that simply was not
+up yet when the client started — is identified afresh rather than
+assumed to be whatever was there before. A <em>confirmed</em>
+coordinator is still probed every cycle, since for it this endpoint is
+the health check and <code>/v1/models</code> is deliberately never
+called (see above).</p>
+<p><code>/server</code> drops it too, in both its forms: listing the
+servers re-opens the question for the active endpoint, and
+<code>/server &lt;name&gt;</code> for the one it selects — including
+when that is the server already in use, matching the model re-detection
+that same command triggers. Listing or selecting a server is the moment
+a user is asking about the connection rather than working through it,
+and the moment the answer is most likely to have just changed. The memo
+is there to keep an unchanging answer from being re-asked on a timer,
+not to outlast a direct question about it; <code>/server</code> is how
+you say “look again”.</p>
 <h3
 id="post-v1coordinatoractivate"><code>POST /v1/coordinator/activate</code></h3>
 <p>A pre-warming hint (<code>proxy::activate</code>) a caller can send
@@ -276,10 +304,19 @@ resolve which <code>orangu-server</code> executable to run
 piped stdout/stderr captured into the rolling tail, record
 <code>current_pid</code> immediately (before the possibly-long health
 check), then poll <code>GET /v1/models</code> on the new origin every
-500ms until it succeeds or <code>startup_timeout</code> elapses. Only
-<em>then</em> does <code>proxy</code> forward the original request —
-headers (minus hop-by-hop ones), method, and body unchanged — and stream
-the response back.</p>
+500ms until it succeeds or <code>startup_timeout</code> elapses. A
+profile’s <code>host</code> travels into that generated config verbatim,
+so it takes exactly the spellings <code>orangu-server</code>’s own
+<code>host</code> does — including the default, <code>all</code>.
+<code>config.rs</code> resolves that wildcard in the two directions it
+has to: <code>resolve_bind_host</code> (<code>all</code>/<code>*</code>
+→ <code>0.0.0.0</code>) for the coordinator’s own listener, and
+<code>resolve_connect_host</code> (<code>all</code>/<code>*</code> →
+<code>127.0.0.1</code>) for <code>CoordinatorLlmEntry::origin</code>,
+since a wildcard says where a process listens, not an address anything
+can dial. Only <em>then</em> does <code>proxy</code> forward the
+original request — headers (minus hop-by-hop ones), method, and body
+unchanged — and stream the response back.</p>
 <p>Unlike a shell-command-line design, <code>start</code> never parses a
 shell command line at all: every argument it passes is either a config
 value validated at load time or a path it generated itself, so there’s
@@ -289,6 +326,30 @@ manual <code>~</code> expansion left to reproduce —
 <code>orangu-server</code> being a sibling process built from the same
 source, not an independently-installed external tool, is what makes this
 simplification possible.</p>
+<h3 id="recovering-a-profile-that-stopped">Recovering a profile that
+stopped</h3>
+<p><code>ensure_active</code> restarts a child it finds dead
+(<code>try_wait</code>), which covers a profile that stopped between
+requests. The proxy handles the case that check cannot see: a request
+that fails to <em>reach</em> the child — the window where it was alive
+when checked and gone by the time the request arrived, which is what
+<code>orangu-server</code> exiting on a lost GPU device (its own
+<code>device_lost::EXIT_CODE</code>, <code>75</code>) does under a
+request. Nothing has been written back to the caller at that point, so
+the request is still whole and is sent again exactly once.</p>
+<p>The retry goes through <code>ensure_reachable</code>, deliberately
+not <code>ensure_active</code>. <code>Child::try_wait</code> lags a
+<code>SIGKILL</code>ed (or just-exited) child by however long tokio’s
+<code>SIGCHLD</code> handling takes to run, and a retry that consults it
+milliseconds after a connection failure is told the dead process is fine
+— so the retry lands in the same closed port and the caller gets the
+<code>502</code> the retry existed to prevent. That is a measured
+failure of the first version of this code, not a hypothetical.
+<code>ensure_reachable</code> asks the question that cannot lag — a
+<code>GET /v1/models</code> probe under
+<code>HEALTH_CHECK_TIMEOUT</code> — and restarts only when it goes
+unanswered, so a transient blip doesn’t cost a working process and its
+other in-flight requests.</p>
 <h3 id="crash-diagnostics">Crash diagnostics</h3>
 <p>If a profile’s <code>orangu-server</code> exits before answering
 <code>GET /v1/models</code>, or dies later while actively serving

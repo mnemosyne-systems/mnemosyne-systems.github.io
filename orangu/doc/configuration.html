@@ -314,6 +314,16 @@ commands. Defaults to <code>on</code>. Options: <code>on</code>,
 <code>0</code></td>
 </tr>
 <tr>
+<td style="text-align: left;"><code>word_wrap</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Wrap long lines in the main TUI,
+<code>/show_file</code>, <code>/review</code>, and
+<code>/auto_review</code> windows. Defaults to <code>off</code>; set it
+to <code>on</code> to wrap at the visible width. Options:
+<code>on</code>, <code>true</code>, <code>1</code>, <code>off</code>,
+<code>false</code>, <code>0</code></td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>mouse</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Enable mouse capture in the terminal. When
@@ -399,8 +409,37 @@ style="text-align: left;"><code>review_confidence_threshold</code></td>
 silently dropped. Defaults to <code>80</code>. Set to <code>0</code> to
 disable filtering</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>diff_file_cap</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Maximum number of files kept when a
+<code>git diff</code> is compressed. Defaults to <code>20</code>. See
+the Compression chapter</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world_state_max_bytes</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Ceiling on the
+<code>world_state_changes</code> fragment prepended to a turn when the
+working tree has changed, in bytes. Defaults to <code>8192</code>;
+<code>0</code> disables the cap. See <a
+href="#workspace-change-budget">Workspace change budget</a></td>
+</tr>
 </tbody>
 </table>
+<h3 id="workspace-change-budget">Workspace change budget</h3>
+<p>Every interactive turn taken after the working tree changed carries a
+<code>world_state_changes</code> fragment describing the change. That
+fragment is <strong>prefilled by the server</strong>, so its size is
+response latency, not just context: on a small local model a few hundred
+bytes cost milliseconds and a few hundred kilobytes cost minutes.</p>
+<p><code>world_state_max_bytes</code> is the hard ceiling on it. Raise
+it if you want the model to see more of a large working diff without
+asking; lower it if the first turn after each edit feels slow. Two lower
+limits apply before it — untracked files above 4 KiB are announced
+rather than inlined, and smaller ones are cut to 80 lines — so the
+ceiling is rarely the binding constraint in an ordinary workspace. The
+Compression chapter describes the whole path.</p>
 <h3 id="response-token-caps">Response-token caps</h3>
 <p><code>review_max_tokens</code> and <code>code_max_tokens</code> bound
 how long a model response may get. Each is sent to the server as the

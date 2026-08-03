@@ -140,7 +140,7 @@ each, grouped the same way as in this manual.</p>
 <p>It is the fastest way to rediscover a command name or its arguments
 without leaving the prompt, and it works regardless of server or model
 state.</p>
-<h3 id="examples">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/help</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>help
@@ -160,7 +160,7 @@ overriding user skills that share the same name.</p>
 skill is invoked, orangu injects the skill instructions into the next
 model request in a structured wrapper that also identifies the skill
 directory and any bundled resource files.</p>
-<h3 id="examples-1">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/skills</code></pre>
 <p>Invoke the bundled debugging skill:</p>
 <pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
@@ -178,7 +178,7 @@ local slash commands documented here.</p>
 is able to do in the current workspace, not what you can type at the
 prompt. In particular it is separate from the local
 <code>/list_files</code> convenience command.</p>
-<h3 id="examples-2">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/tools</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>tools
@@ -191,7 +191,7 @@ show local tools</code></pre>
 active model shown in green and the others in red. With a name it
 switches to that model. Pressing <code>Tab</code> after
 <code>/model</code> cycles through the models the server reports.</p>
-<h3 id="examples-3">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>List the available models:</p>
 <pre class="text"><code>/model</code></pre>
 <p>Switch to a specific model:</p>
@@ -220,7 +220,12 @@ switches to that server and re-detects an available model on it, so the
 model status in the header is refreshed automatically. Pressing
 <code>Tab</code> after <code>/server</code> cycles through the
 configured server names.</p>
-<h3 id="examples-4">Examples</h3>
+<p>Either form also re-checks whether the server is an
+orangu-coordinator rather than a plain <code>orangu-server</code>,
+instead of reusing what it was last found to be. A coordinator started
+since orangu launched is therefore picked up by running
+<code>/server</code>, without restarting.</p>
+<p><strong>Examples</strong></p>
 <p>List the configured servers:</p>
 <pre class="text"><code>/server</code></pre>
 <p>Switch to a named server:</p>
@@ -252,7 +257,7 @@ pinning a copy of it, so the session goes back to following the global
 <p>Pressing <code>Tab</code> after <code>/theme</code> completes the
 built-in themes, <code>random</code>, and any user theme files found in
 <code>~/.orangu/themes/</code>.</p>
-<h3 id="examples-5">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/theme classic
 /theme tokyonight
 /theme modern_light
@@ -348,7 +353,7 @@ implemented — <code>/information</code> only distinguishes “the server
 told us it’s disabled” (<code>HTTP 501</code>) from “the server doesn’t
 know this path” (<code>HTTP 404</code>) from any other response, shown
 as its raw HTTP status.</p>
-<h3 id="examples-6">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/information</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>information
@@ -445,7 +450,7 @@ blank table.</p>
 same report — plus a two-layer table of contents, per-year and per-month
 heatmaps, Authors breakdowns, and bar charts, and a per-author appendix
 — to a PDF.</p>
-<h3 id="examples-7">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/statistics
 /statistics total</code></pre>
 <p>Natural-language forms:</p>
@@ -504,7 +509,7 @@ ignoring them:</p>
 /statistics                              next: 2026-07-10 06:30</code></pre>
 <p>With no schedule file (or an empty one) it says how to create
 one.</p>
-<h3 id="examples-8">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/schedule</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>schedule
@@ -515,7 +520,7 @@ show schedule</code></pre>
 free-form prompts are blocked, but every local command in this manual
 continues to work. Use <code>/server</code> or <code>/reload</code> to
 reconnect.</p>
-<h3 id="examples-9">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/disconnect</code></pre>
 <p>Natural-language form:</p>
 <pre class="text"><code>disconnect</code></pre>
@@ -526,7 +531,7 @@ during the session.</p>
 <p><code>/reload</code> also clears the in-memory conversation history,
 so it doubles as a way to start a clean exchange while returning to the
 configured defaults.</p>
-<h3 id="examples-10">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/reload</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>reload
@@ -548,7 +553,7 @@ so it relaunches the freshly built binary. Only if that path is gone
 entirely does it fall back to staging a runnable copy under
 <code>~/.orangu/last</code>, a scratch directory that is cleared on
 every startup.</p>
-<h3 id="examples-11">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/restart</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>restart
@@ -566,7 +571,7 @@ it deletes all sessions whose recorded workspace path contains
 <code>&lt;days&gt;</code> days in the past.</p>
 <p>Tab completion after <code>/prune</code> cycles through session UUIDs
 newest-first.</p>
-<h3 id="examples-12">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Delete a single session by UUID:</p>
 <pre class="text"><code>/prune 550e8400-e29b-41d4-a716-446655440000</code></pre>
 <p>Delete all sessions except the active one:</p>
@@ -611,7 +616,7 @@ workspace paths recorded across sessions; when the typed text matches
 neither, it falls back to filesystem directory completion so a new
 workspace can be navigated to one segment at a time
 (<code>/session ~/co&lt;Tab&gt;/pr&lt;Tab&gt;</code>).</p>
-<h3 id="examples-13">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>List every session:</p>
 <pre class="text"><code>/session</code></pre>
 <p>Narrow to sessions whose workspace path contains a string (switches
@@ -633,7 +638,7 @@ show sessions</code></pre>
 the workspace; it is separate from the model-facing
 <code>list_directory</code> tool that the model uses to explore files on
 its own.</p>
-<h3 id="examples-14">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/list_files</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>list files
@@ -658,7 +663,7 @@ with the same whole-workspace <code>Tab</code> completion. In
 <code>/auto_review</code> it works once the run has finished. See the
 <code>/review</code> and <code>/auto_review</code> tools for the
 details.</p>
-<h3 id="examples-15">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/open_file README.md
 /open_file src/main.rs</code></pre>
 <p>Natural-language forms:</p>
@@ -688,7 +693,7 @@ file paths recursively; once a file path is present, the next
 <code>/show_file</code> output is laid out on the full virtual canvas
 and can be panned horizontally with
 <code>Alt+Left</code>/<code>Alt+Right</code> without reflowing.</p>
-<h3 id="examples-16">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Show the current file:</p>
 <pre class="text"><code>/show_file src/main.rs</code></pre>
 <p>Show the file with blame columns:</p>
@@ -839,7 +844,7 @@ parallelism, a bare serial <code>make</code>,
 explicit job count to every backend above — Rust, the C/C++ backends,
 plain make, and Go. Java and Python are unaffected: Maven and
 <code>pip</code> have no directly equivalent per-compile job flag.</p>
-<h3 id="examples-17">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/build
 /build debug
 /build release
@@ -887,7 +892,7 @@ exactly like a real shell: <code>/shell ./te</code> offers
 the last word of the command line completes this way — the program name
 and any earlier arguments are left alone. The inline ghost hint previews
 the same completion.</p>
-<h3 id="examples-18">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/shell ls -la
 /shell cargo test
 /shell ./test/check.sh</code></pre>
@@ -1130,7 +1135,7 @@ long lines</li>
 </ul>
 <p>The review status marks and line comments are kept for the duration
 of the review session and are not persisted after exit.</p>
-<h3 id="examples-19">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/review</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>review
@@ -1759,7 +1764,7 @@ category</td>
 </tr>
 </tbody>
 </table>
-<h3 id="examples-20">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/auto_review</code></pre>
 <p>Review a single file (Tab-completes on the file name):</p>
 <pre class="text"><code>/auto_review src/tui.rs</code></pre>
@@ -1956,7 +1961,7 @@ each pair: its similarity percentage, the two function names, and for
 each function its <code>path:start–end</code> location. To save the same
 report as a PDF, use <code>/export duplicates</code> (see the
 <code>/export</code> tool).</p>
-<h3 id="examples-21">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Scan with the default 80% threshold:</p>
 <pre class="text"><code>/duplicates</code></pre>
 <p>Only report pairs that are at least 90% similar:</p>
@@ -2195,7 +2200,7 @@ turn log instead of just the current one (with the Total heading noting
 it covers “all workspaces”), but without the Authors breakdowns or
 appendix — <code>total</code> has no one workspace’s
 <code>git log</code> to read.</p>
-<h3 id="examples-22">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Export the output window (the default):</p>
 <pre class="text"><code>/export
 /export console</code></pre>
@@ -2243,7 +2248,7 @@ connections.</p>
 <p>Nodes are automatically clustered and color-coded based on the file
 they belong to, helping you easily visualize architectural boundaries
 and module dependencies.</p>
-<h3 id="examples-23">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/graph</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>graph
@@ -2317,7 +2322,7 @@ to embeddings, give its section <code>role = embeddings</code> (see the
 Configuration chapter). When no server serves embeddings,
 <code>/search</code> explains how to enable it and existing retrieval
 (<code>/grep</code>, the Knowledge Graph) is unaffected.</p>
-<h3 id="examples-24">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/search where is the retry backoff computed
 /search session persistence</code></pre>
 <p>Natural-language forms:</p>

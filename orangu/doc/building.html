@@ -129,26 +129,40 @@ rendering</li>
 </ul>
 <h2 id="prompt-construction-kv-caching">Prompt Construction &amp; KV
 Caching</h2>
-<p>Orangu is specifically optimized for local LLMs (served by
-<code>orangu-server</code>) which rely on exact token prefix matching to
-reuse KV cache and avoid massive prefill latencies. When developing
-features that touch <code>ChatSession</code>, you must preserve this
-cache:</p>
+<p>Orangu is optimized for local LLMs (served by
+<code>orangu-server</code>), which reuse a KV cache by matching an exact
+<strong>token prefix</strong>. When developing features that touch
+<code>ChatSession</code>, the rule that matters is:</p>
+<blockquote>
+<p>Editing a message costs a re-prefill of that message <strong>and
+everything after it</strong>. Appending costs nothing.</p>
+</blockquote>
+<p>Two consequences that are easy to get wrong:</p>
 <ol type="1">
-<li><strong>Append-Only System Updates</strong>: When updating the
-system prompt mid-session (e.g., changing workspaces or verbosity),
-<code>ChatSession::set_system_prompt()</code> appends the new
-instructions as a <code>user</code> message with a
-<code>[System Update]</code> prefix. It <strong>never</strong> mutates
-the initial system message (<code>messages[0]</code>). Mutating the
-first message would instantly destroy the prefix cache for the entire
-conversation.</li>
-<li><strong>In-Place Tool Eviction</strong>: When context limits are
-reached, <code>compact_transcript</code> replaces old tool outputs with
-a tiny stub <code>[Tool output evicted...]</code>. Because this mutation
-happens in-place further down the array, it perfectly preserves the KV
-cache prefix for all messages that preceded it.</li>
+<li><p><strong>An in-place edit is not free just because it is not the
+first message.</strong> <code>compact_transcript</code> replaces old
+tool outputs with a stub, and the prefix <em>before</em> the edit does
+survive — but everything after it is processed again. Worse, the stub is
+<em>shorter</em> than what it replaced, so the next turn’s divergence
+point lands even earlier. Compacting eagerly, one message per turn,
+measured 3.5× more prefill than never compacting at all. Compaction
+therefore runs only when a pass can reclaim at least half the
+transcript, so the cost is paid once per doubling rather than once per
+turn. See the Compression chapter.</p></li>
+<li><p><strong>Not every edit is worth avoiding.</strong>
+<code>set_system_prompt</code> rewrites <code>messages[0]</code>, which
+does discard the whole conversation’s cache. It used to append the new
+prompt as a <code>user</code> message prefixed
+<code>[System Update]</code> to dodge that, and the dodge was worse than
+the disease: the model got its own instructions in the user’s voice
+while the real system message still held the superseded prompt. The
+rewrite is affordable because of <em>when</em> it runs — only
+<code>/server</code> (which changes endpoint, so that cache is cold
+anyway) and <code>/verbosity</code> (one explicit command, paid once).
+An unchanged prompt is left untouched.</p></li>
 </ol>
+<p>The general shape: prefer appending; when you must edit, edit rarely
+and be able to say what the edit buys.</p>
 <h2 id="development-workflow">Development workflow</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> fmt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div>

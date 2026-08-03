@@ -38,8 +38,8 @@
 
     <div class="hero-left">
       <a class="hero-badge" href="#whats-new">
-        <span class="hero-badge-ver">1.0</span>
-        orangu 1.0.0 is out
+        <span class="hero-badge-ver">1.1</span>
+        orangu 1.1.0 is out
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
       </a>
 
@@ -184,7 +184,7 @@
       <div class="arch-layout">
         <figure class="arch-figure">
           <img src="doc/images/orangu-architecture.png" width="1800" height="1424"
-               alt="Diagram of the orangu stack: you talk to orangu, the coding environment; orangu talks over OpenAI-compatible HTTP to the optional orangu-coordinator, which starts and stops orangu-server and swaps the model per role; orangu-server runs the GGUF engine on CPU, Vulkan, CUDA, ROCm, or OpenCL." />
+               alt="Diagram of the orangu stack: you talk to orangu, the coding environment; orangu talks over OpenAI-compatible HTTP to the optional orangu-coordinator, which starts and stops orangu-server and swaps the model per role; orangu-server runs the GGUF engine on CPU, Vulkan, Metal, CUDA, ROCm, or OpenCL." />
           <figcaption>One native stack — fully local, fully private, entirely your own.</figcaption>
         </figure>
 
@@ -201,7 +201,7 @@
             <h3>orangu-server</h3>
             <p>A native pure-Rust GGUF inference engine: model loading, tokenization, the transformer forward pass, sampling, and request scheduling — with no llama.cpp, no ggml, and no Python. It serves OpenAI-compatible endpoints and a built-in web console.</p>
             <div class="arch-backends">
-              <span>CPU</span><span>Vulkan</span><span>CUDA</span><span>ROCm</span><span>OpenCL</span>
+              <span>CPU</span><span>Vulkan</span><span>Metal</span><span>CUDA</span><span>ROCm</span><span>OpenCL</span>
             </div>
           </li>
         </ul>
@@ -316,7 +316,7 @@
           <span class="stat-label">Cloud dependencies</span>
         </div>
         <div class="stat-cell">
-          <span class="stat-number">1.0</span>
+          <span class="stat-number">1.1</span>
           <span class="stat-label">Current version</span>
         </div>
       </div>
@@ -335,6 +335,8 @@
     .release-list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--amber); }
     .release-list strong { color: var(--text); font-weight: 600; }
     .release-list code { font-size: 0.8rem; }
+    .release-note { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--text-3); line-height: 1.6; }
+    .release-note strong { color: var(--text-2); font-weight: 600; }
     .release-all { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1.5rem; font-size: 0.85rem; font-weight: 600; color: var(--amber); text-decoration: none; transition: gap 0.15s; }
     .release-all:hover { gap: 0.7rem; }
     @media (max-width: 700px) { .release-list { grid-template-columns: 1fr; } }
@@ -349,18 +351,22 @@
 
       <div class="release-card">
         <div class="release-head">
-          <span class="release-ver">orangu 1.0.0</span>
+          <span class="release-ver">orangu 1.1.0</span>
           <span class="release-badge">Latest</span>
-          <span class="release-date">July 27, 2026</span>
+          <span class="release-date">August 3, 2026</span>
         </div>
         <ul class="release-list">
-          <li><strong>A complete stack</strong> — Three cooperating programs, written end to end in Rust, all under GPL v3.</li>
-          <li><strong><code>orangu-server</code></strong> — A native pure-Rust GGUF inference engine. No llama.cpp, no ggml, no Python.</li>
-          <li><strong><code>orangu-coordinator</code></strong> — Starts and stops the server on demand and swaps the model each request needs.</li>
-          <li><strong>Five backends</strong> — Vulkan, CUDA, ROCm, and OpenCL, plus CPU with automated cross-verification.</li>
-          <li><strong>OpenAI-compatible APIs</strong> — Chat, completions, and embeddings endpoints with prefix caching and slot preservation.</li>
-          <li><strong>Built-in web console</strong> — Browser chat with Markdown, syntax highlighting, and LaTeX, embedded in the binary.</li>
+          <li><strong>15% to 450% faster</strong> — A unified attention implementation across every backend, with the largest gains where the old paths were least optimized.</li>
+          <li><strong>Metal for Apple Silicon</strong> — Initial Metal backend, the first step toward native GPU acceleration on the Mac.</li>
+          <li><strong><code>orangu-bench</code></strong> — A benchmarking tool, shipped in the release archives, for measuring performance on your own hardware.</li>
+          <li><strong>Web console: model management</strong> — List and inspect models from the browser instead of only from the command line.</li>
+          <li><strong>Web console: Mermaid and history</strong> — Diagrams render inline, and conversations can be deleted from the console.</li>
+          <li><strong>Better machine information</strong> — More accurate OS and GPU detection to guide backend selection and troubleshooting.</li>
         </ul>
+        <p class="release-note">
+          <strong>Upgrading?</strong>
+          The configuration files changed in 1.1.0 — run <code>--init</code> for <code>orangu</code>, <code>orangu-coordinator</code>, and <code>orangu-server</code>.
+        </p>
       </div>
 
       <a href="releases.html" class="release-all">See all releases →</a>

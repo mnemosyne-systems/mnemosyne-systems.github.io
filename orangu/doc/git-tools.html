@@ -151,7 +151,7 @@ untracked entries are shown in green, deleted entries in red, and
 modified entries in the default terminal color; the branch line is shown
 in a muted color. <code>gh</code> has no equivalent, so this always uses
 plain Git.</p>
-<h3 id="examples">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/status</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>status
@@ -168,7 +168,7 @@ log it appends a highlighted summary of the working tree — either
 <code>● N change(s)</code> broken down into uncommitted (tracked) and
 untracked counts. See the optional tools chapter for the recommended
 <code>git lg</code> alias setup.</p>
-<h3 id="examples-1">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Show the full log:</p>
 <pre class="text"><code>/log</code></pre>
 <p>Show only the latest five commits:</p>
@@ -190,7 +190,7 @@ Tab completion after <code>/show</code> (or the natural-language forms
 <code>git show</code> / <code>show commit</code>) offers the abbreviated
 hashes of the latest 25 commits on the current branch — newest first, so
 the most recent commit previews as the inline ghost.</p>
-<h3 id="examples-2">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Show the latest commit:</p>
 <pre class="text"><code>/show</code></pre>
 <p>Show a specific commit:</p>
@@ -209,7 +209,7 @@ repository it applies any configured non-interactive Git pager such as
 <code>delta</code>. Tab completion after <code>/diff</code> (or the
 natural-language form <code>diff against</code>) offers local and remote
 branch names.</p>
-<h3 id="examples-3">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Show unstaged changes:</p>
 <pre class="text"><code>/diff</code></pre>
 <p>Show what the current branch adds over <code>main</code>:</p>
@@ -230,7 +230,7 @@ is piped through the configured non-interactive pager
 — if <code>delta</code> is configured it will colorize and format the
 results. Exit code 1 (no matches) is handled gracefully. <code>gh</code>
 has no equivalent, so it always uses plain Git.</p>
-<h3 id="examples-4">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/grep TODO
 /grep &quot;fn main&quot;</code></pre>
 <p>Natural-language forms:</p>
@@ -253,7 +253,7 @@ where creating a file that is already there is an override.</p>
 <p>Tab completion after <code>/create_file</code> offers untracked
 directories first, then untracked files; already-tracked content is
 excluded.</p>
-<h3 id="examples-5">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/create_file notes.md
 /create_file src/main.rs with 0644
 /create_file notes.md containing Some text to start with
@@ -279,7 +279,7 @@ forms still work, and now reach <code>/delete_file</code>.</p>
 <p>Tab completion after <code>/delete_file</code> offers tracked
 directories first, then tracked files; untracked content is
 excluded.</p>
-<h3 id="examples-6">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/delete_file old.rs</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>delete file old.rs
@@ -324,7 +324,7 @@ API</strong>).</p>
 <p>Tab completion for the first argument offers tracked directories
 first, then tracked files; the second argument completes from all
 workspace paths.</p>
-<h3 id="examples-7">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/move_file old.rs new.rs</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>move old.rs new.rs
@@ -339,7 +339,7 @@ git mv old.rs new.rs</code></pre>
 <code>git restore --staged &lt;file&gt;</code> to unstage the file
 without changing its contents. <code>gh</code> has no equivalent, so it
 always uses plain Git.</p>
-<h3 id="examples-8">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Discard local changes to a file:</p>
 <pre class="text"><code>/restore src/main.rs</code></pre>
 <p>Unstage a file:</p>
@@ -353,7 +353,7 @@ always uses plain Git.</p>
 message may be bare or quoted; quote it when it contains spaces or
 shell-significant characters such as the <code>[#42]</code> issue
 prefix.</p>
-<h3 id="examples-9">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/commit Fix the parser
 /commit &quot;[#42] Add the new feature&quot;</code></pre>
 <p>Natural-language forms:</p>
@@ -365,7 +365,7 @@ git commit -m &quot;Fix the bug&quot;</code></pre>
 <code>git commit --amend -m &lt;message&gt;</code>.</p>
 <p>The message is mandatory and may be bare or quoted. <code>gh</code>
 has no equivalent, so it always uses plain Git.</p>
-<h3 id="examples-10">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/amend Fix the parser
 /amend &quot;[#42] Add the new feature&quot;</code></pre>
 <p>Natural-language forms:</p>
@@ -382,7 +382,7 @@ reusing the oldest commit’s message.</p>
 tried in that order. At least two commits are required, and squashing on
 <code>main</code> or <code>master</code> is blocked. <code>gh</code> has
 no equivalent, so it always uses plain Git.</p>
-<h3 id="examples-11">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/squash</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>squash
@@ -404,7 +404,7 @@ and description.</li>
 <p><code>gh</code> has no stash equivalent, so all four operations
 always use plain Git. Running <code>/stash</code> with a clean working
 tree produces an error from Git.</p>
-<h3 id="examples-12">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/stash
 /stash pop
 /stash list
@@ -437,7 +437,7 @@ made so far.</li>
 </ul>
 <p>All subcommands run plain <code>git bisect &lt;sub&gt;</code>; there
 is no <code>gh</code> equivalent.</p>
-<h3 id="examples-13">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/bisect start
 /bisect bad
 /bisect good abc1234
@@ -475,7 +475,7 @@ bisect</code></pre>
 <p>Tab completion after <code>/branch</code> offers local branch names.
 <code>gh</code> has no equivalent, so all operations always use plain
 Git.</p>
-<h3 id="examples-14">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/branch
 /branch -a
 /branch feature/login
@@ -504,7 +504,7 @@ offered first and previewed as the grey inline ghost, so
 <code>/fetch u</code> then Tab completes to
 <code>/fetch upstream</code>. It errors when the repository has no
 remotes or the named remote is unknown.</p>
-<h3 id="examples-15">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/fetch
 /fetch upstream</code></pre>
 <p>Natural-language forms:</p>
@@ -517,7 +517,7 @@ git fetch upstream</code></pre>
 <p>If <code>gh</code> is installed it uses
 <code>gh pr merge --merge</code>; otherwise it uses
 <code>git merge</code>.</p>
-<h3 id="examples-16">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/merge feature/login</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>merge feature/login
@@ -550,7 +550,7 @@ remotes (from <code>git remote</code>, with <code>origin</code> floated
 to the front), then the remote-tracking branches (from
 <code>git branch --all</code>, e.g. <code>origin/main</code>). The first
 local branch is previewed as the grey inline ghost.</p>
-<h3 id="examples-17">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/rebase
 /rebase develop
 /rebase origin/main
@@ -567,7 +567,7 @@ git rebase origin/main</code></pre>
 completion offers abbreviated commit hashes from the default branch
 (<code>origin/main</code>, <code>origin/master</code>,
 <code>main</code>, or <code>master</code>, tried in that order).</p>
-<h3 id="examples-18">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/cherry_pick abc1234</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>cherry pick abc1234
@@ -579,7 +579,7 @@ git cherry-pick abc1234</code></pre>
 <p>It works both inside and outside an existing Git repository —
 reinitializing an existing repo is safe. <code>gh</code> has no
 equivalent, so it always uses plain Git.</p>
-<h3 id="examples-19">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/init_repo</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>init
@@ -596,7 +596,7 @@ rewrites. After a successful push it compares the branch against the
 base branch and, when the branch is behind the base or has more than one
 commit ahead, reports that the branch needs a <code>/rebase</code>
 and/or <code>/squash</code>.</p>
-<h3 id="examples-20">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/push
 /push --force</code></pre>
 <p>Natural-language forms:</p>
@@ -613,7 +613,7 @@ After the checkout it compares the branch against the base branch and,
 when the branch is behind the base or has more than one commit ahead,
 reports that the pull request needs a <code>/rebase</code> and/or
 <code>/squash</code>.</p>
-<h3 id="examples-21">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/pull 58</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>pull 58
@@ -635,7 +635,7 @@ the single commit message.</p>
 or <code>auto_squash = on</code> in the <code>[orangu]</code>
 configuration section, which triggers the corresponding fix
 automatically before continuing.</p>
-<h3 id="examples-22">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/pull_request</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>pull request
@@ -683,7 +683,7 @@ completion (and likewise <code>with auto review</code> before any
 <code>/auto_review</code>), so the hints never suggest a report that
 does not exist. Typing <code>with</code> narrows the hint to the
 available keywords.</p>
-<h3 id="examples-23">Examples</h3>
+<p><strong>Examples</strong></p>
 <p>Inline comment body:</p>
 <pre class="text"><code>/comment 51 &quot;Thanks, merged.&quot;</code></pre>
 <p>Comment body from a Markdown file in
@@ -712,7 +712,7 @@ comment on 48 with auto review</code></pre>
 <code>glab mr close &lt;number&gt;</code>) to close a pull request or
 merge request.</li>
 </ul>
-<h3 id="examples-24">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/close -i 51
 /close -p 58</code></pre>
 <p>Natural-language forms:</p>
@@ -764,7 +764,7 @@ shells out on a keystroke. The <code>&lt;number&gt;</code> is typed
 directly (no completion). So
 <code>/issue re&lt;TAB&gt; 114 je&lt;TAB&gt;</code> expands to
 <code>/issue reviewer 114 jesperpedersen</code>.</p>
-<h3 id="examples-25">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/issue reviewer 114 jesperpedersen
 /issue assignee 51 alice
 /issue label 51 needs triage</code></pre>
@@ -797,7 +797,7 @@ assignments, and so on) are skipped.</p>
 
 ● 2026-06-02 08:00:00 bob
   Merged.</code></pre>
-<h3 id="examples-26">Examples</h3>
+<p><strong>Examples</strong></p>
 <pre class="text"><code>/get_comments -i 51
 /get_comments -p 58</code></pre>
 <p>Natural-language forms (after <code>get comments for</code> the

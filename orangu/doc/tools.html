@@ -117,6 +117,18 @@ id="toc-run_shell_command"><code>run_shell_command</code></a></li>
 <h1 id="tools">Tools</h1>
 <p><code>orangu</code> exposes local workspace tools to the active
 model.</p>
+<p>Tools are sent as OpenAI <code>tools</code> on every chat request,
+and the model asks for one by answering with <code>tool_calls</code>;
+<code>orangu</code> runs it in the workspace, feeds the result back as a
+<code>tool</code> message, and lets the model continue.
+<code>max_tool_rounds</code> in <code>[orangu]</code> bounds how many
+such rounds one prompt may take.</p>
+<p>Whether this works depends on the <strong>model</strong>, not on
+orangu: a model whose chat template has no tool support never sees the
+declarations and will say it has no tools available.
+<code>orangu-server</code> passes the array through to the template and
+translates the answer back — see <strong>Tool calling</strong> in the
+Inference server chapter for which answer formats it recognises.</p>
 <h2 id="available-tools">Available tools</h2>
 <table>
 <colgroup>

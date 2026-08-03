@@ -93,6 +93,8 @@ id="toc-configuration">Configuration</a></li>
 <li><a href="#roles" id="toc-roles">Roles</a></li>
 <li><a href="#gpu-backend" id="toc-gpu-backend">GPU backend</a></li>
 <li><a href="#web-ui" id="toc-web-ui">Web UI</a></li>
+<li><a href="#model-management" id="toc-model-management">Model
+management</a></li>
 <li><a href="#session-management" id="toc-session-management">Session
 management</a></li>
 <li><a href="#shutting-it-down" id="toc-shutting-it-down">Shutting it
@@ -136,18 +138,18 @@ have the resources to keep one model resident at a time — this chapter
 covers <code>orangu-server</code> itself.</p>
 <p>It’s also the machine’s GGUF inventory tool — the
 <code>system</code>/<code>suggest</code>/
-<code>list</code>/<code>show</code>/<code>download</code>/<code>delete</code>
+<code>list</code>/<code>show</code>/<code>download</code>/<code>delete</code>/<code>refresh</code>
 subcommands (below) answer the questions that matter when
 <em>getting</em>, <em>choosing</em>, and <em>cleaning up</em> a model,
-before or after serving. Those six read (or write) GGUF files directly
+before or after serving. Those seven read (or write) GGUF files directly
 off disk and query the local machine, no model loaded and no HTTP
-listener bound; <code>download</code> talks to the Hugging Face Hub to
-fetch a model, and <code>list</code> talks to it too — before printing
-its table, to check whether a newer commit exists for each Hugging
-Face-backed model already on disk (see <strong><code>list</code> and
-<code>show</code></strong> below). If the Hub is unreachable,
-<code>list</code> still prints the table; it just skips the check
-silently rather than failing the command.</p>
+listener bound; <code>download</code> and <code>refresh</code> talk to
+the Hugging Face Hub to fetch a model, and <code>list</code> talks to it
+too — before printing its table, to check whether a newer commit exists
+for each Hugging Face-backed model already on disk (see
+<strong><code>list</code> and <code>show</code></strong> below). If the
+Hub is unreachable, <code>list</code> still prints the table; it just
+skips the check silently rather than failing the command.</p>
 <h2 id="quick-start">Quick start</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
 <p>The model argument is resolved the same way
@@ -181,10 +183,14 @@ run goes straight on to the role prompt:</p>
 
 model: Qwen/Qwen2.5-0.5B-Instruct-GGUF:Q4_K_M
 role [all]: </code></pre>
-<p>On startup, <code>orangu-server</code> prints the same CPU/GPU report
-<code>system</code> does, followed by the model/UI/API/workspace
+<p>On startup, <code>orangu-server</code> prints the same OS/CPU/GPU
+report <code>system</code> does, followed by the model/UI/API/workspace
 summary:</p>
-<pre><code>CPU
+<pre><code>OS
+  Name             : Fedora Linux
+  ...
+
+CPU
   Model            : AMD Ryzen 7 4800H with Radeon Graphics
   ...
 
@@ -203,6 +209,7 @@ model was named with a <code>:tag</code> of its own already. Its second
 field names the backend the forward pass actually ran on:
 <code>CPU</code>/<code>CPU/AVX2</code>, or
 <code>Vulkan/&lt;adapter name&gt;</code>,
+<code>Metal/&lt;device name&gt;</code>,
 <code>CUDA/&lt;device name&gt;</code>,
 <code>OpenCL/&lt;device name&gt;</code>,
 <code>ROCm/&lt;device name&gt;</code> when the matching GPU backend was
@@ -213,10 +220,21 @@ below).</p>
 orangu-server-style:</p>
 <pre><code>orangu-server: [slot 0] prompt 42 tokens in 0.18s (233.33 tok/s), generated 128 tokens in 4.31s (29.70 tok/s)</code></pre>
 <h2 id="gguf-inventory">GGUF inventory</h2>
-<p>Six subcommands cover getting, choosing, and cleaning up a model, all
-sharing the same <code>orangu-server.conf</code> and its
-<code>models</code> directory (see <strong>Configuration</strong>
-below).</p>
+<p>Seven subcommands cover getting, choosing, keeping current, and
+cleaning up a model, all sharing the same
+<code>orangu-server.conf</code> and its <code>models</code> directory
+(see <strong>Configuration</strong> below).</p>
+<p>Each of them names itself in the <strong>terminal title</strong>
+while it runs — <code>orangu-server download</code>,
+<code>orangu-server list</code>, <code>orangu-server prune</code>, and
+so on (<code>orangu-server init</code> for <code>-i</code>) — so a
+backgrounded or unfocused terminal still says which mode that process is
+in. Serving keeps the plain <code>orangu-server</code>, set as soon as
+the model starts resolving rather than only once it’s loaded. The title
+is left alone entirely when output isn’t going to a terminal
+(<code>orangu-server list &gt; models.txt</code>, or under
+<code>--daemon</code>), and is cleared again when the command
+finishes.</p>
 <p><strong><code>download</code></strong> fetches a model from Hugging
 Face into the configured <code>models</code> directory, laid out
 <strong>exactly</strong> the way llama.cpp’s own
@@ -228,7 +246,8 @@ llama.cpp itself recognizes it as already downloaded rather than
 fetching it again:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download ggml-org/embeddinggemma-300M-GGUF   <span class="co"># no :quant -&gt; prefers Q4_K_M, then Q8_0</span></span></code></pre></div>
-<pre><code>Downloading Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf: 47% [1/1]</code></pre>
+<pre><code>Downloading Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf: 47% [1/1]
+Total 47%: 0/1 files (8.60 GiB of 18.30 GiB), 1 active, 0 queued, ETA 12m</code></pre>
 <p>If the repository also ships a multimodal projector
 (<code>mmproj-*.gguf</code>, needed for vision/audio input), it’s
 fetched alongside the model too — the same best-matching one
@@ -240,12 +259,97 @@ model is launched. A multi-part model’s every shard (and a bundled
 an interrupted download resumes from where it left off next time. Set
 <code>HF_TOKEN</code> in the environment for a private or gated
 repository.</p>
-<p><strong><code>system</code></strong> detects the machine’s CPU and
-GPU(s) — the same report printed at the top of every attached
-<code>orangu-server</code> startup (see <strong>Quick start</strong>
-above):</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> system</span></code></pre></div>
-<pre><code>CPU
+<p>A sharded model shows <strong>one line per file</strong>, all of them
+from the start and all of them in one block, closed by a
+<code>Total</code> line for the run as a whole. A file is
+<code>Queued</code> until a thread picks it up, <code>Downloading</code>
+while it streams, and <code>Downloaded</code> once it’s on disk —
+including a file that was already there when the command started, which
+is simply downloaded as far as anything else is concerned. Those three
+are the whole vocabulary: an attempt that failed and is waiting to retry
+is still <code>Downloading</code>, at the percentage it had already
+reached, with the retry noted on that same line — a retry resumes from
+the bytes on disk rather than starting the file over. Every line is
+rewritten in place as that file’s own state changes:</p>
+<pre><code>Downloaded UD-Q8_K_XL/Kimi-K3-UD-Q8_K_XL-00001-of-00034.gguf: 100% [1/35]
+Downloading UD-Q8_K_XL/Kimi-K3-UD-Q8_K_XL-00002-of-00034.gguf: 63% [2/35]
+Downloading UD-Q8_K_XL/Kimi-K3-UD-Q8_K_XL-00003-of-00034.gguf: 12% (retry 1/5 in 30s) [3/35]
+Queued UD-Q8_K_XL/Kimi-K3-UD-Q8_K_XL-00004-of-00034.gguf [4/35]
+...
+Downloaded mmproj-BF16.gguf: 100% [35/35]
+Total 12%: 2/35 files (7.12 GiB of 58.30 GiB), 15 active, 18 queued, ETA 2h:47m</code></pre>
+<p><code>Total</code> is <strong>bytes</strong>, not an average of the
+per-file percentages: how much of the model is on disk against what all
+of it really weighs. So a 5 GiB shard half fetched counts for more than
+a finished 200 MiB one, and nothing is rounded away.</p>
+<p>Both of those numbers are known <strong>before the first byte is
+fetched</strong> — the sizes from the repository listing (an LFS file’s
+own object size, never anything measured on disk), what’s already there
+from any <code>.part</code> an interrupted earlier run left behind. So
+the <code>Total</code> line is accurate from the moment it appears
+rather than climbing as threads free up, and a file a previous run got
+partway through says so while it waits:
+<code>Queued …-00002-of-00034.gguf: 23% [2/35]</code>.</p>
+<p>The <strong>ETA</strong> is that difference — the real total minus
+what’s downloaded, so every outstanding byte including the queued files’
+— divided by the rate <strong>this</strong> run has actually pulled off
+the network. Bytes that were already on disk are progress but not
+throughput: counting them as speed would have a resumed terabyte-sized
+download claim to be minutes from finishing. It reads
+<code>2h:47m</code> past the hour and <code>47m</code> under it, and
+appears once there are a few seconds of real transfer to extrapolate
+from — before that, and once everything is fetched, there’s no ETA on
+the line at all.</p>
+<p>Before a single byte is fetched, the free space on the filesystem
+holding the <code>models</code> directory is checked against what this
+run still has to write — the model’s real total less whatever is already
+on disk. A download that can’t possibly fit is refused there and then,
+rather than filling the disk somewhere in the middle of a multi-hour
+fetch:</p>
+<pre><code>error: not enough free space in /mnt/ai/models/models--unsloth--Kimi-K3-GGUF/blobs:
+       1.31 TiB needed, 103.08 GiB free (short by 1.21 TiB)</code></pre>
+<p>The free space counted is what’s available to <em>your</em> user, not
+counting the root-only reserve. There’s no safety margin beyond that:
+the check catches the download that cannot fit, not the one that fits
+with little to spare, and it can’t account for anything else writing to
+the same filesystem while the download runs. On a platform that can’t
+report free space (Windows), the check is skipped rather than guessed
+at.</p>
+<p>Redrawing in place needs the whole block on screen at once, so a
+model with more files than the terminal has rows drops the per-file
+lines and leaves the <code>Total</code> line standing alone — it
+accounts for all of them anyway. Making the window taller (or having
+fewer files than rows) brings the per-file lines back. When output isn’t
+a terminal at all (<code>orangu-server download ... | tee log</code>),
+there’s no cursor movement or redraws: a plain line per file as it
+finishes, plus one whenever a download stalls into a retry, so a slow
+run still says why.</p>
+<p><strong><code>system</code></strong> detects the machine’s operating
+system, CPU and GPU(s) — the same report printed at the top of every
+attached <code>orangu-server</code> startup (see <strong>Quick
+start</strong> above):</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> system</span></code></pre></div>
+<pre><code>OS
+  Name             : Fedora Linux
+  Version          : 44
+  Kernel           : 7.1.3-200.fc44.x86_64
+  Distribution     : fedora
+  Machine          : Micro-Star International Co., Ltd. Bravo 15 A4DDR
+  Hostname         : orangu
+  Uptime           : 20d 07h
+  Load average     : 4.80, 4.09, 3.25
+  Swap total       : 16.00 GiB
+  Swap used        : 13.23 GiB
+  Huge pages       : madvise
+  Page size        : 4.00 KiB
+  Open files       : 1048576 (max 1048576)
+  Models           : /home/orangu/models
+  Models used      : 42.31 GiB
+  Models free      : 118.92 GiB
+  Built for        : x86_64-linux-gnu
+
+CPU
   Model            : AMD Ryzen 7 4800H with Radeon Graphics
   Vendor           : AuthenticAMD
   Architecture     : x86_64
@@ -254,6 +358,9 @@ above):</p>
   Frequency        : 4.29 GHz
   Memory total     : 62.19 GiB
   Memory available : 36.19 GiB
+  SSE4.2           : Yes
+  AVX2             : Yes
+  AVX512           : No
 
 GPU
   [0] AMD Navi 14 [Radeon RX 5500/5500M / Pro 5300/5300M/5500M]
@@ -261,6 +368,33 @@ GPU
       VRAM total   : 3.98 GiB
       VRAM used    : 3.71 GiB
       Driver       : amdgpu</code></pre>
+<p>The <code>OS</code> section leads: which OS this is frames how
+everything under it should be read. It reports the distribution/OS name
+and version, the kernel, the machine’s own vendor and product, hostname,
+uptime, load average, swap, the transparent-hugepage policy, page size,
+the open-file limit (<code>RLIMIT_NOFILE</code>, soft and hard), and the
+target this binary was built for — which isn’t always the machine it
+runs on, an <code>x86_64</code> build on an <code>aarch64</code> Mac
+being under Rosetta.</p>
+<p>The three <code>Models</code> lines are the disk side of the same
+picture: the configured <code>[orangu-server].models</code> directory,
+the space its contents take (everything under it, with a blob shared by
+several snapshot revisions counted once — not just the
+<code>.gguf</code> files <code>list</code> shows), and the free space
+left on the filesystem holding it, which is what the next
+<code>download</code> has to fit into. They need a config file to know
+which directory to measure, so on a machine that has none —
+<code>system</code> deliberately runs without one — those three lines
+are left out and the rest of the report is unchanged.</p>
+<p>Every field is best-effort and every platform answers a different
+subset; whatever the running platform can’t answer simply gets no line
+rather than a line saying <code>unknown</code>. Linux answers all of
+them, macOS all but the hugepage line (a Linux concept), and Windows the
+portable ones — name, edition, build, hostname, uptime, swap. Nothing
+here shells out: the portable fields come from <a
+href="https://docs.rs/sysinfo"><code>sysinfo</code></a>, the POSIX ones
+from <code>libc</code>, and the Linux-specific ones from plain
+<code>procfs</code>/<code>sysfs</code> file reads.</p>
 <p>GPU detection has no single cross-platform API, so it layers several
 best-effort sources: <code>nvidia-smi</code> for NVIDIA (Linux and
 Windows), Linux’s <code>/sys/class/drm</code> for everything else on
@@ -281,9 +415,10 @@ comfortably on this machine, printed as a table — one row per context
 length, one column per quantization — sized against two budgets:
 dedicated GPU VRAM alone (its table is skipped entirely on a machine
 with no dedicated GPU at all, rather than printing a useless 0 B budget
-of nothing but <code>-</code>), and every GPU’s memory combined:</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> suggest</span></code></pre></div>
+of nothing but <code>-</code>), and the machine’s total — the largest
+single memory pool on it, GPU or system RAM:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> suggest</span></code></pre></div>
 <pre><code>Suggested model size (Dedicated)
   Estimated budget : 3.98 GiB
 
@@ -291,17 +426,27 @@ class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#
   -------  -----------------  -------------------  -----------------
   1K       ~9B parameters     ~4B parameters       ~3B parameters
   ...</code></pre>
+<p>Both budgets are a <strong>largest single pool</strong>, never a sum
+of pools: a model is loaded onto one device and runs on one backend,
+with no tensor split across two GPUs and no partial-offload split of
+layers between a GPU and the CPU, so no run can draw on a discrete
+card’s VRAM <em>and</em> system RAM (or on two cards) at once. Dedicated
+VRAM is one of the candidates for it, which makes the
+<code>Dedicated</code> table above the <em>fast</em> subset of this one
+rather than a separate machine.</p>
 <p>The memory-estimation formula mirrors <a
 href="https://smcleod.net/vram-estimator/">Sam McLeod’s GGUF VRAM
 Estimator</a>: model weight bytes scale as parameters × bits-per-weight
 ÷ 8, KV cache bytes scale with context length × layers × hidden size,
-plus a small fixed runtime overhead.</p>
+plus a small fixed runtime overhead. Both budgets are sized against
+total memory rather than what happens to be free right now, so treat
+them as hardware ceilings, not promises.</p>
 <p><strong><code>list</code></strong> recursively scans the configured
 <code>models</code> directory for <code>.gguf</code> files and prints
 one row per model (a multi-shard model collapses into a single row, with
 <code>SIZE</code> summed across shards):</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> list</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> list</span></code></pre></div>
 <pre><code>NR  MODEL                                        QUANT   SIZE        SUPPORTED
  1  unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF    Q4_K_M  17.28 GiB   Yes (qwen3)
  2  unsloth/Qwen3-Coder-480B-A35B-Instruct-GGUF  Q4_K_M  270.14 GiB  Yes (qwen3)
@@ -334,18 +479,31 @@ hidden: you can still select it, but loading it will fail with a clear
 greying is only emitted to a terminal — piped or redirected output stays
 plain text, so the shell completion scripts that read <code>list</code>
 by column keep working.</p>
+<p>For every row that names a Hugging Face repo, <code>list</code> also
+checks that repo’s current <code>main</code> commit against the one the
+local copy was downloaded at, in parallel across every distinct repo on
+the list. A row that’s behind gets a trailing <code>(Refresh)</code>
+marker after its last column:</p>
+<pre><code>NR  MODEL                                      QUANT   SIZE       SUPPORTED
+ 1  unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF  Q4_K_M  17.28 GiB  Yes (qwen3) (Refresh)
+ 2  ggml-org/gemma-4-12B-it-GGUF               Q4_K_M  7.14 GiB   Yes (gemma4)</code></pre>
+<p><code>refresh</code> (below) is the command that acts on it. The
+check needs the Hub to be reachable: when it isn’t, <code>list</code>
+still prints its table and simply skips the check, silently, rather than
+failing or leaving a stale marker. A model outside the Hugging Face hub
+cache layout has no repo to check against and never gets a marker.</p>
 <p><strong><code>show</code></strong> prints a GGUF file’s full metadata
 — every key/value pair in the file, not just the well-known keys. Omit
 the argument entirely to pick one interactively (<code>list</code>’s own
 table, then an <code>NR</code> prompt):</p>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show 3                                     <span class="co"># NR from `list`</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show unsloth/Qwen3-Coder-Next-GGUF          <span class="co"># MODEL from `list`</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show Qwen3-Coder-30B-A3B-Instruct.gguf      <span class="co"># bare name under `models`</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show ./relative/or/absolute/path.gguf</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show 3 <span class="at">--tensors</span>   <span class="co"># also list every tensor&#39;s shape/type/offset</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show 3 <span class="at">--full</span>      <span class="co"># print full arrays instead of a preview</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show               <span class="co"># no argument: list, then pick an NR interactively</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show 3                                     <span class="co"># NR from `list`</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show unsloth/Qwen3-Coder-Next-GGUF          <span class="co"># MODEL from `list`</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show Qwen3-Coder-30B-A3B-Instruct.gguf      <span class="co"># bare name under `models`</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show ./relative/or/absolute/path.gguf</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show 3 <span class="at">--tensors</span>   <span class="co"># also list every tensor&#39;s shape/type/offset</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show 3 <span class="at">--full</span>      <span class="co"># print full arrays instead of a preview</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> show               <span class="co"># no argument: list, then pick an NR interactively</span></span></code></pre></div>
 <p>Array-valued metadata (e.g. <code>tokenizer.ggml.tokens</code>, which
 routinely holds well over 100,000 entries) is truncated to a short
 preview by default — <code>--full</code> disables that. Tensor data
@@ -359,10 +517,10 @@ the same interactive <code>list</code> + <code>NR</code> prompt bare
 one to remove instead), and always against every shard the model is made
 of, so a multi-shard model is deleted atomically rather than leaving
 orphans behind:</p>
-<div class="sourceCode" id="cb16"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> delete 3                                     <span class="co"># NR from `list`</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> delete unsloth/Qwen3-Coder-Next-GGUF          <span class="co"># MODEL from `list`</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> delete                                        <span class="co"># no argument: interactive</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> delete 3                                     <span class="co"># NR from `list`</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> delete unsloth/Qwen3-Coder-Next-GGUF          <span class="co"># MODEL from `list`</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> delete                                        <span class="co"># no argument: interactive</span></span></code></pre></div>
 <pre><code>Delete &#39;unsloth/Qwen3-Coder-Next-GGUF&#39; (Q4_K_M, 4 files, 17.28 GiB) from /home/you/models? [y/N]: y
 Deleted &#39;unsloth/Qwen3-Coder-Next-GGUF&#39; (Q4_K_M, 4 files, 17.28 GiB)</code></pre>
 <p>Asks for confirmation first (<code>[y/N]</code>, defaulting to
@@ -373,18 +531,59 @@ references it — and any now-empty <code>snapshots/&lt;rev&gt;/</code> or
 <code>models--&lt;user&gt;--&lt;model&gt;/</code> directory left behind
 is cleaned up, never anything above the configured <code>models</code>
 directory itself.</p>
+<p><strong><code>refresh</code></strong> downloads a model again at its
+repo’s newer commit — what a <code>(Refresh)</code> marker in
+<code>list</code> asks for. It is <code>delete</code> plus
+<code>download</code> of the same
+<code>&lt;user&gt;/&lt;model&gt;:&lt;quant&gt;</code> spec, in one
+step:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> refresh 3                                        <span class="co"># NR from `list`</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> refresh unsloth/Qwen3-Coder-Next-GGUF             <span class="co"># MODEL from `list`</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> refresh bartowski/Llama-3.2-1B-Instruct-GGUF:Q6_K <span class="co"># one quantization of several on disk</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> refresh                                           <span class="co"># no argument: interactive</span></span></code></pre></div>
+<pre><code>Refresh &#39;unsloth/Qwen3-Coder-Next-GGUF:Q4_K_M&#39; (4 files, 17.28 GiB)? The local copy is deleted first, then downloaded again. [y/N]: y
+Deleted &#39;unsloth/Qwen3-Coder-Next-GGUF&#39; (4 files, 17.28 GiB)
+Downloaded to /home/you/models/models--unsloth--Qwen3-Coder-Next-GGUF/snapshots/&lt;newcommit&gt;/...</code></pre>
+<p>The local copy really does go first. A changed repo means a full
+second copy on disk, not a cheap blob-sharing snapshot, so deleting
+first means a 17 GiB model needs 17 GiB free to refresh rather than 34 —
+at the cost that an interrupted download leaves the model missing rather
+than stale. Re-running <code>refresh</code> (or <code>download</code>,
+which resumes from the <code>.part</code> file left behind) is what
+recovers from that.</p>
+<p>The argument resolves the way <code>delete</code>’s does, with one
+difference: a <code>MODEL</code> name that matches more than one row is
+an error rather than a first-match. Since <code>refresh</code> deletes
+what it then downloads, silently picking a row would refresh the wrong
+quantization <em>and</em> leave the one you meant untouched:</p>
+<pre><code>$ orangu-server refresh bartowski/Llama-3.2-1B-Instruct-GGUF
+error: &#39;bartowski/Llama-3.2-1B-Instruct-GGUF&#39; names 2 models on disk (Q4_K_M, Q6_K); name the quantization too — &#39;bartowski/Llama-3.2-1B-Instruct-GGUF:Q4_K_M&#39; — or use an NR from &#39;orangu-server list&#39;</code></pre>
+<p>With no argument, <code>refresh</code> prints <code>list</code>’s
+table with every row that is <em>already</em> current greyed out — the
+inverse of what <code>list</code> greys — so the only <code>NR</code>s
+standing out are the ones worth refreshing, and prompts for one. When
+nothing is behind (or the Hub couldn’t be reached, so nothing is
+<em>known</em> to be behind and nothing is greyed) it says so before the
+prompt. A model that didn’t come from Hugging Face has no repo to
+refresh from; naming one is an error, raised before anything is deleted.
+Confirmation and <code>-y</code>/<code>--yes</code> work exactly as in
+<code>delete</code>.</p>
 <h2 id="configuration">Configuration</h2>
 <p><code>orangu-server.conf</code>:</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/models</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/gemma-4-E2B-it-GGUF:Q4_K_M</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8100</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="dt">slots </span><span class="ot">=</span><span class="st"> </span><span class="dv">1</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="dt">web </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="dt">backend </span><span class="ot">=</span><span class="st"> auto</span></span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> all</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/models</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/gemma-4-E2B-it-GGUF:Q4_K_M</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8100</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="dt">slots </span><span class="ot">=</span><span class="st"> </span><span class="dv">1</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="dt">backend </span><span class="ot">=</span><span class="st"> auto</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a><span class="dt">reexec </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span></code></pre></div>
 <ul>
 <li><code>models</code> — the base directory a model spec resolves into:
 what <code>list</code>/ <code>show</code> scan (recursively) for
@@ -392,20 +591,35 @@ what <code>list</code>/ <code>show</code> scan (recursively) for
 serving path resolves the CLI’s positional <code>model</code> argument
 against. Required by every subcommand except <code>system</code> and
 <code>suggest</code> (pure hardware inventory, no models directory
-involved) and a <code>show</code> given a direct path.</li>
+involved) and a <code>show</code> given a direct path.
+<code>-i</code>/<code>--init</code> prompts for it with TAB-completion
+over real filesystem paths and an inline grey ghost suggestion of the
+directory being typed, so pointing at one is a prefix and a keypress
+rather than a full path typed out.</li>
 <li><code>model</code> — a model spec, the same shape as the CLI’s
 positional argument (a local <code>.gguf</code> path, an
 <code>NR</code>/<code>MODEL</code> label, or a
 <code>&lt;user&gt;/&lt;model&gt; [:quant]</code> Hugging Face repo).
-<strong>Only consulted in <code>--daemon</code> mode</strong> — a
-normal, attached-terminal run still takes its model from the CLI
-argument, or prompts interactively if none is given, exactly as before;
-<code>model</code> in the config is otherwise ignored.
+<strong>Required by <code>--daemon</code></strong>, which has no
+terminal to prompt on. An attached run still takes its model from the
+CLI argument when one is given; when none is, the interactive picker
+<strong>pre-selects this one</strong> — its <code>NR</code> is shown as
+the prompt’s default and ghosted on the empty line, so a config that
+already names a model is one Enter away rather than a row to find. Type
+a different <code>NR</code> (or a label, or a path) to override it. A
+model the config names but that isn’t installed has no row to point at;
+its spec is offered as written instead, and Enter fetches it exactly as
+<code>orangu-server &lt;spec&gt;</code> would.
 <code>-i</code>/<code>--init</code> prompts for it with TAB-completion
 over the models already installed under <code>models</code>, and an
 inline grey ghost suggestion that opens on the first of them and narrows
 as you type — unless exactly one is installed there, which is taken
-without asking.</li>
+without asking. Each is offered as <code>MODEL:QUANT</code>
+(<code>unsloth/gemma-4-E2B-it-GGUF:Q4_K_M</code>), not as the bare
+<code>MODEL</code>: a repo with several quantizations on disk prints the
+same <code>MODEL</code> on every one of their rows, so the bare name
+would be listed once per quantization and would resolve to whichever
+came first rather than the one picked.</li>
 <li><code>host</code>/<code>port</code> — the bind address, printed on
 startup. <code>host</code> defaults to <code>all</code> (<code>*</code>
 is accepted as an alias for it), which binds every network interface on
@@ -421,29 +635,86 @@ to.</li>
 <li><code>slots</code> — how many requests generate concurrently, each
 with its own KV cache (default <code>1</code>). Raise it to serve
 overlapping requests without queuing behind each other.</li>
-<li><code>web</code> — port for the built-in web UI (see below), bound
-alongside <code>port</code> rather than instead of it. <code>0</code>
-(the default) disables it — no second listener is bound.</li>
 <li><code>backend</code> — <code>auto</code> (the default),
-<code>cpu</code>, <code>vulkan</code>, <code>cuda</code>,
-<code>opencl</code>, or <code>rocm</code>. <code>auto</code> tries every
-GPU backend compiled into this build, in order (Vulkan, CUDA, OpenCL,
-then ROCm if built with the <code>rocm</code> feature), falling back to
-the CPU backend silently if none is found; naming a backend explicitly
-fails to start instead of falling back, for when GPU inference was asked
-for specifically. See <strong>GPU backend</strong> below.</li>
+<code>cpu</code>, <code>vulkan</code>, <code>metal</code>,
+<code>cuda</code>, <code>opencl</code>, or <code>rocm</code>.
+<code>auto</code> tries every GPU backend compiled into this build, in
+order (Vulkan, CUDA, OpenCL, then ROCm if built with the
+<code>rocm</code> feature), falling back to the CPU backend silently if
+none is found. <strong>On macOS the order starts with Metal</strong>,
+which is the only GPU API Apple ships — Vulkan is still tried behind it,
+for a Mac running MoltenVK. Naming a backend explicitly fails to start
+instead of falling back, for when GPU inference was asked for
+specifically. See <strong>GPU backend</strong> below.</li>
 <li><code>role</code> — <code>all</code> (the default),
 <code>code</code>, <code>review</code>, <code>explorer</code>, or
-<code>embedding</code>. See <strong>Roles</strong> below. <strong>Only
-consulted in <code>--daemon</code> mode</strong> — same as
-<code>model</code>, and for the same reason: an attached-terminal run
-always takes its role from the CLI flag if one was given, or (when no
-model was given on the CLI either) the interactive
-<code>role [all]:</code> prompt right after model selection, or
-<code>all</code> otherwise — never from this key; <code>role</code> in
-the config is otherwise ignored. In <code>--daemon</code> mode, an
-explicit CLI role flag still overrides it.</li>
+<code>embedding</code>. See <strong>Roles</strong> below. Resolved in
+this order: an explicit CLI flag
+(<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>)
+wins everywhere and skips the prompt entirely; failing that,
+<code>--daemon</code> takes this key directly, having no terminal to
+prompt on; and an attached run with no flag uses it to
+<strong>pre-select the interactive <code>role</code> prompt</strong> —
+ghosted on the empty line, TAB-completing over the five names, and
+overridable by typing another. That prompt only appears when no model
+was given on the CLI either; an attached run that names a model and no
+role flag is <code>all</code>, as before.</li>
 </ul>
+<h3 id="the-web-section">The <code>[web]</code> section</h3>
+<p>The built-in web console (see <strong>Web UI</strong> below) is
+configured in its own section, and <strong>having that section at all is
+what enables it</strong>. A config with no <code>[web]</code> binds no
+second listener; <code>-i</code>/<code>--init</code> asks
+<code>Add web console</code> and then <code>host</code>,
+<code>port</code>, <code>reexec</code> and <code>delete</code>, or
+writes no section at all.</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> 127.0.0.1</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="dt">reexec </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="dt">delete </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span></code></pre></div>
+<ul>
+<li><code>port</code> — where the console listens, bound alongside
+<code>[orangu-server].port</code> rather than instead of it. Defaults to
+<code>8101</code> when the section is present but says nothing.</li>
+<li><code>host</code> — the address it binds, prompted for with the same
+interface completion and ghost suggestion
+<code>[orangu-server].host</code> gets, and defaulting to whatever that
+was just answered. <strong>When the key is absent it falls back to
+<code>[orangu-server].host</code></strong>, so an ordinary config names
+one host and both listeners use it; answering differently is how the two
+get separated — an API on <code>all</code> for the machines that consume
+it, with the console kept on <code>127.0.0.1</code>.</li>
+<li><code>reexec</code> — whether the console’s model manager may load a
+different model (default <code>yes</code>;
+<code>no</code>/<code>true</code>/<code>false</code>/<code>on</code>/<code>off</code>/<code>1</code>/<code>0</code>
+are all accepted). Loading one restarts this process on it, so a
+deployment that needs the server it started to stay the server it
+started — behind a supervisor, or where one specific model is the point
+of the process — sets <code>no</code>, and every row’s
+<strong>Load</strong> button is gone. Removed rather than disabled, for
+the same reason <code>delete</code> below removes its own: a control
+that can never do anything on this server explains less than its absence
+does. Non-Unix platforms have no <code>execve</code> and behave as
+though it were <code>no</code>. See <strong>Loading a different
+model</strong> below.</li>
+<li><code>delete</code> — whether the console’s model manager may delete
+models (default <code>yes</code>, same spellings). Set <code>no</code>
+and every row’s <strong>Delete</strong> button is gone, and the endpoint
+behind it refuses. Its own key rather than riding on <code>reexec</code>
+because the two are genuinely separate wishes: deleting a model is the
+one irreversible thing the console can do, and a deployment may well
+want a model switch allowed while the models directory stays read-only.
+It governs <strong>models only</strong> — History’s own delete controls
+are unconditional, since a chat session is the console’s own scratch
+data rather than a file on disk something else put there.</li>
+</ul>
+<p><code>web = &lt;port&gt;</code> under <code>[orangu-server]</code> is
+what this replaced, and still works: a configuration written against it
+goes on serving the console on that port, with <code>host</code> and
+<code>reexec</code> at their defaults. A <code>[web]</code> section
+takes precedence over it wherever both appear.</p>
 <p><code>-c</code>/<code>--config</code> picks a config file explicitly;
 without it, <code>./orangu-server.conf</code> then
 <code>~/.orangu/orangu-server.conf</code> are tried, in that order — the
@@ -465,12 +736,12 @@ than silently lost. <code>-h</code>/<code>--help</code> and
 <code>-V</code>/<code>--version</code> are also available.
 <code>-s</code>/ <code>--shell-completions</code> prints a bash/zsh/fish
 completion script for the shell detected from <code>$SHELL</code> —
-covering every flag above, the six subcommand names, and the positional
-<code>model</code> argument plus <code>show</code>’s and
-<code>delete</code>’s own arguments, the latter three completed by
-shelling out to <code>orangu-server list</code> itself.
-<code>-w</code>/<code>--workspace</code> completes directories (only),
-and <code>-c</code>/<code>--config</code> any file, in all three
+covering every flag above, the subcommand names, and the positional
+<code>model</code> argument plus <code>show</code>’s,
+<code>delete</code>’s and <code>refresh</code>’s own arguments, those
+four completed by shelling out to <code>orangu-server list</code>
+itself. <code>-w</code>/<code>--workspace</code> completes directories
+(only), and <code>-c</code>/<code>--config</code> any file, in all three
 shells.</p>
 <h2 id="workspace">Workspace</h2>
 <p><code>-w</code>/<code>--workspace</code> sets the root directory
@@ -478,9 +749,9 @@ shells.</p>
 same way, as <code>orangu</code>’s own
 <code>-w</code>/<code>--workspace</code> (see the Workspaces
 chapter):</p>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-w</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--workspace</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-w</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--workspace</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
 <p>It is a run-time parameter only — there is no
 <code>orangu-server.conf</code> key for it. Without the argument the
 current working directory is used. Either way the path is made absolute
@@ -563,12 +834,12 @@ command line either, whatever’s typed at the interactive
 <code>role</code> key; or, failing all three, <code>all</code>.</p>
 <h2 id="gpu-backend">GPU backend</h2>
 <p><code>orangu-server</code> can run the forward pass on a GPU as well
-as on the CPU. Four GPU backends are available, chosen via
+as on the CPU. Five GPU backends are available, chosen via
 <code>backend</code> in the config (or <code>auto</code>, the default —
 see <strong>Configuration</strong> above for the fallback order):</p>
 <ul>
 <li><strong>Vulkan</strong> (<code>backend = vulkan</code>) — the most
-mature and heavily tuned of the four. Weight tensors are uploaded once
+mature and heavily tuned of the five. Weight tensors are uploaded once
 and cached on the GPU for the model’s lifetime rather than re-uploaded
 per request, and a decode step’s matrix multiplications, attention,
 RoPE, and normalization are fused together into as few GPU submissions
@@ -582,29 +853,140 @@ GPU. Verified end-to-end against real AMD hardware. Still meaningfully
 behind llama.cpp’s own tuned Vulkan backend on the same model and
 hardware — a real, ongoing, and openly tracked performance gap, not a
 hidden one.</li>
+<li><strong>Metal</strong> (<code>backend = metal</code>, Apple GPUs;
+the default on macOS) — the Vulkan backend’s engine and its kernels,
+running on Apple hardware. Not a separate, smaller implementation: the
+compute shaders, the cached GPU-resident weights, the fused decode and
+prefill submissions, split-k attention and GPU sampling are all written
+against portable <code>wgpu</code> and WGSL, and this backend simply
+brings that same code up on a Metal device instead of a Vulkan one. So
+everything listed for Vulkan above is live here too, and both get every
+future optimization at the same time. macOS ships no Vulkan driver,
+which is why <code>auto</code> prefers Metal there and why a Mac
+previously fell all the way back to the CPU backend. Verified on each
+push by CI’s macOS runner: the same per-quantization-type cross-checks
+against the CPU backend that gate the Vulkan path, plus a whole-model
+prefill and a batched decode on a real GGUF.</li>
 <li><strong>CUDA</strong> (<code>backend = cuda</code>, NVIDIA GPUs),
 <strong>OpenCL</strong> (<code>backend = opencl</code>, any
 OpenCL-capable GPU), and <strong>ROCm</strong>
 (<code>backend = rocm</code>, AMD GPUs via HIP) — each real and working,
 cross-checked in automated tests against the CPU backend’s own output,
-but scoped more narrowly than Vulkan: a straightforward dequantizing
-matmul kernel without Vulkan’s fused, GPU-resident optimizations. None
-of the three has been run against real NVIDIA/OpenCL/ROCm hardware
-during development, so treat them as functional but less proven than the
-Vulkan path until verified on your own hardware. ROCm additionally
-requires building with the <code>rocm</code> Cargo feature, since it’s
-off by default in a plain build.</li>
+but scoped more narrowly than Vulkan and Metal: a straightforward
+dequantizing matmul kernel without Vulkan’s fused, GPU-resident
+optimizations. None of the three has been run against real
+NVIDIA/OpenCL/ROCm hardware during development, so treat them as
+functional but less proven than the Vulkan path until verified on your
+own hardware. ROCm additionally requires building with the
+<code>rocm</code> Cargo feature, since it’s off by default in a plain
+build.</li>
 </ul>
-<p>On macOS, <code>backend = auto</code> automatically detects the
-machine and runs on CPU, no configuration needed.</p>
+<p>On macOS, <code>backend = auto</code> needs no configuration: it
+finds the machine’s Metal device and runs the model on the GPU. Earlier
+releases fell back to the CPU there, because Apple ships no Vulkan
+driver and Metal had no backend yet.</p>
 <p>Naming a <code>backend</code> explicitly fails to start rather than
 silently falling back to the CPU, for when GPU inference was asked for
 specifically. Startup prints which backend actually ran the model (see
 <strong>Quick start</strong> above).</p>
+<h3 id="when-the-gpu-device-is-lost">When the GPU device is lost</h3>
+<p>A graphics driver can reset the device out from under a running
+process — a GPU hang, a compositor crash, <code>amdgpu</code> recovering
+a wedged queue. Vulkan (and Metal) surface this as a <em>lost
+device</em>: every buffer map, poll, and submission on it fails from
+then on, and the API offers no way to re-create it in place. The weights
+uploaded to that device are gone with it, and no request in flight can
+finish correctly.</p>
+<p><code>orangu-server</code> treats it as exactly that — a fault it
+cannot repair, and one that a fresh process does not have. It is
+detected however the graphics API reports it: as an error where
+<code>wgpu</code> returns one, and otherwise from <code>wgpu</code>’s
+own fatal panic, which is what <code>Device::poll</code> raises instead
+of returning:</p>
+<ol type="1">
+<li>The request that hit it is failed with one sentence: <em>“the server
+lost its GPU device (the graphics driver reset it) and is restarting;
+retry in a moment”</em>. No panic text, no backtrace.</li>
+<li>The real detail — which readback was in flight, the driver’s own
+error — is written to <code>orangu-server</code>’s own log, which is
+where a diagnosis is made. Check <code>dmesg</code> there too; a device
+is rarely lost without the kernel saying why.</li>
+<li>The process exits with status <code>75</code>
+(<code>EX_TEMPFAIL</code>, “retry later”) about two seconds later, once
+that error has reached the client.</li>
+</ol>
+<p>What causes it here is worth knowing, because it is preventable
+rather than random. The reset is a <strong>job timeout</strong>:
+<code>amdgpu</code> gives a submission ~10 seconds on the ring, and one
+that stops finishing in time gets the ring reset with this process named
+as the guilty context —
+<code>radv/amdgpu: The CS has been cancelled because the context is lost</code>
+in the log.</p>
+<p><code>orangu-server</code> therefore feeds a prompt to the model in
+chunks. A chunk is bounded by <strong>time</strong>, not just by token
+count, because the two are not proportional: a prefill chunk attends
+over everything before it, so the cost of a token climbs with how deep
+into the prompt it is. Measured on a 4 GiB RX 5500M, a fixed 512-token
+chunk took</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">position</th>
+<th style="text-align: right;">chunk time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">512</td>
+<td style="text-align: right;">2.3 s</td>
+</tr>
+<tr>
+<td style="text-align: right;">3 584</td>
+<td style="text-align: right;">5.1 s</td>
+</tr>
+<tr>
+<td style="text-align: right;">6 656</td>
+<td style="text-align: right;"><strong>10.1 s</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">7 680</td>
+<td style="text-align: right;"><strong>11.7 s</strong> → device
+reset</td>
+</tr>
+</tbody>
+</table>
+<p>so a token-count limit alone stops protecting anything past a few
+thousand tokens. Each chunk is now timed, and the next one is scaled by
+the rate just measured to hold roughly
+<code>ORANGU_PREFILL_CHUNK_MS</code> (default 3000) per submission;
+<code>ORANGU_PREFILL_BATCH</code> (default 512) remains the ceiling. A
+prompt opens with a small probe chunk rather than a full-width one,
+since nothing knows the machine’s cost curve in advance and a full-width
+chunk at a deep position is exactly the submission that hangs.</p>
+<p>On the same card, a 48 000-token prompt that previously reset the
+device at position 7 680 now completes in 163 chunks with a slowest
+submission of 3.3 s, the width falling 512 → 382 → 297 → 239 → 192 as
+the context grows. Prefill throughput at ordinary prompt lengths is
+unchanged (227 / 201 / 164 tok/s at 4k / 8k / 16k, against 229 / 209 /
+161 before).</p>
+<p>If you still see resets, lower
+<code>ORANGU_PREFILL_CHUNK_MS</code>.</p>
+<p>Under <code>orangu-coordinator</code> that is the whole recovery: it
+restarts a profile whose <code>orangu-server</code> has stopped on the
+very next request, so the model comes back on a working device at full
+speed, and a request that was in flight during the swap is retried once
+rather than failed (see the Coordinator chapter). Run standalone,
+<code>orangu-server</code> needs a supervisor — systemd’s
+<code>Restart=on-failure</code>, a container restart policy, or a shell
+loop — to come back on its own.</p>
+<p>Earlier versions had no such handling: a lost device surfaced as a
+Rust panic and backtrace <em>as the reply text</em>, and the process
+stayed up with a dead GPU, so every request after it failed the same
+way.</p>
 <h2 id="web-ui">Web UI</h2>
-<p>Set <code>web</code> in the config (or at the <code>web</code> prompt
-in <code>--init</code>) and visit
-<code>http://&lt;host&gt;:&lt;web&gt;/</code> for a small built-in chat
+<p>Add a <code>[web]</code> section to the config (or answer
+<code>Add web console</code> in <code>--init</code>) and visit
+<code>http://&lt;host&gt;:&lt;port&gt;/</code> for a small built-in chat
 UI: an input box, a scrolling transcript, a <strong>New Chat</strong>
 button, and a <strong>History</strong> button that lists previous chat
 sessions — sessions with no messages in them are left out, so History
@@ -614,6 +996,81 @@ same binary — a chat turn calls straight into the model in process,
 never making an HTTP hop to the API’s own <code>port</code>.</p>
 <p>Each assistant reply is rendered from markdown to HTML server-side,
 including syntax-highlighted fenced code blocks.</p>
+<h3 id="diagrams">Diagrams</h3>
+<p>A fenced code block tagged <code>mermaid</code> (or <code>mmd</code>)
+is drawn as a diagram instead of printed as code:</p>
+<pre><code>```mermaid
+flowchart TD
+    A[Start] --&gt; B{Is it working?}
+    B --&gt;|Yes| C[Ship it]
+    B --&gt;|No| D[Debug]
+    D --&gt; B
+```</code></pre>
+<p>All of <a href="https://mermaid.js.org/">Mermaid</a>’s diagram
+families are supported — flowcharts, sequence, class, state, ER, Gantt,
+pie, mindmap, gitgraph, journey, timeline, quadrant, sankey, xychart,
+block, requirement, C4, packet, radar, and treemap.</p>
+<p>Drawing happens on the server, in Rust, with no browser, Node, or
+network access involved, so diagrams work on a fully offline machine
+like the rest of the console. They follow the light/dark theme toggle,
+and each diagram carries a collapsed <strong>Diagram source</strong>
+disclosure holding the Mermaid text the model wrote, so you can copy it
+back out.</p>
+<p>A diagram doesn’t have to be tagged. An <strong>untagged</strong>
+fence whose first line is a Mermaid header — models don’t always add the
+tag — is drawn too. A fence tagged as something else is left alone: if
+the model said <code>bash</code>, you get <code>bash</code>, even when
+the contents would parse as a diagram.</p>
+<h3 id="diagrams-in-attached-files">Diagrams in attached files</h3>
+<p>Diagrams are also detected in files you attach, and drawn under that
+message’s file chips. Two shapes are recognised:</p>
+<ul>
+<li><strong>A file that is one diagram</strong> — a
+<code>.mmd</code>/<code>.mermaid</code> export, or a plain text file
+holding nothing but diagram source. There is no fence to go on, so this
+is recognised from the diagram header itself.</li>
+<li><strong>A document containing diagrams</strong> — a Markdown design
+doc with <code>```mermaid</code> blocks in it. Untagged blocks are
+checked the same way replies are; blocks tagged as another language are
+left alone.</li>
+</ul>
+<p>Each attached file the server could read becomes an expandable chip:
+click it to see what was actually sent to the model — any diagrams as
+pictures, then the extracted text itself. It starts collapsed, so a
+message stays readable no matter how large the file was.</p>
+<p>A file nothing could be read from — a binary, or a format with no
+text extractor — stays a plain chip with no expand control, since there
+would be nothing behind it.</p>
+<p>This matters because an attachment is otherwise invisible to you: its
+text goes to the model, and the message shows only the file’s name and
+size. What you attached would have been the one part of your own message
+you couldn’t see.</p>
+<p>Content appears as soon as the file is sent — you don’t need to
+reload — and comes back on a later visit through
+<strong>History</strong>. Up to 32 diagrams are drawn per file; a
+document with more says so rather than quietly showing only the first
+few.</p>
+<p>Diagrams are left-aligned and scaled to fit the message. Real
+diagrams run large — an ER diagram with a dozen entities is around 2700
+pixels wide, several times a message’s width — so each one carries a
+<strong>download</strong> button, the same save icon an answer has,
+giving you the SVG at full resolution. The button saves the variant
+matching your current theme, and the file is the exact diagram on
+screen.</p>
+<h3 id="diagrams-in-the-answer">Diagrams in the answer</h3>
+<p>Ask a model to render an attached diagram and it will typically
+explain it in words rather than reproducing the Mermaid — the
+explanation is useful, but on its own it leaves you without the picture.
+So when an answer holds no diagram of its own, the diagrams from that
+turn’s attachments are shown beneath it, at full size, each captioned
+with the file it came from. You get the explanation and then the
+picture.</p>
+<p>If the model <em>does</em> write a Mermaid block, that is what you
+see and nothing is added — the answer is never second-guessed or
+duplicated. The caption exists so a picture drawn from your file never
+reads as one the model produced, and the reply’s saved text stays
+exactly what the model wrote, which is also what <strong>Save as
+Markdown</strong> and the next turn’s context see.</p>
 <p>While a reply is streaming in, the <strong>Send</strong> button
 becomes a <strong>Stop</strong> (×) button; clicking it cancels the
 request. Whatever text had already streamed in stays on screen, marked
@@ -623,11 +1080,200 @@ a stopped reply won’t reappear if you reload or revisit it from
 <p>Chat sessions persist as one directory per session at
 <code>~/.orangu/server/sessions/&lt;uuid&gt;/chat.json</code>, so
 <strong>History</strong> survives a restart.</p>
+<p>History can clean them up too: each row carries a
+<strong>cross</strong> that deletes that one chat, and the dropdown’s
+footer a small <strong>Clear all</strong> that deletes every one. Both
+confirm first, and neither is gated by <code>[web].delete</code> — that
+switch is about models, files on disk something else put there, while a
+chat session is the console’s own scratch data. Deleting the chat
+currently on screen starts a fresh empty one in its place; the dropdown
+stays open, so several can be cleared in a row.</p>
+<h2 id="model-management">Model management</h2>
+<p>The topbar’s <strong>Models</strong> button opens a panel showing the
+models directory as <code>orangu-server list</code> prints it — the same
+numbered table, column for column:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>NR</code></td>
+<td style="text-align: left;">the row number, the same one
+<code>list</code> gives the same model</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MODEL</code></td>
+<td style="text-align: left;">what to pass to
+<code>show</code>/<code>delete</code>/<code>refresh</code> on the
+command line</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>QUANT</code></td>
+<td style="text-align: left;">the quantization the file is stored at,
+<code>-</code> when it says nothing</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SIZE</code></td>
+<td style="text-align: left;">summed across every shard</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SUPPORTED</code></td>
+<td style="text-align: left;">e.g. <code>Yes (llama)</code>,
+<code>No (glm-dsa)</code>, <code>No (llama, TQ1_0)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Those strings come from the same code that prints them in the
+terminal, so the two tables cannot end up saying different things about
+the same file. A model this build cannot load is greyed, exactly as
+<code>list</code> greys it, and a file whose header wouldn’t parse shows
+its <code>error:</code> in place of the last three columns — again as
+<code>list</code> does. The row this server actually loaded is tinted
+and marked <strong>loaded</strong>; a row whose Hugging Face repo has a
+newer revision is marked <strong>Refresh</strong>, <code>list</code>’s
+own marker (<code>orangu-server refresh</code> is what acts on it).</p>
+<p>Above the table sits the loaded model with its architecture, backend,
+layer count, context length, role and slot count, and the models
+directory with how much of its filesystem is used and free.</p>
+<p>Two icon buttons per row — hover either for what it does:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Icon</th>
+<th style="text-align: left;">Tooltip</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">play triangle</td>
+<td style="text-align: left;"><strong>Load …</strong></td>
+<td style="text-align: left;">serve this model instead — see below.
+Absent entirely when <code>[web].reexec</code> is off</td>
+</tr>
+<tr>
+<td style="text-align: left;">document</td>
+<td style="text-align: left;"><strong>Show …</strong></td>
+<td style="text-align: left;">this file’s full GGUF metadata —
+<code>orangu-server show</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">waste basket</td>
+<td style="text-align: left;"><strong>Delete …</strong></td>
+<td style="text-align: left;">remove every shard —
+<code>orangu-server delete</code>. Absent entirely when
+<code>[web].delete</code> is off</td>
+</tr>
+</tbody>
+</table>
+<p>The loaded model’s row shows a check mark where its
+<strong>Load</strong> button would be (and is named
+<strong>loaded</strong> beside its own name, which is what says so when
+there are no Load buttons at all). <strong>Delete</strong> is disabled
+on it: its weights are memory-mapped by the running engine, so removing
+the file would leave this process reading something that no longer has a
+name. It asks for confirmation naming the model and its size, and
+reclaims the Hugging Face hub-cache blobs too when nothing else still
+references them.</p>
+<p><strong>Show</strong> opens a scrolling pane with the file’s
+metadata, and has two toggles of its own — <strong>Include
+tensors</strong> (<code>show --tensors</code>: every tensor’s name,
+shape, type and offset) and <strong>Expand truncated arrays</strong>
+(<code>show --full</code>: every element, including a 100,000-entry
+vocabulary) — plus a <strong>Save</strong> button that downloads what is
+on screen as a text file.</p>
+<p>Above the table, a text box takes a <code>user/model:QUANT</code>
+Hugging Face repo and downloads it. Without <code>:QUANT</code> it
+prefers <code>Q4_K_M</code> then <code>Q8_0</code>, exactly as
+<code>orangu-server download</code> does. The download runs in the
+background — closing the panel, or the browser tab, does not stop it —
+and reports its progress per file, with an overall percentage and ETA,
+in the panel: the same numbers <code>download</code>’s own terminal
+progress board draws, as data rather than as in-place-updating text. One
+download runs at a time; starting a second while one is in flight is
+refused rather than queued, since two fetches into the same directory
+would compete for the same disk and the same free-space check. An
+interrupted one resumes from its <code>.part</code> file the next time
+it is asked for.</p>
+<p><strong>Rescan</strong> (the circular arrow in the panel header)
+re-reads the models directory. The panel does not re-read it on its own:
+opening every GGUF header under a directory holding a few dozen models
+takes seconds, and nothing there changes by itself. A delete or a
+finished download refreshes the listing automatically;
+<strong>Rescan</strong> is for a <code>.gguf</code> that arrived some
+other way. The <strong>Refresh</strong> markers come from one Hugging
+Face request per distinct repo, made when the panel opens and when
+<strong>Rescan</strong> is pressed, never on the poll — an unreachable
+Hub marks nothing, since “unknown” is not “behind”.</p>
+<h3 id="loading-a-different-model">Loading a different model</h3>
+<p><strong>Load</strong> serves a different model without you going back
+to the terminal. It does that by <strong>restarting the server on
+it</strong> — the process replaces itself (<code>execve</code>) with a
+new one started on the chosen model, rather than swapping the model
+inside the running process. That is deliberate: the new model is loaded
+by exactly the same code that loads one at startup, so there is no
+second load path that could behave differently from a normal start.</p>
+<p>Three things survive the restart, which is what makes it a handover
+rather than a stop and start:</p>
+<ul>
+<li><strong>The listening sockets.</strong> Both are kept open across
+the restart and picked back up by the new process, so neither port is
+ever unbound. Nothing can take the port in between, and a client
+connecting during the load simply waits rather than getting “connection
+refused”. Measured on a 400-request probe across a live handover: every
+request answered, except the single one already in flight at the moment
+of the switch.</li>
+<li><strong>The process id.</strong> <code>execve</code> replaces the
+program but keeps the pid, so systemd, a <code>--daemon</code> launcher,
+or a shell job goes on tracking the same process. A
+<code>--daemon</code> server stays detached.</li>
+<li><strong>Everything on disk.</strong> Chat history, downloaded
+models, saved slot KV-caches.</li>
+</ul>
+<p>What does not survive is anything held only in memory. Requests in
+flight are cut off, which is why <strong>Load</strong> refuses while any
+slot is still generating — finish or stop the reply, then load. (A
+request that has arrived but has not yet been given a slot can still be
+caught by the switch; the window is small and the client simply
+retries.)</p>
+<p>The server keeps everything about itself that was not the model: the
+same <strong>role</strong>, workspace, host, ports, backend and slot
+count it was started with, whether they came from the command line, the
+config file, or an interactive prompt. Only the model changes.</p>
+<p>Before switching, the console checks what it can while the current
+model is still working — that the file resolves, and that its header
+names an architecture and quantization this build can read (the same
+judgement the <code>SUPPORTED</code> column reports). Some failures can
+only be found by actually loading: a GPU backend with no kernel for one
+of the model’s tensor types, or a model too large for the machine. If
+that happens the server restarts once more on the model it was serving
+before, and the console says so rather than leaving you with a dead
+port.</p>
+<p>The switch is not written anywhere: restart the server and it comes
+back on whatever the command line or <code>model</code> in
+<code>orangu-server.conf</code> names. To make a choice permanent, set
+<code>model</code> in the config.</p>
+<p>Set <code>reexec = no</code> in the <code>[web]</code> section to
+turn this off — the <strong>Load</strong> buttons are then gone
+entirely, and the endpoint behind them refuses. It is also unavailable
+on non-Unix platforms, which have no <code>execve</code>.</p>
+<p>The whole panel is served on the <code>[web]</code> port, which is
+unauthenticated — like the rest of the web UI, and like the
+file-lifecycle API on the API port, it assumes a trusted network. A
+server reachable from an untrusted one should not have <code>web</code>
+enabled at all.</p>
 <h2 id="session-management">Session management</h2>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune            <span class="co"># list sessions, pick one (or &#39;all&#39;) interactively</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune all        <span class="co"># delete every non-active session</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune <span class="op">&lt;</span>uuid<span class="op">&gt;</span>     <span class="co"># a specific session, by NR or full id</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune            <span class="co"># list sessions, pick one (or &#39;all&#39;) interactively</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune all        <span class="co"># delete every non-active session</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune <span class="op">&lt;</span>uuid<span class="op">&gt;</span>     <span class="co"># a specific session, by NR or full id</span></span></code></pre></div>
 <p><code>prune</code> deletes chat sessions from
 <code>~/.orangu/server/sessions/</code>. Needs no config file and loads
 no model. Every invocation, regardless of its own argument, first
@@ -673,9 +1319,8 @@ per-token equivalents. These are the same figures the per-request
 console log prints.</li>
 <li><strong><code>prompt_progress</code></strong> (llama.cpp’s shape) —
 <code>total</code>, <code>cache</code>, <code>processed</code>,
-<code>time_ms</code>. llama-server emits this repeatedly <em>during</em>
-prefill; this server has no mid-prefill progress event and sends it
-once, with the finished request’s totals.</li>
+<code>time_ms</code>, reported once per prefill chunk while the prompt
+is still being processed (see <code>return_progress</code> below).</li>
 </ul>
 <p>On a streaming response they ride on the final chunk (the one
 carrying <code>finish_reason</code>), immediately before
@@ -683,6 +1328,35 @@ carrying <code>finish_reason</code>), immediately before
 fields. <code>orangu-bench --pp</code> reads them to report prefill
 throughput, and the orangu client reads them for its status-line
 rates.</p>
+<h3
+id="timings_per_token-and-return_progress"><code>timings_per_token</code>
+and <code>return_progress</code></h3>
+<p>Both are llama.cpp field names, both apply to a
+<strong>streaming</strong> <code>/v1/chat/completions</code>, and both
+exist for the same reason: the longest part of a turn is the part a
+client otherwise knows nothing about.</p>
+<p><code>return_progress: true</code> emits a
+<code>prompt_progress</code> chunk after every prefill chunk
+(<code>ORANGU_PREFILL_BATCH</code> tokens, 512 by default) rather than
+only at the end. <code>processed</code> counts cached tokens as already
+done, so a mostly-cached prompt does not appear to start from zero. On a
+2712-token prompt that is six updates across a 12.8-second prefill:</p>
+<pre><code> 512/2712   2725 ms      2048/2712   9573 ms
+1024/2712   4996 ms      2560/2712  11904 ms
+1536/2712   7274 ms      2712/2712  12845 ms</code></pre>
+<p><code>timings_per_token: true</code> attaches a <code>timings</code>
+object to every generated token, not just the last chunk, so a client
+can display a live decode rate measured by the server. The first token
+is deliberately skipped: it was sampled from the prefill’s own logits,
+so a rate computed there is a division by a few microseconds and comes
+out in the tens of thousands of tokens per second.</p>
+<p>Each arrives as its own chunk with an empty <code>delta</code>, which
+is what lets them keep flowing while content is briefly held back by the
+tool-call splitter.</p>
+<p>The <code>orangu</code> client requests both. They are what its
+status line shows: a <code>n/total tok</code> prefill bar while the
+prompt is processing, then the server’s
+<code>predicted_per_second</code> while the answer streams.</p>
 <h3 id="cache_prompt"><code>cache_prompt</code></h3>
 <p><code>/v1/chat/completions</code>, <code>/v1/completions</code>, and
 <code>/completion</code> accept <code>cache_prompt</code> (llama.cpp’s
@@ -699,6 +1373,148 @@ doing almost nothing —
 <code>prompt_progress.cache</code> show exactly how much was skipped.
 The flag governs only what a request <em>reads</em>: the resulting cache
 is still stored for later requests either way.</p>
+<h3 id="tool-calling">Tool calling</h3>
+<p><code>/v1/chat/completions</code> accepts OpenAI’s <code>tools</code>
+array and answers with OpenAI’s <code>tool_calls</code>. Nothing about
+the tools themselves is interpreted here: the array is handed to the
+model’s own <code>tokenizer.chat_template</code> as the
+<code>tools</code> variable, which is what every tool-capable template
+gates its declaration block on (<code>{%- if tools -%}</code>). A model
+whose template has no tool support simply ignores it. An empty
+<code>tools: []</code> counts as no tools.</p>
+<p>Messages carry the other half of the conversation:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">On</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>tool_calls</code></td>
+<td style="text-align: left;"><code>assistant</code></td>
+<td style="text-align: left;">the calls that turn made, passed to the
+template verbatim</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tool_call_id</code></td>
+<td style="text-align: left;"><code>tool</code></td>
+<td style="text-align: left;">which call this message answers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>name</code></td>
+<td style="text-align: left;"><code>tool</code></td>
+<td style="text-align: left;">the function’s name; some templates use it
+directly, others resolve it from <code>tool_call_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>All three are required for a <strong>multi-turn</strong> tool
+conversation. Without them the transcript replayed on turn N+1 shows an
+assistant message with empty content and no record of any call, and the
+model calls the same tool again.</p>
+<p><strong>Reading the model’s answer back.</strong> There is no
+standard for how a model <em>writes</em> a call — its template teaches
+it one. Three delimiter-anchored forms are recognised:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Family</th>
+<th style="text-align: left;">Form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">gemma-4</td>
+<td
+style="text-align: left;"><code>&lt;\|tool_call&gt;call:NAME{key:value,…}&lt;tool_call\|&gt;</code>
+(the markers are special tokens)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Qwen / Hermes</td>
+<td
+style="text-align: left;"><code>&lt;tool_call&gt;{"name": …, "arguments": {…}}&lt;/tool_call&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Mistral</td>
+<td
+style="text-align: left;"><code>[TOOL_CALLS][{"name": …, "arguments": {…}}]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Only these delimiters count. A bare JSON object that merely
+<em>looks</em> like a call is left as ordinary content — an answer that
+explains an API must not be mistaken for a request to invoke one. A span
+that opens and never closes, or one that cannot be parsed, is also left
+as content rather than silently dropped.</p>
+<p>A turn that produced calls reports
+<code>finish_reason: "tool_calls"</code> and carries them in
+<code>choices[0].message.tool_calls</code> (non-streaming) or in a
+<code>delta.tool_calls</code> chunk (streaming).
+<code>function.arguments</code> is a JSON <strong>string</strong>, as
+OpenAI specifies. Streaming emits each call complete in one delta rather
+than character by character, since a call is only recognised once it is
+fully written.</p>
+<h3 id="id_slot"><code>id_slot</code></h3>
+<p><code>/v1/chat/completions</code>, <code>/v1/completions</code> and
+<code>/completion</code> accept <code>id_slot</code> (llama.cpp’s field
+name), pinning a request to one specific slot instead of letting it take
+whichever is free. An unknown slot number is a <code>400</code>, not a
+silent fallback.</p>
+<p>What it buys is <strong>cache affinity</strong>. A slot retains the
+<code>(tokens, KV cache)</code> of the last request that ran on it, so a
+conversation that returns to its own slot continues from a warm prefix
+and prefills only the new turn. Landing on a neighbour instead finds
+another conversation’s cache there and reprefills the whole prompt — and
+since an idle server hands out the <em>lowest</em> free slot, two
+alternating conversations otherwise both land on slot 0 and evict each
+other every turn.</p>
+<p>Two conversations interleaved on a two-slot server, three turns each
+(<code>gemma-4-E2B-it:Q4_K_M</code>, ~430-token prompts):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">tokens actually prefilled</th>
+<th style="text-align: right;">prefill time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>without <code>id_slot</code></td>
+<td style="text-align: right;">2 567</td>
+<td style="text-align: right;">13.4 s</td>
+</tr>
+<tr>
+<td>with <code>id_slot</code></td>
+<td style="text-align: right;"><strong>889</strong></td>
+<td style="text-align: right;"><strong>5.0 s</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Steady-state per turn is where it shows: 2.0 s of prefill becomes
+0.25 s, because the whole previous turn is served from the slot’s own
+cache (<code>cached_tokens</code> 417 of 433, rather than 7).</p>
+<p>A pinned request <strong>waits</strong> for its slot rather than
+being bounced to a free one — that is the point, and it is a trade the
+caller has already chosen. Waiting costs no one else any concurrency: a
+queued request holds nothing.</p>
+<p>The <code>orangu</code> client does this automatically. Each
+workspace tab probes <code>/props</code> once per endpoint, takes a slot
+round-robin, and pins every request in that tab to it, so tabs stop
+evicting each other. One-shot requests (<code>orangu -p</code>) do not
+pin — there is no later turn to keep a cache warm for.</p>
 <h2 id="endpoint-reference">Endpoint reference</h2>
 <table>
 <colgroup>
@@ -719,19 +1535,25 @@ is still stored for later requests either way.</p>
 <tr>
 <td
 style="text-align: left;"><code>POST /v1/chat/completions</code></td>
-<td style="text-align: left;">streaming (SSE) and non-streaming;
+<td style="text-align: left;">streaming (SSE) and non-streaming; OpenAI
+<code>tools</code>/<code>tool_calls</code>;
+<code>cache_prompt</code>/<code>id_slot</code>/<code>timings_per_token</code>/<code>return_progress</code>;
 requires the model to have a <code>tokenizer.chat_template</code>;
 disabled under <code>--embedding</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>POST /v1/completions</code></td>
 <td style="text-align: left;">legacy OpenAI completion, no chat template
-needed; disabled under <code>--embedding</code></td>
+needed; <code>cache_prompt</code>/<code>id_slot</code>; disabled under
+<code>--embedding</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>POST /v1/embeddings</code></td>
 <td style="text-align: left;">pooled (mean or last-token, per the
-model’s own <code>pooling_type</code>) and L2-normalized</td>
+model’s own <code>pooling_type</code>) and L2-normalized; carries
+OpenAI’s <code>usage</code>
+(<code>prompt_tokens</code>/<code>total_tokens</code>, summed over a
+batched <code>input</code>)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>GET /health</code></td>
@@ -753,7 +1575,8 @@ state</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>POST /completion</code></td>
-<td style="text-align: left;">native, streaming; disabled under
+<td style="text-align: left;">native, streaming;
+<code>cache_prompt</code>/<code>id_slot</code>; disabled under
 <code>--embedding</code></td>
 </tr>
 <tr>
@@ -837,7 +1660,7 @@ API</strong>.</p>
 <code>web</code> port, separate from the API’s <code>port</code>, and
 exposes a small <code>/api/...</code> surface of its own — used only by
 that page’s own JavaScript, not part of the OpenAI- compatible API
-above, and only reachable at all when <code>web</code> is
+above, and only reachable at all when a <code>[web]</code> section is
 configured:</p>
 <table>
 <colgroup>
@@ -886,8 +1709,72 @@ style="text-align: left;"><code>POST /api/sessions/{id}/messages</code></td>
 streaming (SSE) reply, the same shape <code>/v1/chat/completions</code>’
 own stream uses</td>
 </tr>
+<tr>
+<td
+style="text-align: left;"><code>DELETE /api/sessions/{id}</code></td>
+<td style="text-align: left;">deletes one chat session, directory and
+all — History’s per-row cross</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/sessions</code></td>
+<td style="text-align: left;">deletes every chat session — History’s
+<strong>Clear all</strong> footer</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/models</code></td>
+<td style="text-align: left;">the models directory as the manager panel
+draws it: <code>list</code>’s own table, which row is loaded, disk use,
+and any download in flight. Serves a cached scan;
+<code>?rescan=true</code> re-reads the directory</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/models/updates</code></td>
+<td style="text-align: left;">which rows are behind their Hugging Face
+repo — <code>list</code>’s <code>(Refresh)</code> marker, one Hub
+request per distinct repo</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>GET /api/models/metadata?model=…</code></td>
+<td style="text-align: left;">a model’s full GGUF metadata as plain text
+— <code>show</code>’s own output. <code>&amp;tensors=true</code> and
+<code>&amp;full=true</code> are
+<code>show --tensors</code>/<code>--full</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /api/models/select</code></td>
+<td style="text-align: left;">restarts the server on a different model,
+keeping both listening sockets and the pid; answers <code>202</code>
+before it acts, since <code>execve</code> leaves nothing to answer
+from</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /api/models/download</code></td>
+<td style="text-align: left;">starts a Hugging Face download in the
+background, returning at once</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/models</code></td>
+<td style="text-align: left;">deletes a model, refusing the one
+currently loaded</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/models/job</code></td>
+<td style="text-align: left;">clears a finished download’s result</td>
+</tr>
 </tbody>
 </table>
+<p>The three that name a model take <code>{"model": "..."}</code> — an
+<code>NR</code>, a <code>MODEL</code> label, a bare filename, or a path,
+exactly as the matching subcommand’s own argument does. The panel sends
+the <code>NR</code>, since that is the only spelling that names one row
+exactly (a repo with several quantizations on disk prints the same bare
+<code>MODEL</code> on each of their rows), and for a load or a delete it
+also sends the <code>path</code> that row showed. Given both, the server
+checks they still agree before acting: an <code>NR</code> is a
+<em>position</em>, and a download finishing while a confirmation dialog
+is open re-sorts the listing underneath it.</p>
 <h2 id="scope">Scope</h2>
 <p>Text-in/text-out GGUF chat, completion, and embedding models, for six
 architecture families: Llama-style (<code>general.architecture</code>
@@ -934,10 +1821,11 @@ on the embedding table. Every one of those types is read, so the model
 loads and runs; what the label predicts is the size, not a single tensor
 type.</p>
 <p>Type coverage differs by backend. Only <code>cpu</code> reads every
-type listed above. <code>vulkan</code> covers all of them except
-<code>IQ1_S</code>, <code>IQ1_M</code>, and <code>IQ2_XXS</code>;
-<code>cuda</code>, <code>opencl</code>, and <code>rocm</code> cover the
-float types, the legacy quants,
+type listed above. <code>vulkan</code> and <code>metal</code> — the same
+kernels — cover all of them except <code>IQ1_S</code>,
+<code>IQ1_M</code>, and <code>IQ2_XXS</code>; <code>cuda</code>,
+<code>opencl</code>, and <code>rocm</code> cover the float types, the
+legacy quants,
 <code>Q2_K</code>/<code>Q3_K</code>/<code>Q4_K</code>/<code>Q5_K</code>/<code>Q6_K</code>,
 and <code>IQ4_NL</code>. What’s missing in each case is the
 <code>IQ*</code> types that index a lattice codebook the backend has no

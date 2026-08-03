@@ -147,28 +147,44 @@ instantly responsive at the same time.</p>
 <h2 id="quick-start">Quick start</h2>
 <p>Generate a configuration interactively:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-coordinator</span> <span class="at">--init</span></span></code></pre></div>
-<p>This walks every <code>[orangu-coordinator]</code> setting (including
-the shared <code>models</code> directory every profile’s
-<code>orangu-server</code> uses), then asks for a model, host, and port
-role by role — <code>all</code> is mandatory,
-<code>code</code>/<code>review</code>/
-<code>explorer</code>/<code>embeddings</code> are optional (leave the
-model prompt blank to skip one). It’s written to
+<p>It behaves exactly like <code>orangu-server --init</code>. It walks
+every <code>[orangu-coordinator]</code> setting (including the shared
+<code>models</code> directory every profile’s <code>orangu-server</code>
+uses), then asks for a model, host, and port role by role —
+<code>all</code> is mandatory,
+<code>code</code>/<code>review</code>/<code>explorer</code>/<code>embeddings</code>
+are optional (leave the model prompt blank to skip one). It’s written to
 <code>~/.orangu/orangu-coordinator.conf</code> — tersely: only
 <code>host</code>/<code>port</code> and each profile’s
 <code>model</code> are always present, every other answer left at its
 default is simply omitted.</p>
-<p>Both the <code>models</code> prompt and every role’s
-<code>model</code> prompt offer inline ghost-text suggestions and TAB
-completion: <code>models</code> completes real filesystem paths, and
-each <code>model</code> prompt (once <code>models</code> is set)
-completes over every installed model’s user-facing label — the same
-label <code>orangu-server list</code> prints in its <code>MODEL</code>
-column, not a raw filename or its <code>NR</code> shorthand (a
-coordinator profile’s <code>model</code> is written once and read back
-indefinitely, so only the stable label is offered). Nothing offered is
-required — typing anything else (a path, an undownloaded Hugging Face
-spec) works too.</p>
+<p>Every prompt that has something to offer offers it inline, in grey,
+as you type — press Right Arrow (or TAB, which also lists every
+candidate) to accept:</p>
+<ul>
+<li><code>models</code> completes real filesystem paths, and defaults to
+the Hugging Face cache (<code>~/.cache/huggingface/hub</code>) that
+<code>orangu-server</code> itself scans. A directory that doesn’t exist
+yet is created.</li>
+<li>Every <code>host</code> prompt — the coordinator’s own and each
+role’s — completes over <code>all</code> (the default: every network
+interface), its <code>*</code> alias, and every address your machine’s
+interfaces actually have, each labelled with the interface it belongs
+to.</li>
+<li>Every role’s <code>model</code> prompt (once <code>models</code> is
+set) completes over every installed model, offering both the
+<code>NR</code> shorthand and the <code>MODEL:QUANT</code> label
+<code>orangu-server list</code> prints — <code>QUANT</code> included, so
+a repo you have in several quantizations resolves to the exact one you
+picked rather than whichever came first. An <code>NR</code> is only a
+shorthand for typing: it’s written out as that row’s
+<code>MODEL:QUANT</code> label, since a profile’s <code>model</code> is
+read back for as long as the file lives and is also the id clients match
+against. A models directory holding exactly one model is taken for the
+mandatory <code>all</code> role without asking.</li>
+</ul>
+<p>Nothing offered is required — typing anything else (a path, an
+undownloaded Hugging Face spec) works too.</p>
 <p>A minimal hand-written configuration looks like this:</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode ini"><code class="sourceCode ini"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-coordinator]</span></span>
@@ -185,11 +201,15 @@ class="sourceCode ini"><code class="sourceCode ini"><span id="cb2-1"><a href="#c
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> explorer</span></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF</span></span></code></pre></div>
 <p>Neither profile sets <code>host</code>/<code>port</code> here — both
-default to <code>127.0.0.1:8100</code>, which is fine even though
+default to <code>all:8100</code> (the same default
+<code>orangu-server</code> itself uses: <code>all</code> means every
+network interface, and the coordinator reaches the profile it started
+over loopback). Sharing one address across profiles is fine even though
 they’re identical: only one profile’s <code>orangu-server</code> is ever
 active at a time, and swapping always fully stops the old one before
-starting the new one, so there’s never a real conflict over the
-port.</p>
+starting the new one, so there’s never a real conflict over the port.
+Set a profile’s <code>host</code> to <code>127.0.0.1</code> if you want
+its <code>orangu-server</code> reachable from this machine only.</p>
 <table>
 <colgroup>
 <col style="width: 25%" />
@@ -210,8 +230,10 @@ port.</p>
 <td style="text-align: left;"><code>host</code></td>
 <td style="text-align: left;"><code>[orangu-coordinator]</code></td>
 <td style="text-align: left;">No</td>
-<td style="text-align: left;">Host the proxy listens on. Defaults to
-<code>127.0.0.1</code></td>
+<td style="text-align: left;">Host the proxy listens on:
+<code>all</code> (every interface), its <code>*</code> alias, or a
+literal address such as <code>127.0.0.1</code>. Defaults to
+<code>all</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>port</code></td>
@@ -288,8 +310,10 @@ same shape <code>orangu-server</code>’s own positional
 <td style="text-align: left;">profile</td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Host this profile’s
-<code>orangu-server</code> listens on. Defaults to
-<code>127.0.0.1</code></td>
+<code>orangu-server</code> listens on — written straight into its
+generated config, so it takes the same
+<code>all</code>/<code>*</code>/address spellings. Defaults to
+<code>all</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>port</code></td>
@@ -305,7 +329,7 @@ the same default <code>orangu-server</code> itself uses</td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Forwarded to this profile’s
 <code>orangu-server</code> as <code>[orangu-server].backend</code>
-(<code>auto</code>/<code>cpu</code>/<code>vulkan</code>/<code>cuda</code>/<code>opencl</code>/<code>rocm</code>)
+(<code>auto</code>/<code>cpu</code>/<code>vulkan</code>/<code>metal</code>/<code>cuda</code>/<code>opencl</code>/<code>rocm</code>)
 when set</td>
 </tr>
 <tr>
@@ -321,8 +345,8 @@ set</td>
 <td style="text-align: left;">profile</td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Forwarded to this profile’s
-<code>orangu-server</code> as <code>[orangu-server].web</code> when set,
-exposing that profile’s own web UI while it’s active</td>
+<code>orangu-server</code> as <code>[web].port</code> when set, exposing
+that profile’s own web console while it’s active</td>
 </tr>
 </tbody>
 </table>
@@ -435,6 +459,14 @@ automatically (polled every ~5 seconds) without needing a restart.</li>
 load (e.g. out of memory), the coordinator automatically falls back to
 starting the <code>all</code>-role profile rather than failing the
 request entirely.</li>
+<li><strong>Crash recovery</strong>: a profile whose
+<code>orangu-server</code> has stopped — it lost its GPU device to a
+driver reset (see the Server chapter), was OOM-killed, or was killed by
+hand — is simply started again on the next request. A request that was
+in flight when it stopped is sent again once, after that restart, rather
+than failed: nothing had been written back to you yet, so the request
+was still whole. What you see is a slow answer, not an error. A second
+failure is reported rather than retried.</li>
 <li>On shutdown (<code>Ctrl+C</code> or the internal
 <code>GET /v1/coordinator/shutdown</code> API), the coordinator
 gracefully stops whatever <code>orangu-server</code> process is

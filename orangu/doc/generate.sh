@@ -11,6 +11,11 @@
 #
 #     ORANGU_SRC=~/GitHub/orangu ./generate.sh
 #
+# ORANGU_REF picks the ref fetched from GitHub — use it to publish the manual as
+# it stood at a release rather than whatever main happens to hold:
+#
+#     ORANGU_REF=1.1.0 ./generate.sh
+#
 # Requirements: pandoc, python3, and (unless ORANGU_SRC is set) gh + base64.
 #
 set -eu
@@ -19,7 +24,7 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 cd "$HERE"
 
 REPO="mnemosyne-systems/orangu"
-BRANCH="main"
+BRANCH="${ORANGU_REF:-main}"
 DOCROOT="doc"
 
 command -v pandoc  >/dev/null 2>&1 || { echo "error: pandoc is required"  >&2; exit 1; }

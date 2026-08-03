@@ -54,6 +54,11 @@
     }
     .rel-list strong { color: var(--text); font-weight: 600; }
     .rel-more { color: var(--text-3); }
+    .rel-note {
+      max-width: 720px; margin-top: 1.5rem; padding: 0.85rem 1rem;
+      font-size: 0.85rem; color: var(--text-2); line-height: 1.65;
+      background: var(--amber-soft); border: 1px solid var(--amber-line); border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -93,6 +98,7 @@
 
       <!-- Index -->
       <div class="rel-index reveal">
+        <a href="#v1-1-0"><span class="ri-date">August 3, 2026</span><span class="ri-ver">orangu 1.1.0</span></a>
         <a href="#v1-0-0"><span class="ri-date">July 27, 2026</span><span class="ri-ver">orangu 1.0.0</span></a>
         <a href="#v0-11-0"><span class="ri-date">July 13, 2026</span><span class="ri-ver">orangu 0.11.0</span></a>
         <a href="#v0-10-0"><span class="ri-date">July 6, 2026</span><span class="ri-ver">orangu 0.10.0</span></a>
@@ -107,11 +113,32 @@
         <a href="#v0-1-0"><span class="ri-date">May 15, 2026</span><span class="ri-ver">orangu 0.1.0</span></a>
       </div>
 
+      <!-- 1.1.0 -->
+      <article class="rel-entry reveal" id="v1-1-0">
+        <div class="rel-head">
+          <span class="rel-ver">orangu 1.1.0</span>
+          <span class="rel-badge">Latest</span>
+          <span class="rel-date">August 3, 2026</span>
+        </div>
+        <ul class="rel-list">
+          <li><strong>Performance: 15% to 450% faster</strong> — The attention implementation was unified across every backend, so the paths that were least optimized gained the most.</li>
+          <li><strong>Initial Metal support</strong> — A first Metal backend for macOS on Apple Silicon, beginning native GPU acceleration on the Mac.</li>
+          <li><strong><code>orangu-bench</code></strong> — A benchmarking tool, now included in the release archives, for measuring throughput on your own hardware.</li>
+          <li><strong>Web console: model management</strong> — List and inspect models from the browser rather than only from the command line.</li>
+          <li><strong>Web console: Mermaid support</strong> — Mermaid diagrams render inline in the conversation.</li>
+          <li><strong>Web console: history management</strong> — Delete conversations you no longer want to keep.</li>
+          <li><strong>Improved machine information</strong> — More accurate OS and GPU detection, to guide backend selection and troubleshooting.</li>
+          <li><strong>Configurable word wrap</strong> — <code>word_wrap</code> can now be turned on and off.</li>
+        </ul>
+        <p class="rel-note">
+          The configuration files changed in this release — run <code>--init</code> for <code>orangu</code>, <code>orangu-coordinator</code>, and <code>orangu-server</code> after upgrading.
+        </p>
+      </article>
+
       <!-- 1.0.0 -->
       <article class="rel-entry reveal" id="v1-0-0">
         <div class="rel-head">
           <span class="rel-ver">orangu 1.0.0</span>
-          <span class="rel-badge">Latest</span>
           <span class="rel-date">July 27, 2026</span>
         </div>
         <ul class="rel-list">
