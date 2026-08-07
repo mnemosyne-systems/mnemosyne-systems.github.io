@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-# Usage: curl -fsSL https://raw.githubusercontent.com/mnemosyne-systems/orangu/main/install.sh | sh
+# Usage: curl -fsSL https://mnemosyne-systems.github.io/orangu/install.sh | sh
 # Override install directory: INSTALL_DIR=/usr/local/bin sh install.sh
 set -e
 
@@ -71,14 +71,17 @@ echo "Downloading ${ASSET}..."
 fetch_to "$URL" "${TMP}/${ASSET}" || { echo "error: download failed: ${URL}" >&2; exit 1; }
 
 tar -xzf "${TMP}/${ASSET}" -C "$TMP" || { echo "error: could not extract ${ASSET}" >&2; exit 1; }
-[ -f "${TMP}/orangu" ] || { echo "error: binary not found in archive" >&2; exit 1; }
 
 mkdir -p "$INSTALL_DIR"
 [ -w "$INSTALL_DIR" ] || { echo "error: ${INSTALL_DIR} is not writable — try sudo or set INSTALL_DIR" >&2; exit 1; }
 
-cp "${TMP}/orangu" "${INSTALL_DIR}/orangu"
-chmod +x "${INSTALL_DIR}/orangu"
-echo "Installed: ${INSTALL_DIR}/orangu"
+# The whole stack: the editor plus the coordinator and inference server.
+for bin in orangu orangu-coordinator orangu-server; do
+    [ -f "${TMP}/${bin}" ] || { echo "error: ${bin} not found in archive" >&2; exit 1; }
+    cp "${TMP}/${bin}" "${INSTALL_DIR}/${bin}"
+    chmod +x "${INSTALL_DIR}/${bin}"
+    echo "Installed: ${INSTALL_DIR}/${bin}"
+done
 
 case ":${PATH}:" in
     *":${INSTALL_DIR}:"*) ;;
