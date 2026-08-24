@@ -128,7 +128,7 @@
           <div class="terminal-block">
             <div><span class="p">Invoke-WebRequest</span> -Uri https://mnemosyne-systems.github.io/orangu/install.cmd -OutFile install.cmd; .\install.cmd</div>
           </div>
-          <p class="step-note">Installs to <code>~/.local/bin</code> (Linux/macOS) or <code>%USERPROFILE%\.local\bin</code> (Windows) and warns if it is not on your <code>PATH</code>. Override the location with <code>INSTALL_DIR</code>. Prefer to build from source? Follow the steps below.</p>
+          <p class="step-note">Installs the whole stack &mdash; <code>orangu</code>, <code>orangu-coordinator</code>, <code>orangu-server</code>, and <code>orangu-bench</code> &mdash; to <code>~/.local/bin</code> (Linux/macOS) or <code>%USERPROFILE%\.local\bin</code> (Windows), and warns if it is not on your <code>PATH</code>. Override the location with <code>INSTALL_DIR</code>. The <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf" style="color:var(--amber);text-decoration:none">four-page cheat sheet</a> lands in <code>~/.orangu</code> (override with <code>DOC_DIR</code>), and the <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf" style="color:var(--amber);text-decoration:none">complete manual</a> is published as a PDF with every release. Prefer to build from source? Follow the steps below.</p>
         </div>
       </div>
 
@@ -142,7 +142,7 @@
           <div class="terminal-block">
             <div><span class="p">dnf install</span> <span class="k">-y git rust cargo</span></div>
           </div>
-          <p class="step-note">On other distributions, install Rust via <a href="https://rustup.rs" target="_blank">rustup.rs</a>. On Windows, use WSL2 with a Linux distribution.</p>
+          <p class="step-note">On other distributions, on macOS, and on Windows, install Rust via <a href="https://rustup.rs" target="_blank">rustup.rs</a>. Windows builds natively against the MSVC toolchain &mdash; no WSL required.</p>
         </div>
       </div>
 
@@ -170,13 +170,14 @@
           <h3>Start a local LLM server</h3>
         </div>
         <div class="step-body">
-          <p>The installer ships <code>orangu-server</code>, the project's own pure-Rust GGUF engine. Download a model and serve it on the default API port <code>8100</code>.</p>
+          <p>The installer ships <code>orangu-server</code>, the project's own pure-Rust GGUF engine. Configure it first, then download a model and serve it on the default API port <code>8100</code>.</p>
           <div class="terminal-block">
-            <div><span class="dim"># fetch a model, then serve it</span></div>
-            <div><span class="p">orangu-server download</span> <span class="k">unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M</span></div>
-            <div><span class="p">orangu-server</span> <span class="k">--all</span> <span class="k">/path/to/model.gguf</span></div>
+            <div><span class="dim"># configure, then fetch a model and serve it</span></div>
+            <div><span class="p">orangu-server</span> <span class="k">-i</span></div>
+            <div><span class="p">orangu-server download</span> <span class="k">unsloth/gemma-4-E2B-it-GGUF</span></div>
+            <div><span class="p">orangu-server</span> <span class="k">--all</span> <span class="k">unsloth/gemma-4-E2B-it-GGUF</span></div>
           </div>
-          <p class="step-note">orangu also talks to any other OpenAI-compatible server — see <a href="doc/local-llm.html" style="color:var(--amber);text-decoration:none">Serving models per role</a>.</p>
+          <p class="step-note">The order matters: downloading and serving both read the models directory from the configuration <code>-i</code> writes. That directory defaults to the Hugging Face hub cache (<code>~/.cache/huggingface/hub</code>); <code>orangu-server download</code> fetches models straight into it, and anything already there is found without moving it. orangu also talks to any other OpenAI-compatible server — see <a href="doc/local-llm.html" style="color:var(--amber);text-decoration:none">Serving models per role</a> for a starting model per role.</p>
         </div>
       </div>
 

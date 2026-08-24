@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -79,6 +79,14 @@
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
 <ul>
 <li><a href="#core-tools" id="toc-core-tools">Core tools</a>
@@ -86,9 +94,13 @@
 <li><a href="#help" id="toc-help">/help</a></li>
 <li><a href="#skills" id="toc-skills">/skills</a></li>
 <li><a href="#tools" id="toc-tools">/tools</a></li>
+<li><a href="#developer" id="toc-developer">/developer</a></li>
+<li><a href="#committer" id="toc-committer">/committer</a></li>
+<li><a href="#mcp" id="toc-mcp">/mcp</a></li>
 <li><a href="#model" id="toc-model">/model</a></li>
 <li><a href="#server" id="toc-server">/server</a></li>
 <li><a href="#theme" id="toc-theme">/theme</a></li>
+<li><a href="#license" id="toc-license">/license</a></li>
 <li><a href="#information" id="toc-information">/information</a></li>
 <li><a href="#statistics" id="toc-statistics">/statistics</a></li>
 <li><a href="#schedule" id="toc-schedule">/schedule</a></li>
@@ -134,6 +146,21 @@ red.</p>
 in its <strong>Examples</strong>; the recognized phrases are matched
 only for these built-in commands, and any other input is sent to the
 model as an ordinary prompt.</p>
+<p>Some of those aliases are bare English verbs — <code>create</code>,
+<code>add</code>, <code>remove</code>, <code>delete</code>,
+<code>move</code>, <code>open</code>, <code>edit</code>,
+<code>show</code>, <code>restore</code>, <code>merge</code>,
+<code>checkout</code>, <code>switch to</code>, <code>rebase</code> —
+which is also how a sentence meant for the model begins. Each of them
+takes <strong>exactly one argument</strong>: a single word, or a quoted
+string. So <code>create pacman.rs</code> creates that file, while
+<code>Create a Pacman like game</code> is a prompt and goes to the
+model, as does <code>remove the duplicated parsing code</code> or
+<code>open the file that defines the parser</code>. The forms that name
+their object — <code>create file …</code>, <code>delete branch …</code>,
+<code>git add …</code> — are not restricted this way, since there you
+have already said what you meant; and quoting reaches anything, so a
+path with a space in it is <code>open "docs/user guide.md"</code>.</p>
 <h2 id="help">/help</h2>
 <p>Shows the list of available commands with a one-line description of
 each, grouped the same way as in this manual.</p>
@@ -171,15 +198,92 @@ directory and any bundled resource files.</p>
 <code>delete_file</code>, <code>create_directory</code>,
 <code>move_directory</code>, <code>delete_directory</code>), plus
 <code>list_directory</code>, <code>fetch_url</code>, and
-<code>run_shell_command</code> — that the active model may call. These
-are the tools described in the Tools chapter and are distinct from the
-local slash commands documented here.</p>
+<code>run_shell_command</code> — and any connected MCP tools, named
+<code>mcp__&lt;server&gt;__&lt;tool&gt;</code>, that the active model
+may call. These are the tools described in the Tools chapter and are
+distinct from the local slash commands documented here.</p>
 <p><code>/tools</code> is purely informational: it shows what the model
 is able to do in the current workspace, not what you can type at the
 prompt. In particular it is separate from the local
 <code>/list_files</code> convenience command.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/tools</code></pre>
+<h2 id="developer">/developer</h2>
+<p>Puts the prompt in <strong>developer mode</strong>, the default:
+writing code. The prompt keeps out of the way — an untouched line opens
+with the greeting <code>Welcome, I'm orangu</code>, and from there only
+what you type is hinted (slash commands, natural-language bindings, and
+argument completion, exactly as described in the Terminal chapter).</p>
+<p>The greeting is a label, not a suggestion: it is drawn in grey like
+any other hint, but it is deliberately kept out of the <code>Tab</code>
+and <code>Shift+Tab</code> candidates, so it can never be completed into
+the line.</p>
+<p>Switching mode changes only what the prompt suggests. Every command
+stays available in both modes, and nothing about the session, the model,
+or the workspace changes.</p>
+<p><strong>Examples</strong></p>
+<pre class="text"><code>/developer</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>developer
+developer mode</code></pre>
+<h2 id="committer">/committer</h2>
+<p>Puts the prompt in <strong>committer mode</strong>: landing a
+reviewed pull request. The prompt walks the merge flow, hinting one step
+at a time, starting from the empty line:</p>
+<pre class="text"><code>pull &lt;PR_NUMBER&gt;
+build | review | auto review    (optional, on the pulled branch)
+switch to main|master
+merge &lt;BRANCH_NAME&gt;
+push
+delete &lt;BRANCH_NAME&gt;
+comment on &lt;PR_NUMBER&gt; merged.md</code></pre>
+<p><code>pull</code> remembers the request number and the branch it
+checked out, so the following steps are hinted with the real names —
+<code>merge pr-231</code>, not a placeholder. Each step advances only
+when the command it hints actually succeeds, so a failed merge keeps the
+merge on offer.</p>
+<p><code>build</code>, <code>review</code>, and <code>auto review</code>
+are offered as optional steps while the pulled branch is still checked
+out — what you would reasonably do to a request before taking it to the
+base branch. They are never the first suggestion, and running one
+advances nothing: the flow is remembered across them, so the next
+auto-suggestion is still the step the request is waiting on. They stop
+being offered once the flow has left the branch.</p>
+<p>Within the mode the flow comes first everywhere the prompt suggests
+something: as the inline ghost, in the <code>Shift+Tab</code> cycle, and
+in the <code>Tab</code> candidate list, where the rest of the flow
+follows the current step so a step can be skipped by cycling past it.
+The remembered branch and request number also lead the argument
+completions for <code>merge</code>, <code>delete</code>,
+<code>switch to</code>, and <code>comment on</code>. Nothing is hidden —
+workspace files, branches, and the natural-language bindings still
+follow. See <strong>The merge flow</strong> in the Terminal chapter for
+the full behaviour.</p>
+<p>The flow belongs to the workspace it was started in, so other
+workspace tabs are unaffected. Checking out a branch that is neither the
+request’s nor the base ends it, as does commenting on the request. Steps
+taken in developer mode are still tracked, so <code>/committer</code>
+picks up where the branch actually is.</p>
+<p>The comment body comes from
+<code>~/.orangu/comments/merged.md</code>, like any other
+<code>/comment</code> template.</p>
+<p><strong>Examples</strong></p>
+<pre class="text"><code>/committer</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>committer
+committer mode</code></pre>
+<h2 id="mcp">/mcp</h2>
+<p>Shows configured MCP servers for the active workspace, including
+whether each server is connected, disabled, or failed during startup and
+how many tools it exposed. Use it to diagnose a missing
+<code>mcp__&lt;server&gt;__&lt;tool&gt;</code> entry in
+<code>/tools</code>.</p>
+<p><code>/mcp refresh</code> reconnects configured servers and
+re-discovers their tools.
+<code>/mcp add &lt;name&gt; &lt;command&gt; [args…]</code> writes a
+minimal <code>[mcp.&lt;name&gt;]</code> profile to the active config and
+refreshes it; <code>/mcp remove &lt;name&gt;</code> removes that
+profile.</p>
 <p>Natural-language forms:</p>
 <pre class="text"><code>tools
 show tools
@@ -262,6 +366,79 @@ built-in themes, <code>random</code>, and any user theme files found in
 /theme tokyonight
 /theme modern_light
 /theme random</code></pre>
+<h2 id="license">/license</h2>
+<p>Chooses the licence <strong>generated</strong> code is written under
+— the header <code>create_file</code> puts on a file it brings into
+existence, and the one the web console’s per-block download saves. It
+changes nothing in the workspace: this is a session’s answer about a
+project, not a change to the project.</p>
+<p>With no argument it reports the licence in force and where it came
+from:</p>
+<pre class="text"><code>Generated files are licensed GPL-3.0-or-later (GNU General Public License
+v3.0 or later), copyright Jesper Pedersen — detected from this workspace.</code></pre>
+<p><strong>It is detected before it is chosen.</strong> In order: the
+<code>license</code> field of the workspace’s <code>Cargo.toml</code>,
+<code>pyproject.toml</code> or <code>package.json</code>; then its
+<code>LICENSE</code>/<code>COPYING</code> file; then, if that file is a
+licence orangu has no header for, <strong>that file’s own text, used
+verbatim</strong> — the project has said what its licence is, and that
+it is not one of the ones below is no reason to put a different one on
+its files. A project that says nothing at all gets <strong>MIT</strong>,
+so a new project still produces licensed files.</p>
+<p>The copyright holder is found the same way: the manifest’s first
+author, then the <code>LICENSE</code> file’s copyright line — but only
+for MIT and the BSDs, since a GPL or Apache <code>LICENSE</code> is
+boilerplate whose copyright line names the Free Software Foundation or
+the Apache Software Foundation rather than anyone who wrote the code —
+and finally <code>git config user.name</code>. Give one yourself as a
+second argument. If none can be found, no header is written and
+<code>/license</code> says so rather than leaving you to discover it in
+a generated file.</p>
+<p>The licences are the popular set from <a
+href="https://opensource.org/license"
+class="uri">https://opensource.org/license</a>, with the GNU family
+split the way SPDX splits it, because <code>-only</code> and
+<code>-or-later</code> are different grants and a header has to say
+which:</p>
+<pre class="text"><code>MIT                 Apache-2.0          BSD-3-Clause        BSD-2-Clause
+GPL-3.0-or-later    GPL-3.0-only        GPL-2.0-or-later    GPL-2.0-only
+LGPL-3.0-or-later   LGPL-3.0-only       LGPL-2.1-or-later   LGPL-2.1-only
+AGPL-3.0-or-later   AGPL-3.0-only       MPL-2.0             EPL-2.0
+BSL-1.0             CDDL-1.0</code></pre>
+<p><code>Tab</code> after <code>/license</code> completes them, along
+with <code>auto</code> and <code>none</code>; the grey ghost previews
+the match as you type. Only the first argument is completed — what
+follows it is a copyright holder, which has nothing to offer a list.</p>
+<p>The choice is remembered <strong>per session</strong>, written
+to:</p>
+<pre class="text"><code>~/.orangu/sessions/&lt;UUID&gt;/settings</code></pre>
+<p>as <code>license</code> and <code>license_holder</code>, so it is
+restored when the session is resumed or when you switch back to that
+workspace tab. Each workspace tab has its own session, so each can be
+writing under a different licence.</p>
+<p><code>auto</code> clears the choice and goes back to following the
+workspace. <code>none</code> turns headers off for the session.</p>
+<p>A model cannot set this. The licensing fields are absent from the
+<code>create_file</code> tool schema deliberately — relicensing
+somebody’s project is not a decision to leave to a language model — so a
+call that names them is overruled.</p>
+<p><code>-p</code> refuses <code>/license &lt;spdx&gt;</code> for the
+same reason it refuses <code>/theme &lt;name&gt;</code>: the choice is
+kept per session and a one-shot keeps none. A bare <code>/license</code>
+reports, and works.</p>
+<p><strong>Examples</strong></p>
+<pre class="text"><code>/license
+/license MIT
+/license Apache-2.0 Acme Ltd
+/license GPL-3.0-or-later
+/license none
+/license auto</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>license
+show license
+license MIT
+use license Apache-2.0
+set license to GPL-3.0-or-later</code></pre>
 <h2 id="information">/information</h2>
 <p>Reports everything <code>orangu</code> can learn about the active
 server: every OpenAI-compatible endpoint orangu itself talks to

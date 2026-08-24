@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html" class="active">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -75,6 +75,14 @@
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
         <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -129,6 +137,17 @@ declarations and will say it has no tools available.
 <code>orangu-server</code> passes the array through to the template and
 translates the answer back — see <strong>Tool calling</strong> in the
 Inference server chapter for which answer formats it recognises.</p>
+<p>Configured Streamable HTTP MCP servers can add tools to this list.
+Their names are namespaced as
+<code>mcp__&lt;server&gt;__&lt;tool&gt;</code> so they cannot collide
+with built-in tools or another server. orangu discovers them once when a
+workspace opens; a server that cannot be reached is disabled with a
+warning while built-in and other MCP tools remain available. MCP tool
+results are returned through the same text tool result channel as
+built-in tools and are capped at 20,000 characters.</p>
+<p>MCP support currently exposes tools only. Resources and prompts are
+not exposed; <code>/mcp refresh</code> re-discovers tools at
+runtime.</p>
 <h2 id="available-tools">Available tools</h2>
 <table>
 <colgroup>
@@ -232,8 +251,8 @@ output using its hash ID</td>
 <code>/v1/create_file</code>, <code>/v1/modify_file</code> and so on —
 one shared implementation (<code>orangu::files</code>), so a tool call,
 a typed command and an API request behave identically. Their full
-field-by-field schemas are in the Inference server internals chapter,
-under <strong>File-lifecycle API</strong>.</p>
+field-by-field schemas are in the <em>HTTP endpoints</em> chapter, under
+<strong>File-lifecycle API</strong>.</p>
 <p>They replace the earlier <code>read_file</code> and
 <code>edit_file</code>: <code>read_file</code> is now
 <code>show_file</code> with the same arguments, and
@@ -245,6 +264,55 @@ accepts the server’s <code>edits</code> line ranges. The typed
 chapter). An existing path is overwritten on every surface — tool, typed
 command and HTTP endpoint alike; pass <code>"overwrite": false</code>
 for create-if-absent.</p>
+<p><strong>Licence headers.</strong> A file that
+<code>create_file</code> brings into existence is generated code, and it
+is written with <strong>the workspace’s own licence</strong> at the top
+of it, as a comment in that file’s own language — <code>//</code> for
+Rust and the C family, <code>#</code> for shells and configuration
+formats, <code>--</code> for SQL and Lua, <code>;;</code> for Lisps,
+<code>%</code> for TeX and Erlang, <code>REM</code> for batch files, and
+a delimited <code>&lt;!-- --&gt;</code>, <code>/* */</code> or
+<code>(* *)</code> block for a language with no line comment. A shebang
+or an XML declaration keeps the first line; the licence goes directly
+beneath it.</p>
+<p>The licence and the copyright holder are read from the workspace: the
+<code>license</code> field of its <code>Cargo.toml</code>,
+<code>pyproject.toml</code> or <code>package.json</code>, or failing
+that its <code>LICENSE</code>/<code>COPYING</code> file — used
+<em>verbatim</em> when it is a licence orangu has no header for. A
+project that says nothing gets MIT. <strong><code>/license</code>
+overrides all of it</strong> for the session, including turning headers
+off; see the Core tools chapter.</p>
+<p>Three things never get one, and they are the point of the rule:</p>
+<ul>
+<li><strong>A file that already existed.</strong> Rewriting or editing
+it is a change to somebody’s project, and a project’s licensing is not
+the agent’s to decide — an MIT header must never land on top of a GPL
+source file.</li>
+<li><strong>A file you spelled out yourself</strong> with the typed
+<code>/create_file</code> command. That is you writing a file, not
+orangu generating one.</li>
+<li><strong>A format with nowhere to put a comment</strong> —
+<code>.json</code>, <code>.csv</code> — which would be corrupted rather
+than licensed.</li>
+<li><strong>A workspace with no copyright holder to name.</strong> It is
+taken from the manifest’s first author, the <code>LICENSE</code> file’s
+own copyright line (for MIT and the BSDs, whose licence files name the
+project rather than a foundation), or <code>git config user.name</code>.
+With none to be found there is no header, because inventing an
+attribution is worse than omitting one —
+<code>/license &lt;spdx&gt; &lt;holder&gt;</code> supplies one.</li>
+</ul>
+<p>Because the header is added on top of what was sent, the file on disk
+has more lines than the <code>content</code> argument did. The tool
+result reports this as <code>"licensed": true</code>, and a
+<code>modify_file</code> that names line numbers should read the file
+back first. <code>"licensed": false</code> means no header was added —
+which, now that the licence is the project’s, is the ordinary answer in
+a project that does not declare one. The licence texts are strings
+compiled into the binary rather than files read from disk, and they are
+shared with the web console’s code blocks, which use the same
+implementation.</p>
 <p><strong>Git.</strong> In a Git repository these tools make their
 change <em>with</em> the Git command —
 <code>create_file</code>/<code>modify_file</code> stage with

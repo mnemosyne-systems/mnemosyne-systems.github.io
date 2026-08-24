@@ -14,7 +14,7 @@
 # ORANGU_REF picks the ref fetched from GitHub — use it to publish the manual as
 # it stood at a release rather than whatever main happens to hold:
 #
-#     ORANGU_REF=1.1.0 ./generate.sh
+#     ORANGU_REF=1.2.0 ./generate.sh
 #
 # Requirements: pandoc, python3, and (unless ORANGU_SRC is set) gh + base64.
 #
@@ -40,8 +40,7 @@ trap 'rm -rf "$SRC"' EXIT
 # The order also drives the sidebar grouping in template.html.
 PAGES="
 introduction|manual/en/01-introduction|Introduction
-getting-started|GETTING_STARTED|Getting Started
-quickstart|manual/en/03-quickstart|Quick Start
+getting-started|manual/en/03-getting_started|Getting Started
 configuration|manual/en/20-configuration|Configuration
 terminal|manual/en/40-terminal|Terminal Interface
 tools|manual/en/30-tools|Tools
@@ -53,6 +52,7 @@ skills|manual/en/32-skills|Skills
 extra|manual/en/72-extra|External Tools
 coordinator|manual/en/44-coordinator|Coordinator
 server|manual/en/46-server|Inference Server
+http|manual/en/80-http|HTTP Endpoints
 local-llm|manual/en/73-openai|Serving Models per Role
 compression|manual/en/75-compression|Compression
 completions|manual/en/74-completions|Shell Completions

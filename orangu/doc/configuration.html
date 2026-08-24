@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html" class="active">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -75,6 +75,14 @@
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
         <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -96,6 +104,7 @@ model</a></li>
 <li><a href="#server-sections" id="toc-server-sections">Server
 sections</a></li>
 <li><a href="#sample-file" id="toc-sample-file">Sample file</a></li>
+<li><a href="#mcp-servers" id="toc-mcp-servers">MCP servers</a></li>
 </ul></li>
 </ul>
     </div>
@@ -394,13 +403,6 @@ coding-assistant prompt. The discovered Agent Skills index is appended
 to whichever prompt is in effect</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>model_verbosity</code></td>
-<td style="text-align: left;">No</td>
-<td style="text-align: left;">Set the model’s chattiness. Defaults to
-<code>normal</code>. Options: <code>terse</code>, <code>normal</code>,
-<code>verbose</code></td>
-</tr>
-<tr>
 <td
 style="text-align: left;"><code>review_confidence_threshold</code></td>
 <td style="text-align: left;">No</td>
@@ -408,6 +410,24 @@ style="text-align: left;"><code>review_confidence_threshold</code></td>
 <code>/auto_review</code> findings; findings below this threshold are
 silently dropped. Defaults to <code>80</code>. Set to <code>0</code> to
 disable filtering</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>compression</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Enable the built-in compression layer:
+context deduplication, file-read stubbing, and shell-output compression.
+Defaults to <code>on</code>. Options: <code>on</code>,
+<code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code>. See the Compression chapter</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>auto_downsample_lines</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Line count above which an unbounded file
+read is returned as signatures instead of the whole file, with a note
+saying so. Defaults to <code>300</code>; <code>0</code> reads every file
+in full. Only applies while <code>compression</code> is on, and never to
+a read that asked for a <code>mode</code> or a line range</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>diff_file_cap</code></td>
@@ -424,6 +444,15 @@ the Compression chapter</td>
 working tree has changed, in bytes. Defaults to <code>8192</code>;
 <code>0</code> disables the cap. See <a
 href="#workspace-change-budget">Workspace change budget</a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>semantic_budget_tokens</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Token budget for the code chunks
+<code>/search</code> injects into a turn. Hits are added in rank order
+until the next one would exceed it, so the cap bounds what semantic
+search costs in context rather than the number of results. Defaults to
+<code>16384</code>; the top hit is always kept</td>
 </tr>
 </tbody>
 </table>
@@ -464,8 +493,21 @@ conversation — prompts typed at the input window, including tool-calling
 turns. It defaults to <code>0</code> (no cap) because coding answers are
 open-ended: explanations, diffs, and file contents can legitimately be
 long. Set it only when a model tends to ramble or you want a hard
-latency bound per response.</li>
+latency bound per response. Note that <code>0</code> does not mean
+<em>unbounded</em> — it means the <strong>server</strong> chooses, and
+<code>orangu-server</code> answers with <code>8192</code> (see the HTTP
+chapter).</li>
 </ul>
+<p><strong>A cut-off answer says so.</strong> Whichever cap is reached,
+the server reports <code>finish_reason: "length"</code> and
+<code>orangu</code> prints
+<code>[answer cut off at the server's response-length cap …]</code>
+under the timings. This matters most on a tool-calling turn: a file’s
+contents travel <em>inside</em> the tool call, and a call cut off
+mid-argument never closes, so it is not recognised as a call at all —
+nothing runs, nothing is written, and the half-finished file arrives as
+ordinary text. If you see that notice where you expected a file, raise
+<code>code_max_tokens</code>.</p>
 <p><strong>Reasoning (“thinking”) models need a larger review
 cap.</strong> A model’s hidden thinking tokens count against
 <code>max_tokens</code>, so with the default <code>512</code> a model
@@ -566,14 +608,27 @@ completes built-in themes and user theme files. The startup option
 <code>-t</code>/<code>--theme &lt;name-or-path&gt;</code> applies a
 theme only for that process and takes precedence over the global and
 session settings.</p>
+<h3 id="the-sessions-licence">The session’s licence</h3>
+<p>The licence generated files are written under is a session setting
+too, but it is not configured here: it is read from the
+<em>workspace</em> — its manifest’s <code>license</code> field, then its
+<code>LICENSE</code>/<code>COPYING</code> file, then MIT as the default
+— and overridden for the session with
+<code>/license &lt;spdx&gt; [&lt;holder&gt;]</code>. That writes:</p>
+<pre class="text"><code>~/.orangu/sessions/&lt;UUID&gt;/settings</code></pre>
+<p>as <code>license</code> and <code>license_holder</code>, beside the
+session’s <code>server</code> and <code>model</code>, and is restored on
+resume or when you switch back to that workspace tab.
+<code>/license auto</code> clears it and <code>/license none</code>
+turns headers off. See the <em>Core tools</em> chapter.</p>
 <h2 id="server-sections">Server sections</h2>
 <p>Each server is a named section. The section name is what
 <code>[orangu].server</code> points to, and it carries the host
 information for that server:</p>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:8100/v1</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:8100/v1</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -623,6 +678,14 @@ search auto-enables when that endpoint responds at startup. Ignored
 behind a confirmed orangu-coordinator — it alone decides which model
 backs each role, so a single server section is enough there</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>model_verbosity</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">How chatty this server’s model should be.
+Defaults to <code>normal</code>. Options: <code>terse</code>,
+<code>normal</code>, <code>verbose</code>. It is a per-server key:
+writing it in <code>[orangu]</code> has no effect</td>
+</tr>
 </tbody>
 </table>
 <ul>
@@ -652,6 +715,120 @@ while/when a <code>/auto_review</code> runs and finishes</li>
 <pre class="text"><code>doc/etc/orangu.conf</code></pre>
 <p>It ships with <code>orangu-server</code> sections and a 30-minute
 timeout suitable for local tool-calling workloads.</p>
+<h2 id="mcp-servers">MCP servers</h2>
+<p>Use a <code>[mcp.&lt;name&gt;]</code> section, or set
+<code>mcp = true</code> in a section, for an already-running Streamable
+HTTP MCP service. The endpoint normally ends in <code>/mcp</code>.</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[mcp.weather]</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:9000/mcp</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">timeout </span><span class="ot">=</span><span class="st"> </span><span class="dv">30</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="dt">approval_mode </span><span class="ot">=</span><span class="st"> writes</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Key</th>
+<th style="text-align: left;">Required</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>endpoint</code></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Streamable HTTP URL of the running
+service, normally ending in <code>/mcp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mcp</code></td>
+<td style="text-align: left;">Only for the shortcut form</td>
+<td style="text-align: left;">Set to <code>on</code> in a section that
+is not named <code>mcp.&lt;name&gt;</code> to read that section as an
+MCP service too. Options: <code>on</code>, <code>true</code>,
+<code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>timeout</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Seconds allowed for initialization, tool
+discovery, and tool calls alike. Defaults to <code>30</code>, and
+supplies the default for the two keys below</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>startup_timeout</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Seconds for connection and tool discovery
+alone. Defaults to <code>timeout</code>. Must be greater than zero</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tool_timeout</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Seconds for a single tool call. Defaults
+to <code>timeout</code>. Must be greater than zero</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>enabled</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Whether the service is used at all.
+Defaults to <code>on</code>. Options: <code>on</code>,
+<code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>required</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Make a failed connection abort workspace
+startup instead of disabling the service with a warning. Defaults to
+<code>off</code>. Options: <code>on</code>, <code>true</code>,
+<code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>enabled_tools</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Comma-separated allowlist of tool names.
+Empty (the default) offers every discovered tool</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>disabled_tools</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Comma-separated denylist of tool names.
+The denylist wins over <code>enabled_tools</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>approval_mode</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">How tool calls are confirmed. Defaults to
+<code>auto</code>. Options: <code>auto</code>, <code>prompt</code>,
+<code>writes</code>, <code>deny</code></td>
+</tr>
+</tbody>
+</table>
+<p>The section name after <code>mcp.</code> is the service name used in
+the <code>mcp__&lt;server&gt;__&lt;tool&gt;</code> prefix, and it
+accepts ASCII letters, digits, <code>_</code> and <code>-</code>.
+Configuring the same name twice — once as
+<code>[mcp.&lt;name&gt;]</code> and once through the
+<code>mcp = on</code> shortcut — is a startup error.</p>
+<p><code>approval_mode</code> controls MCP execution: <code>auto</code>
+runs tools directly, <code>prompt</code> asks for each call,
+<code>writes</code> asks unless the MCP tool declares
+<code>readOnlyHint</code>, and <code>deny</code> disables the service.
+In the interactive terminal, answer an approval with <code>y</code> or
+<code>n</code>; noninteractive and review runs deny calls that require
+confirmation.</p>
+<p>orangu connects to configured MCP services; it does not launch or
+manage MCP processes. A failed service is disabled with a warning while
+the rest of the session continues. MCP support is tools-only: resources,
+prompts, sampling, elicitation, and tasks are deferred. Use
+<code>/mcp refresh</code> to rediscover tools after a service changes
+them; an interrupted connection is retried once.</p>
   </main>
 </div>
 

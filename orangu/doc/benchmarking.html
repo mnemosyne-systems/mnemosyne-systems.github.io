@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -75,6 +75,14 @@
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html" class="active">Benchmarking</a></li>
         <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -109,33 +117,88 @@ no bearing on running a model in production; it exists to answer one
 question during performance work: <em>how fast does token generation
 (decode) run, how does that rate change as the context grows, and how
 fast is prompt processing (prefill)?</em></p>
-<p>It is the HTTP-client analogue of <code>llama.cpp</code>’s
-<code>llama-bench -n</code> (its <code>tg</code>, token-generation,
-test). Rather than embedding an inference engine, it points at a
+<p>Rather than embedding an inference engine, it points at a
 <strong>running OpenAI-compatible server</strong> over HTTP and measures
-the tokens per second it streams back. Because both
-<code>orangu-server</code> and <code>llama-server</code> speak
-<code>POST /v1/completions</code> with SSE streaming, the <em>same</em>
-tool measures both through the <em>same</em> path — the only way to get
-a genuinely apples-to-apples comparison (in-process
-<code>llama-bench</code> numbers and an ad-hoc <code>curl</code> of
-orangu are not comparable).</p>
+the tokens per second it streams back. Any server that speaks
+<code>POST /v1/completions</code> with SSE streaming is measured through
+the <em>same</em> path by the <em>same</em> tool — which is the only way
+to get a genuinely apples-to-apples comparison between two engines,
+since an in-process benchmark on one side and an ad-hoc
+<code>curl</code> on the other are not comparable.</p>
 <h3 id="what-it-measures">What it measures</h3>
 <p>For each run, <code>orangu-bench</code> sends one streaming
 completion and times the window <strong>from the first streamed token to
 the last</strong>. Prompt processing (prefill) and time-to-first-token
 are therefore <em>excluded</em> from the reported rate — the number is
 steady-state decode throughput,
-<code>(tokens - 1) / decode_seconds</code>, exactly the quantity
-<code>llama-bench</code>’s <code>tg</code> reports. Time to first token
-is printed separately (<code>ttft_ms</code>) so prefill cost is still
+<code>(tokens - 1) / decode_seconds</code>, the standard
+token-generation (<code>tg</code>) quantity. Time to first token is
+printed separately (<code>ttft_ms</code>) so prefill cost is still
 visible.</p>
 <p>To see how decode scales with context, it sweeps
 <strong>depths</strong>: each depth pads the prompt with filler so
-generation begins at roughly that many tokens of context, mirroring
-<code>llama-bench -d</code>. A flat curve across depths means decode is
-context-insensitive; a curve that falls with depth means attention or KV
-traffic is growing per token.</p>
+generation begins at roughly that many tokens of context. A flat curve
+across depths means decode is context-insensitive; a curve that falls
+with depth means attention or KV traffic is growing per token.</p>
+<h4 id="ranges">Ranges</h4>
+<p>Anywhere a list of points is accepted — <code>--depths</code>,
+<code>--pp</code>, <code>--pg</code>, <code>--pp-continue</code>,
+<code>--embed</code>, <code>--streams</code> — an item may be a range
+instead of a number, in the three forms the wider ecosystem’s benchmarks
+use, so a sweep can be copied between them:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">form</th>
+<th style="text-align: left;">means</th>
+<th style="text-align: left;">example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>first-last*mult</code></td>
+<td style="text-align: left;">multiply until past <code>last</code></td>
+<td style="text-align: left;"><code>128-2048*2</code> → 128, 256, 512,
+1024, 2048</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>first-last+step</code></td>
+<td style="text-align: left;">step until past <code>last</code></td>
+<td style="text-align: left;"><code>0-2048+512</code> → 0, 512, 1024,
+1536, 2048</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>first-last</code></td>
+<td style="text-align: left;">every value, stepping by one</td>
+<td style="text-align: left;"><code>1-8</code> → 1, 2, 3, 4, 5, 6, 7,
+8</td>
+</tr>
+</tbody>
+</table>
+<p>Ranges and numbers mix: <code>--depths 0,128-512*2,3072</code>. The
+end is a bound, not a member — <code>128-3000*2</code> stops at
+2048.</p>
+<p>A range is expanded <strong>before the first request</strong>, so a
+mistyped one costs nothing: <code>2048-128</code> (“ends before it
+starts”), <code>128-2048*1</code> (“would never reach its end”) and
+<code>128-4096</code> (“expands to more than 256 points — did a doubling
+sweep lose its <code>*2</code>?”) are all refused with their reason
+rather than run. That last cap is deliberate: <code>128-4096</code> is
+legal and means 3969 measurements, which looks exactly like a doubling
+sweep missing its multiplier.</p>
+<h4 id="letting-the-card-cool---delay">Letting the card cool
+(<code>--delay</code>)</h4>
+<p><code>--delay &lt;seconds&gt;</code> waits between measured points —
+between them only, never before the first or after the last. On a laptop
+card a sweep that heats through its own run reports a falling curve that
+looks exactly like the effect these sweeps are run to find. The clock
+and DPM state printed in the header make the cause visible after the
+fact; this is what avoids it.</p>
 <blockquote>
 <p>The depth padding is approximate — it appends <code>~depth</code>
 filler words (≈ one BPE token each) rather than exact tokens, because
@@ -149,9 +212,8 @@ base URL.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server (default port 8100): sweep decode rate across context depths</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024,2048,3072 <span class="at">--gen</span> 128</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># llama-server on port 8300, identical harness (uses the OpenAI-compat endpoint)</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">llama-server</span> <span class="at">-m</span> model.gguf <span class="at">-ngl</span> 99 <span class="at">--port</span> 8300 <span class="at">-c</span> 4096</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0,512,1024,2048,3072 <span class="at">--gen</span> 128</span></code></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># another OpenAI-compatible server on port 8300, identical harness</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0,512,1024,2048,3072 <span class="at">--gen</span> 128</span></code></pre></div>
 <p>Typical output (one row per depth):</p>
 <pre><code>orangu-bench → http://127.0.0.1:8100
    depth |   gen | ttft_ms |    n_tok |     best |        mean ± sd
@@ -159,15 +221,239 @@ base URL.</p>
        0 |   128 |     140 |      128 |    31.20 |    31.05 ±  0.12
     1024 |   128 |     520 |      128 |    24.90 |    24.70 ±  0.18
     2048 |   128 |     980 |      128 |    20.10 |    19.95 ±  0.20</code></pre>
+<h3 id="the-web-console---web">The web console (<code>--web</code>)</h3>
+<p>Everything below is also available from a browser. <code>--web</code>
+serves a console — the same vanilla HTML/CSS/JS, embedded in the binary
+with no build step, that <code>orangu-server</code>’s own web UI is
+built from, and deliberately the same palette — where a run is
+<strong>defined in a form</strong> and its result comes back as a
+<strong>summary table</strong>, a <strong>flamegraph</strong> and a
+<strong>chart</strong>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--web</span>                        <span class="co"># http://127.0.0.1:8300</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--web</span> <span class="at">--port</span> 9000</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--web</span> <span class="at">--host</span> all             <span class="co"># reachable from another machine</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--web</span> <span class="at">--host</span> 192.168.1.10    <span class="co"># or one specific interface</span></span></code></pre></div>
+<pre class="text"><code>orangu-bench 1.2.0
+Console  http://127.0.0.1:8300
+Runs     /home/you/.orangu/orangu-bench/runs</code></pre>
+<p>The banner is one aligned table: labels padded to a common width, and
+a value too long for the terminal continued under its own column rather
+than back at the left margin. A value is only ever broken at a space, so
+an address or a path stays in one piece — an address split across two
+lines cannot be copied, and copying it is what the line is for. Bound
+off loopback there is a third row, <code>Note</code>, saying so.</p>
+<p>Pick the measurement (decode, prefill, combined, continuation
+prefill, curve, concurrency, embeddings, decode CPU), give it the server
+URL and its sweep points, and press <strong>Run benchmark</strong>. The
+console then shows, live:</p>
+<ul>
+<li>the tool’s own output as it measures, one row per point as the row
+is taken, with anything it wrote to stderr — a retried send, a profile
+that undercounted — kept visibly apart from the measurements;</li>
+<li>a <strong>summary table</strong>: best, mean and ± sd per point,
+above the model, backend, server pid/uptime and GPU clock state that
+were live <em>while measuring</em>;</li>
+<li>the <strong>flamegraph</strong>, in the page and interactive (click
+a frame to zoom, the title to reset, Ctrl-F to highlight), with
+<strong>both <code>.svg</code> and <code>.png</code></strong> to
+download, and the sample count, window, cores-busy and GPU-wait share
+beside it — a flamegraph is normalised to its own total, so only those
+numbers say how much time there was to divide;</li>
+<li>the <strong>chart</strong>, likewise as <code>.svg</code> and
+<code>.png</code>;</li>
+<li>a <strong>Report</strong> button beside the summary table, which
+builds the whole run as one PDF (see <em>The run as a document</em>
+below) and saves it. It is built on the click rather than by every run:
+most runs are never sent anywhere, and a document written every time is
+a directory full of PDFs nobody opened. Everything it needs is already
+archived, so it can be built at any time — including from a run measured
+weeks ago;</li>
+<li>the run’s <code>bundle.json</code>, which is what all of the above
+was read back from.</li>
+</ul>
+<p>Every image and every text pane carries a <strong>save control at its
+lower right</strong> — the same dimmed footer with the same icon
+<code>orangu-server</code>’s console puts under an answer and under a
+rendered diagram. What lands on disk is the byte-identical file the run
+wrote, named after the run
+(<code>orangu-bench-&lt;id&gt;- flamegraph.png</code>), so two arms of
+an A/B saved from two tabs do not both arrive as
+<code>flamegraph.png</code>.</p>
+<p>A run’s directory holds what cannot be regenerated from it: the
+bundle, the chart and flamegraph (SVG, their PNG twins, and the
+collapsed <code>.folded</code> a profile can be re-rendered or compared
+from), the log, and the console’s own <code>run.json</code>. The PDF is
+built on demand and the comparison’s working copies are deleted once the
+comparison is made.</p>
+<p>Every run gets a directory under
+<code>~/.orangu/orangu-bench/runs/&lt;id&gt;/</code>, so a result
+outlives the console process that produced it: the <strong>Past
+runs</strong> button lists them newest first, and opening one re-loads
+its table, its artifacts and the form that produced it — which is how a
+second A/B arm gets defined, one field away from the first.</p>
+<p>The topbar’s <strong>New</strong> and the history panel’s
+<strong>Clear all</strong> are <code>orangu-server</code>’s console’s
+own, doing the same thing to runs that they do to chats there.
+<strong>New</strong> empties the result pane and lets go of the run it
+was showing — deliberately leaving the form alone, since the next run is
+almost always the last one with one field changed, which is exactly what
+an A/B arm is. It is remembered, so a reload after it comes back to an
+empty pane rather than reopening the newest run; a row’s own
+<strong>×</strong> does the same for one run.</p>
+<p><strong>Clear all</strong> deletes every kept run. A run that is
+still measuring is <strong>not</strong> one of them: it is kept, named
+in the reply, and the console follows it — tidying a list of finished
+results should never be the thing that ends a twenty-minute sweep, and
+Cancel is one button away and says what it does.</p>
+<h4 id="scaling-tests-the-sweeps-this-project-actually-ran">Scaling
+tests: the sweeps this project actually ran</h4>
+<p>Under <strong>Measurement</strong> sits <strong>Scaling
+test</strong>, a second drop-down whose entries are named for the range
+they cover — “Prefill” plus “128 to 3072”. Choosing one fills in the
+points, the token count and the repetitions, and locks them, so the
+sweep about to run is on screen rather than implied. The default is
+<strong>None</strong>, which leaves every field free: a one-off
+measurement, or an A/B against one hand-picked depth, is not a scaling
+test.</p>
+<p>The ranges are not round numbers. Each one is the sweep this
+repository used to find what it found, so a run lands beside an existing
+baseline rather than beside nothing:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Measurement</th>
+<th style="text-align: left;">Scaling test</th>
+<th style="text-align: left;">Where it comes from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Decode</td>
+<td style="text-align: left;"><code>0 to 2048</code></td>
+<td style="text-align: left;">the tracked series in
+<code>perf-history.tsv</code>; <code>PERF-GAP.md</code>’s standard
+harness, best of 3</td>
+</tr>
+<tr>
+<td style="text-align: left;">Prefill</td>
+<td style="text-align: left;"><code>128 to 3072</code></td>
+<td style="text-align: left;">the tracked <code>pp</code> series — every
+recorded prefill row came from these lengths</td>
+</tr>
+<tr>
+<td style="text-align: left;">Combined</td>
+<td style="text-align: left;"><code>128 to 3072</code></td>
+<td style="text-align: left;">the tracked prefill lengths with the
+tracked decode length, timed as one turn</td>
+</tr>
+<tr>
+<td style="text-align: left;">Continuation prefill</td>
+<td style="text-align: left;"><code>10 to 130 added</code></td>
+<td style="text-align: left;"><code>PERF-GAP.md</code> increment 7, the
+sweep that found the 2× cooperative-GEMM cliff between 50 and 66
+tokens</td>
+</tr>
+<tr>
+<td style="text-align: left;">Decode curve</td>
+<td style="text-align: left;"><code>0 to 3072 in one pass</code></td>
+<td style="text-align: left;">the curve invocation this manual documents
+below</td>
+</tr>
+<tr>
+<td style="text-align: left;">Concurrency</td>
+<td style="text-align: left;"><code>1 to 8 streams</code></td>
+<td style="text-align: left;"><code>PERF-GAP.md</code> item 7 — 99%
+engine occupancy at two streams against a generic path stuck at 66% with
+eight</td>
+</tr>
+<tr>
+<td style="text-align: left;">Embeddings</td>
+<td style="text-align: left;"><code>64 to 256</code></td>
+<td style="text-align: left;"><code>embeddinggemma-300M</code>’s own
+sweep, 15 reps</td>
+</tr>
+<tr>
+<td style="text-align: left;">Decode CPU</td>
+<td style="text-align: left;"><code>0 to 1024</code></td>
+<td style="text-align: left;">the depths that separated a claimed +58%
+CPU-per-token growth from the real +8.8%</td>
+</tr>
+</tbody>
+</table>
+<h4 id="comparing-against-an-earlier-run">Comparing against an earlier
+run</h4>
+<p>The question a benchmark is usually run to answer is not “how fast is
+this?” but “is this faster than what I had?” — so every finished run
+offers a <strong>Compare</strong> panel listing every earlier run this
+console has kept. Pick one and the console runs
+<code>orangu-bench --read-bundle old,new</code> against the two archived
+bundles and shows what it prints:</p>
+<ul>
+<li><strong>what differed</strong> between the two configurations —
+model, backend, kernels, host, GPU clocks — because a throughput
+comparison is only readable once you know whether the two runs were the
+same experiment;</li>
+<li><strong>where the GPU time went</strong> per decode stage, when both
+runs recorded it;</li>
+<li><strong>what each measured</strong>, point by point, with the
+percentage against the older run;</li>
+<li><strong>one chart holding both</strong>, saveable as SVG and PNG
+like every other image;</li>
+<li><strong><code>compare.pdf</code></strong> — the same comparison as a
+document, which is the artifact most likely to be attached to a pull
+request.</li>
+</ul>
+<p>The two bundles are copied into the newer run’s directory as
+<code>old-&lt;id&gt;.json</code> and <code>new-&lt;id&gt;.json</code>
+before being compared, and the copies’ series labels are tagged
+<code>old ·</code> / <code>new ·</code>. Both halves matter: every run’s
+bundle is called <code>bundle.json</code>, so the table’s two columns
+would otherwise both read “bundle”, and two runs of the same server
+carry the same series label, so the chart would draw them as one line.
+The runs’ own bundles are not touched.</p>
+<p>Comparing is allowed while a benchmark is running, unlike starting a
+second run: it reads two files that were written when their runs ended
+and talks to no server, so it cannot disturb a measurement in
+flight.</p>
+<p>Two things it does on purpose:</p>
+<ul>
+<li><strong>One run at a time.</strong> A second run pressed while one
+is going is refused rather than queued or allowed: two benchmarks
+sharing a server measure each other’s interference.</li>
+<li><strong>It runs <code>orangu-bench</code>, it does not reimplement
+it.</strong> Each run re-executes this same binary with the flags the
+form describes — the first line of the log is that command line, quoted
+so it can be pasted straight into a terminal. A console with its own
+copy of the harness could disagree with the command line about the same
+workload, and a benchmark tool that gives two answers for one question
+is worse than none.</li>
+</ul>
+<p>The console is <strong>unauthenticated</strong>, like
+<code>orangu-server</code>’s, and assumes a trusted network. It differs
+in its default: loopback, where that console defaults to every interface
+— because this one starts processes rather than answering requests.
+<code>--host all</code> (or <code>*</code>, or a literal interface
+address) opens it up for the case that wants it, which is real and
+common in performance work: the machine with the GPU is rarely the
+machine you are sitting at. Bound anywhere but loopback it says so at
+startup, because from then on anyone who can route to the port can start
+runs on that machine.</p>
+<p><code>--sweep</code> is the one mode with no place in the UI at all:
+a sweep’s whole input is a shell command to start a server with, and
+this console never takes one.</p>
 <h3 id="prefill-mode---pp-prompt-processing-not-decode">Prefill mode
 (<code>--pp</code>) — prompt processing, not decode</h3>
 <p><code>--pp</code> sweeps <em>prompt lengths</em> and reports
-<strong>prompt-processing</strong> throughput —
-<code>llama-bench</code>’s <code>pp</code> test to the default’s
-<code>tg</code>. Each run sends a prompt of roughly the requested length
-and generates a single token, so what is timed is prefill and nothing
-else.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pp</span> 128,512,1024,2048</span></code></pre></div>
+<strong>prompt-processing</strong> throughput — the standard
+<code>pp</code> test to the default’s <code>tg</code>. Each run sends a
+prompt of roughly the requested length and generates a single token, so
+what is timed is prefill and nothing else.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pp</span> 128,512,1024,2048</span></code></pre></div>
 <pre><code>orangu-bench → http://127.0.0.1:8100
   model    unsloth/gemma-4-E2B-it-GGUF:Q4_K_M
   backend  Vulkan/AMD Radeon RX 5500M (RADV NAVI14) (Vulkan)
@@ -187,17 +473,51 @@ processed.</li>
 from the server’s prefix cache and so never went through a forward pass.
 A cached prompt “prefills” instantly and would otherwise look like a
 spectacular result. Every run sends <code>cache_prompt: false</code>,
-which both <code>orangu-server</code> and <code>llama-server</code>
-honour, so this column should read <code>0</code>; if it ever climbs
-toward <code>n_tok</code>, the server ignored the flag and the row is
-measuring a cache lookup rather than prefill.</li>
+which any server implementing a prefix cache honours, so this column
+should read <code>0</code>; if it ever climbs toward <code>n_tok</code>,
+the server ignored the flag and the row is measuring a cache lookup
+rather than prefill.</li>
 </ul>
 <p>A server that reports no <code>timings</code> at all (an older
-<code>orangu-server</code>, or a llama-server built without them) gets a
-row marked <code>no server timings (ttft only)</code>, carrying
-wall-clock time-to-first-token instead. That figure includes queueing
-and the first decode step, so it is not comparable with the rest — the
-row says so rather than quietly printing a smaller number.</p>
+<code>orangu-server</code>, or one built without them) gets a row marked
+<code>no server timings (ttft only)</code>, carrying wall-clock
+time-to-first-token instead. That figure includes queueing and the first
+decode step, so it is not comparable with the rest — the row says so
+rather than quietly printing a smaller number.</p>
+<h3 id="combined-mode---pg-the-whole-turn-timed-as-one-thing">Combined
+mode (<code>--pg</code>) — the whole turn, timed as one thing</h3>
+<p>Every other mode here splits the turn on purpose: <code>--pp</code>
+times prefill with a single token generated, the default sweep times
+generation with prefill excluded. That is what a <em>diagnosis</em>
+needs — the two halves have different bottlenecks and move for different
+reasons.</p>
+<p><code>--pg</code> answers the other question, the one a user actually
+experiences: how long the whole turn takes. It sends one request that
+prefills a prompt of roughly the given length and generates
+<code>--gen</code> tokens, times it from before the send to the last
+streamed token, and reports
+<code>(prompt + generated) / total</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pg</span> 128,512,1024 <span class="at">--gen</span> 128</span></code></pre></div>
+<pre class="text"><code>      pp |   n_tok |     gen | prompt_ms |  total_ms |     best |   mean ± sd(n-1)
+---------------------------------------------------------------------------------
+      64 |      71 |      40 |      12.5 |      63.3 |  1754.89 |  1749.80 ±  7.20
+     128 |     146 |      40 |      12.5 |      63.6 |  2951.57 |  2938.98 ± 17.81</code></pre>
+<p>This figure <strong>cannot be reconstructed</strong> from a
+<code>--pp</code> run and a decode run: neither carries the queueing and
+the hand-off between prefill and the first token, which is exactly the
+part a combined number includes. It is also the figure most third-party
+comparisons quote.</p>
+<p><code>prompt_ms</code> is the server’s own prefill time, so the split
+inside the turn stays visible; <code>n_tok</code> is what the server
+said it processed, and the rate is computed from that rather than from
+the requested length. <code>cache_prompt: false</code> as everywhere
+else — a cached prompt would make the prefill half vanish and quietly
+turn this into a decode measurement.</p>
+<p>The swept axis is the <strong>prompt</strong>; the generated length
+comes from <code>--gen</code>, so one invocation is one generation
+length. That keeps <code>n</code> meaning one thing per mode in the
+history file, where these rows are recorded under mode
+<code>pg</code>.</p>
 <h3
 id="continuation-prefill-mode---pp-continue-the-narrow-batch-regime">Continuation-prefill
 mode (<code>--pp-continue</code>) — the narrow-batch regime</h3>
@@ -214,7 +534,7 @@ that batch-width thresholds actually govern.</p>
 (<code>--pp-continue-base</code>, default 512 tokens), then sends base +
 extension and reports the rate over the tokens the server says it
 actually processed:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pp-continue</span> 8,16,32,64,128</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--pp-continue</span> 8,16,32,64,128</span></code></pre></div>
 <pre><code>   added |   n_tok |  cached | processed | prompt_ms |     best |        mean ± sd
 ----------------------------------------------------------------------------------
        8 |     582 |     572 |        10 |     275.9 |    36.24 |    34.74 ±  1.37
@@ -251,7 +571,8 @@ token</strong>, read from <code>/proc/&lt;pid&gt;/stat</code>, with
 prefill excluded. Useful when a change is expected to remove CPU work
 rather than wall-clock time — a throughput number can be too noisy to
 show a few percent, while CPU seconds are counted by the kernel.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 192 <span class="at">--decode-cpu</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 192 <span class="at">--decode-cpu</span></span></code></pre></div>
 <pre><code>   depth |   n_tok | prefilled |  cpu_ms/token |    tok/s
 ----------------------------------------------------------
        0 |      33 |         1 | 14.427 ± 0.052 |    22.06
@@ -292,9 +613,10 @@ warmup included. <code>--embed</code> sweeps prompt lengths against
 <code>/v1/embeddings</code> and reports forward-pass throughput, which
 is what <code>--pp</code> reports for a generative model: an embedding
 pass is prompt processing without the decode that follows it.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> embeddinggemma-300M-Q8_0.gguf <span class="at">--embedding</span> <span class="kw">&amp;</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15  <span class="co"># the reference</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> embeddinggemma-300M-Q8_0.gguf <span class="at">--embedding</span> <span class="kw">&amp;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15  <span class="co"># the reference</span></span></code></pre></div>
 <pre><code>   embed |   n_tok |   wall_ms |     best |        mean ± sd
 ------------------------------------------------------------
       64 |      81 |    1163.3 |    70.49 |    68.33 ±  1.64
@@ -302,8 +624,8 @@ pass is prompt processing without the decode that follows it.</p>
      256 |     289 |    5003.7 |    59.47 |    57.95 ±  1.89</code></pre>
 <p><code>n_tok</code> is the count from the response’s
 <code>usage.prompt_tokens</code> — the length the forward pass actually
-ran, not the requested target — and both <code>orangu-server</code> and
-<code>llama-server</code> report it. A server that omits it gets a row
+ran, not the requested target — which <code>orangu-server</code> and
+every other conformant server reports. A server that omits it gets a row
 marked <code>no usage.prompt_tokens (latency only)</code>: an embedding
 response carries no other clue to its token count, so there is no rate
 to print and the row is not recorded.</p>
@@ -341,62 +663,529 @@ than reading it off the end of a long sweep.</li>
 interleave the arms rather than running all of one and then all of the
 other.</li>
 </ul>
+<h3
+id="position-inside-a---sweep-is-a-confound-and-a-large-one">Position
+inside a <code>--sweep</code> is a confound, and a large one</h3>
+<p><code>--sweep</code> runs its values in the order you give them, and
+each value’s repetitions run together. The <strong>later slot is
+systematically worse</strong> on hardware that warms or a drive that
+tires — measured here at <strong>2.96% slower with three to six times
+the variance</strong>, pooled over seven <code>pp512</code> sweeps.</p>
+<p>That is bigger than most changes worth measuring, so a two-value
+sweep written <code>VAR=a,b</code> charges the whole positional penalty
+to <code>b</code>:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">what the sweep said</th>
+<th style="text-align: left;">what it was</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">+4.8%, −9.8%, +4.0%, −8.8% across four
+same-order runs</td>
+<td style="text-align: left;">a <strong>+0.11%</strong> change</td>
+</tr>
+<tr>
+<td style="text-align: left;">−3.1%</td>
+<td style="text-align: left;">a <strong>+3.9%</strong> change</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Write each value more than once, in both orders</strong> —
+<code>VAR=a,b,b,a</code> and <code>VAR=b,a,a,b</code> — so every value
+holds every position, and pool the runs. And score on <strong>mean ± sd,
+not best-of</strong>: the extra variance in the late slot inflates a
+best-of statistic, which is how the +0.11% change above also produced a
+confident-looking +4.9% “win”.</p>
+<h3 id="storage-mode---storage-probe-what-request-size-is-worth">Storage
+mode (<code>--storage-probe</code>) — what request size is worth</h3>
+<p><code>[orangu-server].read_size</code> exists because read throughput
+is a function of request size, and the shape of that function is a
+property of the drive, the bus and the bridge rather than something
+derivable from <code>sysfs</code>. This measures it:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--storage-probe</span> 4,64,128,256,512,1024,2048,4096,8192 <span class="dt">\</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--storage-file</span> <span class="op">&lt;</span>a model shard<span class="op">&gt;</span> --storage-span 384 <span class="at">--storage-ramp</span> 16 <span class="dt">\</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--history</span> storage-history.tsv <span class="at">--chart</span> storage-curve.svg <span class="dt">\</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--chart-y-label</span> <span class="st">&quot;MB/s (log)&quot;</span></span></code></pre></div>
+<p>Sizes are KiB. <code>--storage-file</code> names the file to read;
+without it the probe asks the server at <code>--url</code> for its
+largest shard, which is usually what you want and needs a server
+running. <code>--storage-span</code> is how much to read at each size,
+per pass, and <code>--storage-ramp</code> how much to read and discard
+first.</p>
+<p>Reads are <code>O_DIRECT</code>, so the page cache is neither
+consulted nor populated: the probe measures the device rather than
+memcpy, and it does not evict a model a later benchmark is about to
+want.</p>
+<p><strong>Every size is measured twice, ascending then
+descending</strong>, and the table reports both passes with their
+spread. This is not redundancy. A drive that degrades under load gives
+its later sizes a worse reading, so a one-directional sweep can invent a
+threshold that is not there — which is exactly what happened to this
+project’s own storage table, where an apparent 8× cliff at 512 KiB
+turned out to be the drive changing state partway through the
+measurement. When the two passes disagree by more than a quarter the
+probe says so and names the size:</p>
+<pre class="text"><code>  request |     MB/s |       up |     down |  spread
+      4 K |     27.4 |     46.6 |      8.2 |  140.0%
+   8192 K |    305.9 |    305.6 |    306.2 |    0.2%
+  the 4 K point differs by 140% between the ascending and descending passes —
+  this drive changed state during the probe, so read the two columns, not the mean</code></pre>
+<p>Read that as: 8 MiB reads hold ~306 MB/s whether measured first or
+last, while 4 KiB reads collapse from 46.6 to 8.2 — <strong>small
+requests put this drive into a slow state and large ones never
+do.</strong> That is the argument for a large <code>read_size</code>,
+and it is a stronger one than “clear a threshold”.</p>
+<h3
+id="capped-runs---cap-the-regime-a-large-model-actually-meets">Capped
+runs (<code>--cap</code>) — the regime a large model actually meets</h3>
+<p>A model smaller than RAM is served from the page cache, so a
+benchmark of it measures the CPU. Streaming behaviour only appears once
+the working set exceeds what the kernel will hold, and reproducing that
+on a large host otherwise means finding a large enough model.</p>
+<p><code>--cap</code> runs each <code>--sweep</code> server inside a
+memory-capped transient cgroup:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--cap</span> 4G <span class="at">--drop-model-cache</span> <span class="dt">\</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep</span> <span class="st">&#39;ORANGU_CHUNK_POLICY=flat,adaptive&#39;</span> <span class="dt">\</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server -c bench.conf &lt;model&gt;&quot;</span></span></code></pre></div>
+<p>It uses <code>systemd-run --user --scope</code>, so it needs no root
+and the scope is cleaned up when the server exits. Swap is pinned off —
+a cap the kernel can satisfy by swapping measures the swap device
+instead of the model’s read path.</p>
+<p>Combined with the <code>io</code> line (below) this reports what a
+streamed model costs per token:</p>
+<pre class="text"><code>  io       read 19.74 GiB from disk  ·  1263.6 MiB/token  ·  20688 major faults</code></pre>
+<p>1,263.6 MiB per token against a 1.23 GiB model is the whole model,
+every token — the signature of a working set that does not fit.</p>
+<h3 id="the-io-line-bytes-which-do-not-drift">The <code>io</code> line —
+bytes, which do not drift</h3>
+<p>Every run reports what it pulled through the block layer, from the
+server’s own <code>/proc/self/io</code> over the measured window, and
+records it as <code>io_mb_per_token</code> and <code>io_majflt</code> in
+<code>--history</code>.</p>
+<p>This is the most trustworthy number a run produces on storage-bound
+work. Rates on real hardware drift — thermals, clocks, a drive tiring —
+and this manual’s own sections say so repeatedly. <strong>Bytes moved do
+not.</strong> Two runs of the same prompt against the same model read
+the same number, so a change that moves bytes has moved something real,
+whatever the stopwatch says that afternoon.</p>
+<p>A warm run reads nothing and says <code>(fully cached)</code> rather
+than showing a bare zero, because “read nothing” and “could not measure”
+must not look alike.</p>
+<h3 id="measuring-across-cards-and-across-models">Measuring across
+cards, and across models</h3>
+<p><code>orangu-bench</code> is an HTTP client, so it never chooses a
+device: the server does, with <code>--device</code> /
+<code>[orangu-server].device</code> (an index, part of a name, or
+<code>auto</code>) and <code>--device-split</code> for spreading one
+model’s layers across several. What the benchmark side owns is making
+the answers <em>comparable</em> afterwards — recording which card
+produced each row, and restarting the server between points so one
+invocation can cover several.</p>
+<p><code>ORANGU_DEVICE</code> is read ahead of the config file precisely
+so a sweep can walk a machine’s cards without editing anything between
+runs:</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the same model, every card in the machine, one invocation</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> ORANGU_DEVICE=0,1 <span class="dt">\</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server --model gemma-4-E2B-it-Q4_K_M.gguf&quot;</span> <span class="dt">\</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> cards.svg</span></code></pre></div>
+<p>Each point starts its own server, waits for it to answer, proves
+through <code>/props</code> that the process answering is the one it
+started, measures it, and stops it — see the warnings in <em>A sweep can
+contaminate its own later rows</em> for why the restart matters, and
+<code>--sweep</code>’s own refusal to measure a server it did not launch
+for why the identity check does. The summary table is followed by a line
+naming the device behind each point, because <code>0</code> and
+<code>1</code> are the indices asked for and not the cards that
+answered:</p>
+<pre class="text"><code>  ORANGU_DEVICE=0          Vulkan/Radeon Graphics
+  ORANGU_DEVICE=1          Vulkan/Radeon RX 5500M</code></pre>
+<p>That line appears only when the points really did run on different
+devices, so an ordinary tuning sweep’s output is unchanged.</p>
+<p><strong>Models sweep the same way.</strong> <code>--sweep-cmd</code>
+runs through a shell with the swept variable exported, so the variable
+does not have to be one the engine reads — it can be one the command
+line reads:</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;MODEL=/models/a.gguf;/models/b.gguf&#39;</span> <span class="dt">\</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&#39;orangu-server --model &quot;$MODEL&quot;&#39;</span> <span class="at">--pp</span> 512</span></code></pre></div>
+<p><strong>Values that contain commas need <code>;</code>.</strong> A
+split ratio is written <code>3,1</code>, which is also how the value
+list is separated: <code>--sweep ORANGU_DEVICE_SPLIT=off,all,3,1</code>
+would be four points, two of them halves of a ratio, and because
+<code>3</code> and <code>1</code> are themselves legal one-entry ratios
+nothing would complain. A spec containing a semicolon is therefore split
+on semicolons and never on commas:</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=off;all;3,1&#39;</span> <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server ...&quot;</span> <span class="at">--depths</span> 0</span></code></pre></div>
+<p>A spec with no semicolon splits on commas exactly as before. The one
+case a parser can still catch is caught: a comma-separated sweep of
+<code>ORANGU_DEVICE_SPLIT</code> containing a bare number is refused,
+with the semicolon form in the message, rather than measured.</p>
+<h4 id="every-card-against-every-model">Every card against every
+model</h4>
+<p><code>--sweep</code> is deliberately <strong>one axis</strong>. A
+cartesian product costs the product of two model loads, and its result
+is not a table anyone can read — so the matrix is a shell loop around
+the sweep, writing into <strong>one</strong> history file:</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model <span class="kw">in</span> /models/llama-1b.gguf /models/gemma-12b.gguf<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="dt">\</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sweep</span> ORANGU_DEVICE=0,1 <span class="dt">\</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server </span><span class="va">$model</span><span class="st"> --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--depths</span> 0,512,2048 <span class="at">--gen</span> 128 <span class="at">--reps</span> 3 <span class="dt">\</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--label</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$model</span><span class="st">&quot;</span> .gguf<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--history</span> matrix.tsv</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> matrix.tsv <span class="at">--chart</span> matrix.svg</span></code></pre></div>
+<p>The three things that vary land in three different fields, which is
+what makes the file readable rather than a pile of colliding rows:</p>
+<ul>
+<li><strong>the model</strong> in <code>--label</code>, which inside a
+sweep <em>prefixes</em> each point rather than replacing it — so the
+series above come out as <code>llama-1b · ORANGU_DEVICE=0</code>. The
+loop is what varies the model, and a label is the only field it can
+reach.</li>
+<li><strong>the swept variable</strong> in the point name, which the
+sweep writes itself.</li>
+<li><strong>the device</strong> in the <code>device</code> column, which
+the run fills in from the server it measured.</li>
+</ul>
+<p>That asymmetry is why the loop goes over <em>models</em> and the
+sweep over <em>devices</em> rather than the other way round: the device
+needs no naming and the model does.</p>
+<p>The chart is drawn at the end, once, from the accumulated file —
+every run’s rows are already in it, so nothing has to be re-measured to
+redraw. Each series comes out as
+<code>llama-1b · Vulkan/Radeon RX 5500M</code>, and the four
+combinations sit on one pair of axes.</p>
+<p>Two practical notes for a matrix that takes hours. Give each model
+its own <code>--sweep-cmd</code> port only if you are running loops
+concurrently — otherwise let them share one, since each sweep frees the
+port before it returns. And check the <code>build</code> line in each
+block: a matrix is long enough that a rebuild can land in the middle of
+it, which is exactly how two points end up measuring two different
+binaries (see <em>Confirm you are measuring the build you think you
+are</em>).</p>
+<p>A split model reports its <strong>placement plan</strong> in the
+header where a single device reports its kernel selection, since there
+is no one device to describe:</p>
+<pre class="text"><code>  api      vulkan · split across 2 devices · 1 hand-off/token
+  device 0  Radeon RX 5500M · 2 layers · 0.27 GiB of 4.00 GiB · 3.73 GiB free · KV room ~918k tok
+  device 1  Radeon Graphics · 14 layers · 0.47 GiB of 21.06 GiB · 20.59 GiB free · KV room ~724k tok
+  kernels  not reported on a split — the tuning report describes one device, and this run has none
+  timings  no GPU stage breakdown on a split — query sets belong to one device; --flamegraph still profiles the CPU side</code></pre>
+<p><strong>KV room is per device and is not proportional to the layer
+count.</strong> In the run above, device 1 holds seven times the layers
+and five times the free memory of device 0 and has <em>less</em> room
+for KV, because its fourteen layers cost seven times as much per token.
+That figure comes from the server measuring each device’s own layers
+(<code>kv_dim</code> and stride vary down a model’s depth), not from
+scaling a total — which is why it cannot be worked out from the layer
+counts by hand.</p>
+<p>A device the plan overfilled says so, on its own line:</p>
+<pre class="text"><code>  device 0  Radeon RX 5500M · 36 layers · 5.49 GiB of 4.00 GiB · 0.00 GiB free · KV room ~0k tok
+  device 0  OVER by 1.49 GiB — the driver will page this device&#39;s weights on every token; give it a smaller share of the split</code></pre>
+<p>This is the single most useful thing the header can tell you before
+trusting a split’s throughput, because paging weights on every token
+produces a rate that looks like a slow engine rather than a placement to
+change.</p>
+<p>Two things that block is honest about, because they change what a
+split run’s numbers can be used for. The <strong>kernel and flag report
+is unavailable</strong>, so a split cannot be A/B’d against a single
+card for kernel selection — only for placement. And
+<strong><code>--flamegraph</code> is the only profiler that still
+works</strong>: a GPU timestamp query set belongs to one device, so
+<code>ORANGU_GPU_TIMESTAMPS</code> resolves none of them on a split. The
+server says so rather than answering an empty result —
+<code>GET /gpu-timings</code> returns
+<code>{"enabled": false, "timings": null, "unavailable": "split"}</code>
+— and the header line above repeats it, because a diagnostic that
+silently does nothing invites the reading that what it measures cost
+nothing.</p>
+<h4 id="what-a-split-costs-and-how-to-measure-it">What a split costs,
+and how to measure it</h4>
+<p>A split’s loss has two terms, and they behave completely differently:
+a <strong>fixed</strong> cost paid the moment the model is split at all,
+and a <strong>marginal</strong> cost for each layer that ends up on the
+slower device. Separating them is one sweep — move the boundary and
+watch the slope:</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=off;15,1;14,2;12,4;8,8&#39;</span> <span class="dt">\</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server model.gguf --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0 <span class="at">--gen</span> 32 <span class="at">--reps</span> 4</span></code></pre></div>
+<p><code>off</code> is the baseline, and every other point has
+<strong>exactly one boundary</strong> — the plan hands out layers in
+contiguous runs — so anything the points share is fixed and anything
+that grows with the layer count is marginal. Convert the rates to
+milliseconds per token before reading it; a slope in tok/s is not a
+slope in cost. On this project’s dev machine (RX 5500M + Renoir iGPU,
+Llama-3.2-1B-Q4_K_M, 16 layers):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">placement</th>
+<th style="text-align: right;">decode</th>
+<th style="text-align: right;">ms/token</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>off</code> — 16 layers on the
+discrete card</td>
+<td style="text-align: right;">60.0 tok/s</td>
+<td style="text-align: right;">16.7</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>15,1</code></td>
+<td style="text-align: right;">39.4</td>
+<td style="text-align: right;">25.4</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>14,2</code></td>
+<td style="text-align: right;">36.0</td>
+<td style="text-align: right;">27.8</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>12,4</code></td>
+<td style="text-align: right;">36.3</td>
+<td style="text-align: right;">27.5</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>8,8</code></td>
+<td style="text-align: right;">27.4</td>
+<td style="text-align: right;">36.5</td>
+</tr>
+</tbody>
+</table>
+<p>The slope is about <strong>1.7–2.4 ms per layer moved</strong>, and
+extrapolating back to zero layers moved leaves about <strong>6–7
+ms</strong> that the split costs before any layer has changed device —
+roughly 40% of an entire unsplit token. So <strong>moving one single
+layer costs 34%</strong>, and moving seven more costs only about as much
+again. If you take one thing from this: a split’s price is mostly paid
+at the moment you split, so a model that fits on one card belongs on one
+card.</p>
+<p>That fixed term is not the hand-off across the bus. The hidden state
+for this model is 2048 floats — 8 KiB — which is microseconds on any
+link; what the fixed term actually is has not been established. Note
+also that it cannot be attributed <em>per boundary</em> on a two-device
+machine, because every split there has exactly one: separating “the cost
+of a boundary” from “the cost of splitting” needs a third device, and
+this rig has two.</p>
+<p>Two more things worth knowing before trusting such a sweep:</p>
+<ul>
+<li><p><strong>Use <code>--reps 4</code> or more.</strong> At two
+repetitions this same sweep put <code>14,2</code> ahead of
+<code>15,1</code>, which is impossible — the ordering came back at four.
+The unsplit point is the noisiest of all (±4.8 tok/s here) because it is
+the fastest, so scheduling jitter is a larger share of its per-token
+time.</p></li>
+<li><p><strong><code>ORANGU_NO_SPLIT_FUSION=1</code> is the A/B for the
+split’s GPU paths</strong>, from one binary and two runs — the way to
+check they are live rather than assume it:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_NO_SPLIT_FUSION=;1&#39;</span> <span class="dt">\</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-env</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=12,4&#39;</span> <span class="dt">\</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server model.gguf --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0 <span class="at">--gen</span> 32 <span class="at">--reps</span> 2</span></code></pre></div>
+<p>The empty first value means <em>unset</em>, so the two points are
+“fusion on” against “fusion off”. Here that was 34.8 against 20.8 tok/s
+— per-layer fusion is worth <strong>+68%</strong> on a split, which is
+most of what makes one usable at all. <code>--sweep-env</code> is what
+holds the placement identical across both.</p></li>
+</ul>
 <h3 id="what-was-measured">What was measured</h3>
-<p>Every run opens with the server’s model and backend (from
-<code>GET /props</code>) and, on Linux with an AMD card, each GPU’s
-current core clock and DPM mode read from
-<code>/sys/class/drm/card*/device/</code>. This is not decoration: a
-card left at <code>power_dpm_force_performance_level = auto</code> can
-idle its clock down between requests, which moves throughput by more
-than the difference most benchmarks are run to detect. A rate recorded
-without the device and clock state beside it cannot be compared against
-one recorded later. Under <code>--json</code> the same information is
-the first object emitted, tagged <code>"type": "env"</code>, so a stored
+<p>Every run opens with the server’s model, backend and
+<strong>build</strong> (from <code>GET /props</code>) and, on Linux with
+an AMD card, each GPU’s current core clock and DPM mode read from
+<code>/sys/class/drm/card*/device/</code>.</p>
+<pre class="text"><code>  model    unsloth/gemma-4-E2B-it-GGUF:Q4_K_M
+  backend  Vulkan/AMD Radeon RX 5500M (RADV NAVI14) (Vulkan)
+  build    1.2.0 (52c04435f-dirty)
+  server   pid 48219 up 12s</code></pre>
+<p>The <code>build</code> line is <code>version</code> plus the git
+commit the server was compiled from, <code>-dirty</code> when tracked
+files differed from that commit. A version alone cannot separate two
+builds during performance work — every build between two releases
+carries the same one — and a run whose engine is identified only by a
+hand-typed <code>--label</code> is a run whose provenance depends on
+someone having remembered. The bundle archives both fields, so
+<code>--read-bundle</code> names a build change in <strong>what
+differed</strong> before it shows what moved. A server that reports
+neither (an older <code>orangu-server</code>, or another engine) simply
+gets no such line. This is not decoration: a card left at
+<code>power_dpm_force_performance_level = auto</code> can idle its clock
+down between requests, which moves throughput by more than the
+difference most benchmarks are run to detect. A rate recorded without
+the device and clock state beside it cannot be compared against one
+recorded later. Under <code>--json</code> the same information is the
+first object emitted, tagged <code>"type": "env"</code>, so a stored
 result carries its own provenance.</p>
 <h3 id="options">Options</h3>
 <p><code>orangu-bench --help</code>:</p>
-<pre class="text"><code>Usage: orangu-bench [OPTIONS]
+<pre class="text"><code>Measure throughput of an OpenAI-compatible server
+
+Usage: orangu-bench [OPTIONS]
 
 Options:
-      --url &lt;URL&gt;          Base URL of the server [default: http://127.0.0.1:8100]
-      --depths &lt;DEPTHS&gt;    Comma-separated context depths to sweep [default: 0]
-      --pp &lt;PP&gt;            Prefill mode: comma-separated prompt lengths to sweep, reporting prompt-processing throughput
-      --pp-continue &lt;LENS&gt; Continuation-prefill mode: comma-separated *added* token counts to sweep
-      --decode-cpu         Report the server&#39;s CPU time per generated token, with prefill excluded
-      --streams &lt;N&gt;        Concurrency mode: comma-separated stream counts; reports aggregate tok/s
-      --pp-continue-base &lt;N&gt;  Prompt length (tokens) to prime the prefix cache with for --pp-continue [default: 512]
-      --embed &lt;EMBED&gt;      Embedding mode: comma-separated prompt lengths to sweep against /v1/embeddings
-      --gen &lt;N_GEN&gt;        Number of tokens to generate per timed run [default: 128]
-      --curve &lt;CURVE&gt;      Curve mode: ONE generation of this many tokens, decode rate bucketed by context [default: 0]
-      --bucket &lt;BUCKET&gt;    Bucket width (in context tokens) for --curve [default: 256]
-      --reps &lt;REPS&gt;        Repetitions per depth; the reported rate is the best run with mean±sd [default: 3]
-      --no-warmup          Skip the initial warmup run
-      --timeout &lt;TIMEOUT&gt;  Per-request timeout in seconds [default: 600]
-      --model &lt;MODEL&gt;      Model id to request
-      --json               Emit machine-readable JSON
-      --history &lt;HISTORY&gt;  Append each measured point to this tab-separated history file
-      --label &lt;LABEL&gt;      Series name recorded in the history file
-      --chart &lt;CHART&gt;      Render the history file to this SVG after measuring
-      --chart-only         Only render the chart from an existing history file; measure nothing
-      --chart-png          Also render a PNG beside the chart SVG
-      --chart-scale &lt;MIN:MAX&gt;  Pin the chart&#39;s tok/s axis so a pair of charts compare
-      --chart-y-label &lt;TEXT&gt;   Label for the chart&#39;s y-axis [default: tok/s (log)]
-      --chart-x-label &lt;TEXT&gt;   Label for the chart&#39;s x-axis
-      --flamegraph &lt;FILE&gt;  Record a CPU flamegraph of the server over the measured window
-      --flamegraph-pid &lt;PID&gt;          Process to profile (default: the server&#39;s own, else the URL port&#39;s owner)
-      --flamegraph-freq &lt;HZ&gt;          Sampling frequency in Hz for --flamegraph [default: 999]
-      --flamegraph-call-graph &lt;MODE&gt;  Call-graph mode for --flamegraph: fp or dwarf [default: fp]
-      --flamegraph-png                Also render a PNG beside the flamegraph SVG
-      --compare-profiles &lt;FILES&gt;      Compare already-collapsed .folded profiles side by side; measure nothing
-  -h, --help               Print help
-  -V, --version            Print version</code></pre>
+      --url &lt;URL&gt;                      Base URL of the server [default: http://127.0.0.1:8100]
+      --depths &lt;LIST&gt;                  Comma-separated context depths to sweep. Ranges too: `0-2048+512` [default: 0]
+      --pp &lt;LIST&gt;                      Prefill mode: prompt lengths to sweep, reporting prompt-processing rate
+      --pp-continue &lt;LIST&gt;             Continuation-prefill mode: comma-separated *added* token counts to sweep
+      --pg &lt;LIST&gt;                      Combined mode: prompt lengths prefilled and generated in one request
+      --decode-cpu                     Report the server&#39;s CPU time per generated token, with prefill excluded
+      --streams &lt;LIST&gt;                 Concurrency mode: comma-separated stream counts; reports AGGREGATE tok/s
+      --pp-continue-base &lt;N&gt;           Prompt length (tokens) to prime the prefix cache with for `--pp-continue` [default: 512]
+      --embed &lt;LIST&gt;                   Embedding mode: prompt lengths to sweep against /v1/embeddings
+      --gen &lt;N&gt;                        Number of tokens to generate per timed run [default: 128]
+      --curve &lt;N&gt;                      Curve mode: one generation of this many tokens, bucketed by context; 0 disables [default: 0]
+      --bucket &lt;N&gt;                     Bucket width (in context tokens) for `--curve` [default: 256]
+      --reps &lt;N&gt;                       Repetitions per depth; the reported rate is the best run with mean±sd [default: 3]
+      --drop-model-cache               Evict the model from the page cache before every repetition
+      --no-warmup                      Skip the initial warmup run
+      --timeout &lt;SECONDS&gt;              Per-request timeout in seconds [default: 600]
+      --model &lt;ID&gt;                     Model id to request
+      --json                           Emit machine-readable JSON
+      --history &lt;PATH&gt;                 Append each measured point to this tab-separated history file
+      --label &lt;NAME&gt;                   Series name recorded in the history file (defaults to the server&#39;s model); prefixes each `--sweep` point
+      --chart &lt;PATH&gt;                   Render the history file to this SVG after measuring
+      --chart-only                     Only render the chart from an existing history file; measure nothing
+      --storage-probe &lt;LIST&gt;           Storage mode: comma-separated read request sizes in KiB to sweep
+      --storage-file &lt;PATH&gt;            File the storage probe reads. Defaults to the server&#39;s largest shard
+      --storage-span &lt;MIB&gt;             MiB to read at each request size, per pass [default: 256]
+      --storage-ramp &lt;MIB&gt;             MiB read and discarded before timing starts, at each size [default: 32]
+      --cap &lt;SIZE&gt;                     Run each `--sweep` server under this memory cap (e.g. `4G`)
+      --chart-png                      Also render a PNG beside the chart SVG
+      --chart-scale &lt;MIN:MAX&gt;          Pin the chart&#39;s tok/s axis to `MIN:MAX` so a pair of charts compare
+      --chart-y-label &lt;TEXT&gt;           Label for the chart&#39;s y-axis [default: &quot;tok/s (log)&quot;]
+      --chart-x-label &lt;TEXT&gt;           Label for the chart&#39;s x-axis
+      --flamegraph &lt;PATH&gt;              Record a CPU flamegraph of the server over the measured window
+      --flamegraph-pid &lt;PID&gt;           Process to profile (default: the server&#39;s own, else the URL port&#39;s owner)
+      --flamegraph-freq &lt;HZ&gt;           Sampling frequency in Hz for `--flamegraph` [default: 999]
+      --flamegraph-call-graph &lt;MODE&gt;   Call-graph mode for `--flamegraph`: `fp` or `dwarf` [default: fp]
+      --flamegraph-png                 Also render a PNG beside the flamegraph SVG
+      --compare-profiles &lt;LIST&gt;        Compare already-collapsed `.folded` profiles side by side; measure nothing
+      --bundle &lt;PATH&gt;                  Write the whole run — measurements, configuration, host — to one JSON file
+      --read-bundle &lt;LIST&gt;             Read bundles and report them side by side; measure nothing
+      --sweep &lt;SPEC&gt;                   Sweep one tuning variable: `VAR=v1,v2,...` (`;` if a value has a comma); needs `--sweep-cmd`
+      --sweep-cmd &lt;CMD&gt;                Shell command that starts the server, run once per `--sweep` value
+      --sweep-env &lt;K=V&gt;                Environment held constant across every `--sweep` point (repeatable)
+      --sweep-start-timeout &lt;SECONDS&gt;  Seconds to wait for a swept server to come up [default: 300]
+      --render-profile &lt;PATH&gt;          Re-render an already-collapsed `.folded` profile to SVG; measure nothing
+      --report &lt;PATH&gt;                  Write the run — provenance, measurements, chart, flamegraph — to one PDF
+      --web                            Serve the web console instead of measuring
+      --host &lt;HOST&gt;                    Address the web console binds: &quot;all&quot; (or &quot;*&quot;) for every interface [default: 127.0.0.1]
+      --port &lt;PORT&gt;                    Port the web console listens on [default: 8300]
+      --delay &lt;SECONDS&gt;                Seconds to wait between measured points, for a card that heats up [default: 0]
+  -h, --help                           Print help
+  -V, --version                        Print version</code></pre>
 <p>Notes: <code>--url</code> is the server base URL (the tool appends
 <code>/v1/completions</code>); <code>--depths</code> is comma-separated
-(e.g. <code>0,512,1024,2048</code>); <code>--reps</code> reports the
-best (fastest) run with mean ± standard deviation alongside; warmup (one
-short generation) is on unless <code>--no-warmup</code>;
+and accepts ranges (e.g. <code>0,512,1024,2048</code> or
+<code>128-2048*2</code>, see <em>Ranges</em> above); <code>--reps</code>
+reports the best (fastest) run with mean ± standard deviation alongside;
+warmup (one short generation) is on unless <code>--no-warmup</code>;
 <code>--json</code> emits one JSON object per depth instead of the
 table.</p>
+<h4
+id="mixture-of-experts-models-and-models-that-do-not-fit">Mixture-of-experts
+models, and models that do not fit</h4>
+<p>On a MoE model whose weights are larger than RAM, a rate is not
+enough to score a change. One that moves fewer expert bytes and one that
+moves the same bytes faster report the same tok/s, and once the weights
+stream from disk neither is visible over the I/O at all. So against an
+<code>orangu-server</code> that reports them, each measured
+<code>--pp</code> and decode point carries three mechanism figures
+beside its rate, printed as a <code>moe</code> line and recorded in the
+history file and the bundle:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">history mode</th>
+<th style="text-align: left;">what it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>moe_union</code></td>
+<td style="text-align: left;">how many times the average expert’s
+weights were read inside one layer call, against reading each distinct
+expert once. <code>1.0</code> is the floor. The server also reports
+<code>selection_ratio</code> — the routing’s own redundancy, which is
+the ceiling on what grouping by expert can save and which no
+implementation moves</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>moe_mb</code></td>
+<td style="text-align: left;">expert weight megabytes dequantized per
+token per MoE layer</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>moe_majflt</code></td>
+<td style="text-align: left;">major faults per repetition — the only
+honest signal that weights came off the disk rather than out of the page
+cache</td>
+</tr>
+</tbody>
+</table>
+<p>They are exact counts, not repeated measurements: <code>best</code>
+and <code>mean</code> are the same number and the <code>sd</code>
+columns are empty, and each is drawn on its own chart panel for that
+reason. A dense model writes none of them, rather than writing zeros
+that would read as “no redundancy”.</p>
+<p>The run header also reports how much of the model was in the page
+cache when it started (<code>GET /model-cache</code>). That is not
+context — on a model that does not fit, a cold run and a warm run of the
+same build are two different experiments, and their rates must not be
+compared. <code>--drop-model-cache</code> evicts the model before
+<strong>every repetition</strong>, so a <code>--reps 3</code> run
+measures three cold ones rather than one cold and two warm; without it,
+whatever the previous run left behind is what is being measured.</p>
+<blockquote>
+<p><code>--drop-model-cache</code> is silent against a server without
+the endpoint, which would produce warm numbers under a cold heading. The
+residency figure in the header is what catches that, which is why it is
+printed and archived rather than merely available.</p>
+</blockquote>
+<h4 id="which-standard-deviation">Which standard deviation</h4>
+<p>The <code>±</code> printed beside the mean is the
+<strong>sample</strong> standard deviation — the sum of squares divided
+by <code>n - 1</code> — which is the standard estimator and the one
+every other benchmark reports. The column says so:
+<code>mean ± sd(n-1)</code>. A run of one repetition has none, and the
+row reads <code>—</code> rather than <code>0.00</code>, which would
+claim a spread was measured and found to be zero.</p>
+<p>The history file and the bundle carry <strong>both</strong>. Their
+<code>sd</code> column is the <em>population</em> estimator (divided by
+<code>n</code>), which is what it has meant since the file was created —
+a column in an append-only record is not redefined, so a new one,
+<code>sd_sample</code>, was added beside it. Rows written before that
+column existed read back with it empty, not as parse failures.</p>
+<p>The difference is not cosmetic: at the default three repetitions the
+sample figure is <code>sqrt(3/2)</code> — 22% — larger than the
+population one, which is bigger than most of the differences this tool
+is run to detect. Quoting one against the other would be a systematic
+error, which is exactly why both are recorded and the printed one is the
+comparable one.</p>
+<p>The <strong>headline is still the best run</strong>, not the mean, in
+the table, the report and the history file. A best is always the
+flattering statistic, so the PDF report says so on the page and the
+console’s table heads its column <code>± sd (n-1)</code> for the same
+reason.</p>
 <h3 id="profiling-what-was-measured---flamegraph">Profiling what was
 measured (<code>--flamegraph</code>)</h3>
 <p>A rate says <em>how</em> slow something is and never <em>where</em>
@@ -411,21 +1200,21 @@ busy.</p>
 server <strong>over exactly the measured window</strong>: sampling
 starts after warmup and stops when the last repetition finishes, so the
 flamegraph and the tok/s printed above it describe the same seconds of
-the same process. <code>llama-server</code> goes through the same path,
-so the two engines’ profiles are as comparable as their two rates.</p>
+the same process. Any other server goes through the same path, so two
+engines’ profiles are as comparable as their two rates.</p>
 <p>Collapsing and rendering are done <strong>in this binary</strong>, so
 <code>perf</code> is the only external program involved. The rendered
 SVG is interactive on its own: click a frame to zoom into it, click the
 title to reset, Ctrl-F to highlight every frame matching a substring and
 report what share of samples matched.</p>
-<div class="sourceCode" id="cb12"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server, decode: one profile of the 512-token generation that was timed</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-orangu-decode.svg <span class="at">--flamegraph-png</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># llama-server, the same workload through the same harness</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-llama-decode.svg <span class="at">--flamegraph-png</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server, decode: one profile of the 512-token generation that was timed</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-orangu-decode.svg <span class="at">--flamegraph-png</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference engine on :8300, the same workload through the same harness</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-reference-decode.svg <span class="at">--flamegraph-png</span></span></code></pre></div>
 <p>Three files come out of one <code>--flamegraph out.svg</code>:</p>
 <table>
 <colgroup>
@@ -465,6 +1254,16 @@ SVG</td>
 <p>The transient <code>perf.data</code> is removed once collapsed: it is
 the largest artifact by an order of magnitude and nothing downstream
 reads it. The <code>.folded</code> file is the durable one.</p>
+<p>Because it is durable, the SVG can be rebuilt from it at any time
+without measuring again:</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded <span class="at">--flamegraph</span> new.svg</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded <span class="at">--flamegraph-png</span></span></code></pre></div>
+<p><code>--render-profile</code> measures nothing. It writes beside its
+input unless <code>--flamegraph</code> names an output, and combining it
+with <code>--flamegraph-png</code> adds the PNG a run could not produce
+at the time because no rasterizer was installed.</p>
 <p>Beside the files the tool prints what the stacks say, so the common
 case needs no SVG viewer at all:</p>
 <pre class="text"><code>  profile  perf/gemma4-e2b-orangu-decode.svg (24140 samples over 25s)
@@ -535,9 +1334,9 @@ whichever engine happened to be sampled more.
 <code>--compare-profiles</code> reads the <code>.folded</code> files
 back and puts them in one table — the <code>--chart-only</code> of
 profiling, no server and no re-run:</p>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--compare-profiles</span> perf/gemma4-e2b-orangu-decode.folded,perf/gemma4-e2b-llama-decode.folded</span></code></pre></div>
-<pre class="text"><code>bucket         | gemma-orangu-decode | gemma-llama-decode
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--compare-profiles</span> perf/gemma4-e2b-orangu-decode.folded,perf/gemma4-e2b-reference-decode.folded</span></code></pre></div>
+<pre class="text"><code>bucket         | gemma-orangu-decode | gemma-reference-decode
 ------------------------------------------------------------
 app/other      |               22.5% |              66.2%
 kernel         |               33.5% |              10.4%
@@ -562,15 +1361,14 @@ compares two different totals. It is read from the
 <code>.folded</code> carried off the machine alone shows
 <code>?</code>.</p>
 <p><strong><code>gpu-wait</code> and <code>pool-idle</code> are why an
-occupancy number was needed at all.</strong> The two engines wait for
-the GPU in different ways — <code>llama-server</code> spins on
-<code>_mm_pause</code>, <code>orangu-server</code> blocks — and a
-blocked thread produces no samples while a spinning one produces them at
-full rate. Read naively, that makes the engine wasting a whole core look
-busy with useful work and the one yielding it look idle. Both are
-therefore detected from the <strong>stack</strong>, not the leaf, and
-subtracted: <code>— working</code> is the cores actually spent on the
-model.</p>
+occupancy number was needed at all.</strong> Two engines can wait for
+the GPU in different ways — one spinning on <code>_mm_pause</code>,
+<code>orangu-server</code> blocking — and a blocked thread produces no
+samples while a spinning one produces them at full rate. Read naively,
+that makes the engine wasting a whole core look busy with useful work
+and the one yielding it look idle. Both are therefore detected from the
+<strong>stack</strong>, not the leaf, and subtracted:
+<code>— working</code> is the cores actually spent on the model.</p>
 <p><code>pool-idle</code> is kept separate from <code>gpu-wait</code>
 because they have different remedies. Time under
 <code>wait_until_out_of_work</code> is a thread pool waking more workers
@@ -598,14 +1396,14 @@ run still succeeds.</p></li>
 and loses the call chain for most samples in the hot leaf, which renders
 as a flamegraph of a process doing nothing. Build the server being
 profiled with:</p>
-<div class="sourceCode" id="cb17"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="va">CARGO_TARGET_DIR</span><span class="op">=</span>target-fp <span class="va">RUSTFLAGS</span><span class="op">=</span><span class="st">&quot;-C force-frame-pointers=yes&quot;</span> <span class="dt">\</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> build <span class="at">--profile</span> release-with-debug <span class="at">--bin</span> orangu-server</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="va">CARGO_TARGET_DIR</span><span class="op">=</span>target-fp <span class="va">RUSTFLAGS</span><span class="op">=</span><span class="st">&quot;-C force-frame-pointers=yes&quot;</span> <span class="dt">\</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> build <span class="at">--profile</span> release-with-debug <span class="at">--bin</span> orangu-server</span></code></pre></div>
 <p>A binary you do not control needs
-<code>--flamegraph-call-graph dwarf</code> instead.
-(<code>llama-server</code> as packaged happens to keep frame pointers,
-so <code>fp</code> works for it too — worth checking rather than
-assuming, since a broken unwind looks like a real result.)</p></li>
+<code>--flamegraph-call-graph dwarf</code> instead. (Some third-party
+builds keep frame pointers, so <code>fp</code> works for them too —
+worth checking rather than assuming, since a broken unwind looks like a
+real result.)</p></li>
 </ul>
 <p><code>--flamegraph-pid</code> is only needed when neither route to
 the pid works. The tool asks the server for its own pid first
@@ -618,8 +1416,8 @@ the device? (<code>--streams</code>)</h3>
 <p>Sweeps the number of <strong>concurrent</strong> decode streams and
 reports the aggregate tok/s across them — what a server’s capacity
 actually is, which no single-stream number shows.</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--streams</span> 1,2,4,8 <span class="at">--gen</span> 160</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--streams</span> 1,2,4,8 <span class="at">--gen</span> 160</span></code></pre></div>
 <pre><code> streams |    aggregate |  per-stream |   tokens
 ------------------------------------------------
        1 |  37.76 ± 0.00 |       37.76 |      160
@@ -692,40 +1490,63 @@ are both outside any single invocation, so <code>--history</code>
 appends each measured point to a tab-separated file that accumulates
 across runs, and <code>--chart</code> draws the chart from <strong>that
 file</strong> rather than from the run that produced it. A run measuring
-only orangu still redraws llama.cpp’s line beside it.</p>
-<div class="sourceCode" id="cb22"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;llama.cpp b10104&quot;</span> <span class="dt">\</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
+only orangu still redraws the reference engine’s line beside it.</p>
+<div class="sourceCode" id="cb41"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;reference b10104&quot;</span> <span class="dt">\</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
 <p>The file is plain TSV with a <code>#</code> header, so it diffs in
 review and is hand-editable; blank lines, comments and unparseable rows
 are skipped rather than fatal. Each row is <code>date</code>,
 <code>label</code>, <code>mode</code> (<code>pp</code>, <code>tg</code>,
-<code>curve</code>, <code>cpu</code> or <code>embed</code> — each drawn
-as its own chart panel, since an embedding pass and a generative model’s
-prefill are not the same measurement, and two of the five are not even
-in tokens/second), <code>n</code>, and the best / mean / sd of the run’s
-repetitions:</p>
-<pre class="text"><code>#date   label   mode    n   best    mean    sd
-2026-07-25  orangu af7c767  pp  1120    81.75   81.40   0.26
-2026-07-25  llama.cpp b10104    pp  1120    1061.66 1049.40 8.84</code></pre>
+<code>curve</code>, <code>cpu</code> or <code>pg</code>,
+<code>embed</code> — each drawn as its own chart panel, since an
+embedding pass and a generative model’s prefill are not the same
+measurement, and two of the five are not even in tokens/second),
+<code>n</code>, the best / mean / both standard deviations of the run’s
+repetitions (see <em>Which standard deviation</em> above), and the
+<code>device</code> that produced the row:</p>
+<pre class="text"><code>#date   label   mode    n   best    mean    sd  sd_sample   device
+2026-07-25  orangu af7c767  pp  1120    81.75   81.40   0.26    0.32    Vulkan/Radeon RX 5500M
+2026-07-25  reference b10104    pp  1120    1061.66 1049.40 8.84    10.83   Vulkan/Radeon RX 5500M</code></pre>
 <p>Nothing is ever rewritten — a row is a measurement that was taken,
-and a later run that disagrees is another row, not a correction.</p>
+and a later run that disagrees is another row, not a correction. Columns
+are only ever appended, and a shorter row is read as “that column was
+not recorded” rather than as a broken line, so a file written by an
+older build keeps working: rows with seven, eight and nine columns can
+sit in one file and all three parse.</p>
+<p><code>device</code> is filled in from the server’s own backend label,
+shortened to fit a legend — <code>Vulkan/Radeon RX 5500M</code>,
+<code>CPU/AVX2</code>, or <code>Vulkan/Radeon RX 5500M (split 2)</code>
+for a model spread across cards. It is recorded because with
+<code>--device</code> on the server the same model measured on two cards
+produces rows that are identical in every other field: same date, same
+label, same mode, same <code>n</code>. Without it the file cannot tell
+the two cards apart, and the chart draws one series with two points at
+every x — a comparison silently rendered as a trend. The bundle
+(<code>--bundle</code>) keeps the unshortened name, the driver string
+and, on a split, the whole placement plan.</p>
 <p><code>--label</code> is the series identity, so it must stay stable
 across runs for a line to be drawn; it defaults to the server’s model
 id, which distinguishes two models but <em>not</em> two builds of
-orangu, so pass it explicitly when A/B-ing builds. Prompt-processing
-rows are keyed by the token count the server actually reported rather
-than the requested length, and a row without server timings is printed
-but not recorded — a time-to-first-token is a different measurement and
-does not belong on the same line as a prefill rate.</p>
+orangu, so pass it explicitly when A/B-ing builds. Two devices need no
+such care: when a file holds rows from more than one named device, the
+chart appends the device to each series name by itself —
+<code>gemma-4-E2B · Vulkan/Radeon RX 5500M</code>. When every row names
+the same device, or none names one at all, nothing is appended and the
+chart is exactly what it was before the column existed.
+Prompt-processing rows are keyed by the token count the server actually
+reported rather than the requested length, and a row without server
+timings is printed but not recorded — a time-to-first-token is a
+different measurement and does not belong on the same line as a prefill
+rate.</p>
 <p>The chart is a standalone SVG with no external references:
 <strong>two charts</strong> — prompt processing and token generation —
 each plotting <strong>tokens/second against context length</strong>,
@@ -756,6 +1577,57 @@ on one date collapse to their best, for the same reason a single run
 reports its best repetition. Series colours are assigned in first-seen
 order and never recycled; past the last slot a label is dropped from the
 chart rather than given a colour another series already owns.</p>
+<h3 id="the-run-as-a-document---report">The run as a document
+(<code>--report</code>)</h3>
+<p>A rate travels badly. It goes into a pull request, an issue, or a
+mail to someone with different hardware — and the parts that make it
+<em>checkable</em> are the parts a terminal cannot carry: the chart it
+sits on and the profile that explains it. <code>--report FILE.pdf</code>
+writes all of it as one file:</p>
+<div class="sourceCode" id="cb43"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 128 <span class="dt">\</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--chart</span> run.svg <span class="at">--flamegraph</span> run-profile.svg <span class="dt">\</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--report</span> run.pdf</span></code></pre></div>
+<p>The document holds, in order:</p>
+<ul>
+<li><strong>What produced it</strong> — the URL, model, backend, the
+server’s <strong>build</strong> (version and commit, see <em>What was
+measured</em> above), its pid and uptime, the GPU kernels it selected,
+each card’s clock and DPM mode, the host, the workload spelled out,
+<strong>when it was measured</strong> (to the second, in UTC) and this
+tool’s own build. A date alone cannot separate two runs taken on the
+same afternoon, which is when an A/B is usually taken — so the bundle
+records the instant, and a report rebuilt from it reads that instant
+back.</li>
+<li><strong>What it measured</strong> — best, mean and ± sd per point,
+with the unit column, under a line saying that the headline is the
+<em>best</em> of the repetitions. A card measured at
+<code>power_dpm_force_performance_level = auto</code> adds a caution
+here, because that alone makes the numbers incomparable with a pinned
+run.</li>
+<li><strong>Throughput</strong> — the chart, embedded.</li>
+<li><strong>Where the time went</strong> — the profile’s samples,
+window, cores busy and what it was waiting on, its self-time buckets,
+and the flamegraph, embedded.</li>
+</ul>
+<p>The same document can be rebuilt later from what the run
+archived:</p>
+<div class="sourceCode" id="cb44"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--read-bundle</span> run/bundle.json <span class="at">--report</span> run.pdf</span></code></pre></div>
+<p>A single <code>--read-bundle</code> with <code>--report</code> writes
+a <em>run</em> report rather than a comparison — one bundle is not a
+comparison — and looks for the pictures beside the bundle, which is
+exactly how a run’s directory is laid out. That is what the console’s
+<strong>Report</strong> button runs.</p>
+<p>A PDF rather than a markdown table for exactly one reason: <strong>it
+folds the PNGs in</strong>. The chart and the flamegraph are written as
+SVG (the canonical artifact) and rasterized beside them; the report
+embeds the raster, rendering it on demand, so <code>--report</code>
+needs neither <code>--chart-png</code> nor <code>--flamegraph-png</code>
+to produce a complete document. On a machine with no
+<code>rsvg-convert</code> the report is still written, with a line where
+each image would have been — the measurements are the deliverable and
+are never withheld because a picture could not be made.</p>
 <h3 id="curve-mode---curve-decode-scaling-without-prefill">Curve mode
 (<code>--curve</code>) — decode scaling without prefill</h3>
 <p>The depth sweep pads the <em>prompt</em> to reach a context depth,
@@ -765,9 +1637,9 @@ avoids that entirely: it does <strong>one</strong> generation of
 <code>N</code> tokens, timestamps each streamed token, and reports the
 instantaneous decode rate per <code>--bucket</code>-token context
 window. That is the cleanest way to see decode-vs-context scaling, and
-it works identically against orangu-server and llama-server.</p>
-<div class="sourceCode" id="cb24"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
+it works identically against any OpenAI-compatible server.</p>
+<div class="sourceCode" id="cb45"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
 <pre class="text"><code>orangu-bench → http://127.0.0.1:8100 (curve: 3072 tokens, bucket 256)
      ctx |    tok/s
 ------------------
@@ -812,8 +1684,8 @@ numbers, which reads as a clean “this change did nothing” result rather
 than as a broken measurement. Keeping both builds named
 <code>orangu-server</code> in separate directories avoids it; checking
 the pid proves it.</p>
-<p><code>llama-server</code> does not report these fields, so the line
-is omitted for it — there, check the process yourself.</p>
+<p>A server that does not report these fields gets no such line — there,
+check the process yourself.</p>
 <h3 id="interpreting-a-comparison">Interpreting a comparison</h3>
 <p>Run the same sweep against both servers and compare <strong>the shape
 of the curve</strong>, not just the top-of-context point. Two builds (or
@@ -834,14 +1706,14 @@ two runs minutes apart are not comparable (check
 <em>why</em> a compute kernel is slow — its register (VGPR) count and
 occupancy — there is a <strong>clock-independent</strong> measure: the
 RADV driver’s compile-time shader statistics.</p>
-<div class="sourceCode" id="cb27"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
+<div class="sourceCode" id="cb48"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
 <p>To attribute a stats block to a specific kernel, capture with the
 kernel’s env flag on and off (e.g. <code>ORANGU_Q4K_LIGHT=1</code> vs
 unset) and diff the <code>VGPRs:</code> / <code>Code size:</code> blocks
@@ -857,8 +1729,8 @@ number.</p>
 <code>temperature: 0</code> so runs are deterministic and
 comparable.</li>
 <li>It sends both <code>max_tokens</code> (OpenAI) and
-<code>n_predict</code> (llama.cpp native) so a server honors whichever
-it recognizes.</li>
+<code>n_predict</code> (the widely-used native spelling) so a server
+honors whichever it recognizes.</li>
 <li>Force the GPU to a stable clock state before benchmarking, or the
 numbers reflect the governor, not the code (see
 <code>orangu-server</code>’s startup power-state advisory).</li>

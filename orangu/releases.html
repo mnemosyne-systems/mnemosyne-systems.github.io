@@ -59,6 +59,8 @@
       font-size: 0.85rem; color: var(--text-2); line-height: 1.65;
       background: var(--amber-soft); border: 1px solid var(--amber-line); border-radius: 6px;
     }
+    .rel-note a { color: var(--amber); text-decoration: none; font-weight: 600; }
+    .rel-note a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -98,6 +100,7 @@
 
       <!-- Index -->
       <div class="rel-index reveal">
+        <a href="#v1-2-0"><span class="ri-date">August 24, 2026</span><span class="ri-ver">orangu 1.2.0</span></a>
         <a href="#v1-1-0"><span class="ri-date">August 3, 2026</span><span class="ri-ver">orangu 1.1.0</span></a>
         <a href="#v1-0-0"><span class="ri-date">July 27, 2026</span><span class="ri-ver">orangu 1.0.0</span></a>
         <a href="#v0-11-0"><span class="ri-date">July 13, 2026</span><span class="ri-ver">orangu 0.11.0</span></a>
@@ -113,11 +116,34 @@
         <a href="#v0-1-0"><span class="ri-date">May 15, 2026</span><span class="ri-ver">orangu 0.1.0</span></a>
       </div>
 
+      <!-- 1.2.0 -->
+      <article class="rel-entry reveal" id="v1-2-0">
+        <div class="rel-head">
+          <span class="rel-ver">orangu 1.2.0</span>
+          <span class="rel-badge">Latest</span>
+          <span class="rel-date">August 24, 2026</span>
+        </div>
+        <ul class="rel-list">
+          <li><strong>Eight new model families</strong> &mdash; DeepSeek 4, GLM, Kimi K3, Muse-Glimmer, Inkling-Small, Ling, NVIDIA Nemotron, and Qwen 3.8, so this year&rsquo;s larger models run locally.</li>
+          <li><strong>KV caching</strong> &mdash; A long conversation with a large model no longer pays the full price again on every turn.</li>
+          <li><strong>Multi-card support</strong> &mdash; A large model can be spread across the GPUs you already have rather than the one you wish you had. Context size suggestions were raised to match.</li>
+          <li><strong>Model Context Protocol</strong> &mdash; orangu connects to external tools over MCP, with local server management, refresh, and reconnect handled inside orangu &mdash; no separate supervisor, and no config file to edit to bring a server back.</li>
+          <li><strong>Markdown rendering</strong> &mdash; A significant upgrade in the terminal, so answers arrive readable rather than as a wall of source.</li>
+          <li><strong>Web console: PlantUML</strong> &mdash; PlantUML renders alongside Mermaid, so class, sequence, and component diagrams come back as diagrams whichever notation the model reaches for.</li>
+          <li><strong>Initial license header support</strong> &mdash; A first pass at keeping license headers consistent across a codebase as you work in it.</li>
+          <li><strong><code>/developer</code> and <code>/committer</code></strong> &mdash; Two new modes: one for writing the change, one for getting it committed. Same environment, different emphasis.</li>
+          <li><strong><code>orangu-bench</code> in the web console</strong> &mdash; A benchmark run no longer means dropping to the command line.</li>
+          <li><strong>Also in this release</strong> &mdash; Model last-use tracking and additional answer save formats (both community contributions), an improved <code>/review</code>, a cheat sheet and endpoint documentation, and macOS and WGPU stability fixes including recovery from a lost device.</li>
+        </ul>
+        <p class="rel-note">
+          The complete manual ships with the release as <a href="https://github.com/mnemosyne-systems/orangu/releases/download/1.2.0/orangu-en.pdf">PDF</a> and HTML, alongside the four-page <a href="https://github.com/mnemosyne-systems/orangu/releases/download/1.2.0/orangu-cheatsheet-en.pdf">cheat sheet</a>, and is embedded in the binary for offline reading with <code>/manual</code>. 56 commits went into this release &mdash; our thanks to everyone who filed an issue, opened a discussion, or sent a patch.
+        </p>
+      </article>
+
       <!-- 1.1.0 -->
       <article class="rel-entry reveal" id="v1-1-0">
         <div class="rel-head">
           <span class="rel-ver">orangu 1.1.0</span>
-          <span class="rel-badge">Latest</span>
           <span class="rel-date">August 3, 2026</span>
         </div>
         <ul class="rel-list">

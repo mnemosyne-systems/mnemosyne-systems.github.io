@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html" class="active">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -75,6 +75,14 @@
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
         <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -244,18 +252,21 @@ saying which group they fall in:</p>
 <ul>
 <li>Commands whose only effect is on the running session —
 <code>/model</code>, <code>/server</code>,
-<code>/theme &lt;name&gt;</code>, <code>/verbosity</code>,
-<code>/disconnect</code>, <code>/reload</code> — since a one-shot exits
-before the change could matter. Select the server and model in
-<code>orangu.conf</code>, or point <code>--config</code> at a different
-file.</li>
+<code>/theme &lt;name&gt;</code>, <code>/license &lt;spdx&gt;</code>,
+<code>/verbosity</code>, <code>/disconnect</code>, <code>/reload</code>
+— since a one-shot exits before the change could matter.
+(<code>/license</code> with no argument still reports; it is only
+<em>setting</em> one that a one-shot cannot keep.) Select the server and
+model in <code>orangu.conf</code>, or point <code>--config</code> at a
+different file.</li>
 <li>Commands that need the terminal interface — <code>/review</code>,
 <code>/auto_review</code>, <code>/manual</code>, <code>/pending</code>,
-<code>/clear</code>, <code>/quit</code>, <code>/restart</code>, and the
-forms of <code>/workspace</code>, <code>/create_workspace</code>, and
-<code>/session</code> that switch tab or session. The reporting forms
-still work: a bare <code>/workspace</code> prints the active workspace,
-and a bare <code>/session</code> lists the stored sessions.</li>
+<code>/clear</code>, <code>/copy</code>, <code>/quit</code>,
+<code>/restart</code>, and the forms of <code>/workspace</code>,
+<code>/create_workspace</code>, and <code>/session</code> that switch
+tab or session. The reporting forms still work: a bare
+<code>/workspace</code> prints the active workspace, and a bare
+<code>/session</code> lists the stored sessions.</li>
 </ul>
 <p><code>/export</code> covers the targets that are computed at export
 time: <code>pr</code>, <code>statistics</code>, and
@@ -528,6 +539,64 @@ completion, so <code>c</code> + <code>Tab</code> completes to
 <code>contrib/</code>. Slash-command and argument completion (branches,
 files, commit hashes, and so on) continue to use the cycling
 <code>Tab</code> behavior described next.</p>
+<h3 id="the-merge-flow">The merge flow</h3>
+<p>The prompt has two modes, selected with <code>/developer</code> and
+<code>/committer</code> (see the Core tools chapter). In
+<strong>developer mode</strong> — the default — an untouched line opens
+with the greeting <code>Welcome, I'm orangu</code> and nothing else is
+suggested until you type. Everything in this section is what
+<strong>committer mode</strong> adds.</p>
+<p>Merging a reviewed pull request is the same six commands every time,
+so in committer mode the prompt hints them for you, in order, starting
+from the empty line:</p>
+<pre class="text"><code>pull &lt;PR_NUMBER&gt;
+build | review | auto review    (optional, on the pulled branch)
+switch to main|master
+merge &lt;BRANCH_NAME&gt;
+push
+delete &lt;BRANCH_NAME&gt;
+comment on &lt;PR_NUMBER&gt; merged.md</code></pre>
+<ul>
+<li>Before a request is checked out, the empty prompt hints
+<code>pull &lt;PR_NUMBER&gt;</code> for the open pull/merge requests
+fetched at startup; <code>Shift+Tab</code> cycles through them.</li>
+<li>While the pulled branch is still checked out, <code>build</code>,
+<code>review</code>, and <code>auto review</code> are offered too — the
+things worth doing to a request before taking it to the base branch.
+They are never the first suggestion and they never advance anything: the
+flow is remembered across them, so after a build or a review the prompt
+still opens with <code>switch to main</code>. They drop off the list
+once the flow has left the branch.</li>
+<li><code>pull</code> remembers the request number and the branch it
+checked out. From then on the empty prompt hints the next step —
+<code>switch to main</code>, then
+<code>merge &lt;BRANCH_NAME&gt;</code>, <code>push</code>,
+<code>delete &lt;BRANCH_NAME&gt;</code>, and finally
+<code>comment on &lt;PR_NUMBER&gt; merged.md</code> (the body is read
+from <code>~/.orangu/comments/merged.md</code>, like any other comment
+template).</li>
+<li>Each step advances only when the command it hints actually succeeds,
+so a failed merge keeps the merge on offer.</li>
+<li>The steps come first everywhere the prompt suggests something: as
+the inline ghost, in the <code>Shift+Tab</code> cycle, and in the
+<code>Tab</code> candidate list — where the rest of the flow follows the
+current step, so a step can be skipped by cycling past it. Nothing is
+hidden: workspace files and the natural-language bindings still
+follow.</li>
+<li>While a request is being merged, its branch also leads the argument
+completions — <code>merge</code>, <code>delete</code>, and
+<code>switch to</code> offer the remembered branch and the base branch
+first, and <code>comment on</code> offers the request number and
+<code>merged.md</code> first. Every other candidate is still listed,
+just after them.</li>
+<li>The flow belongs to the workspace it was started in, so other
+workspace tabs are not hinted at its branches. Checking out a branch
+that is neither the request’s nor the base ends it, as does commenting
+on the request.</li>
+<li>Steps run in developer mode are still tracked, so
+<code>/committer</code> picks up where the branch actually is instead of
+starting over.</li>
+</ul>
 <h3 id="tab-completion">Tab completion</h3>
 <p><code>Tab</code> uses context-sensitive completion. The first
 <code>Tab</code> inserts the first match. Repeated <code>Tab</code>
@@ -616,7 +685,10 @@ enabled in <code>orangu.conf</code> (the default), this completion is
 also visualized as an interactive dropdown menu that intercepts the
 Up/Down arrow keys.</li>
 <li>Otherwise, complete filesystem entries from the current token
-relative to the workspace, using the token before the cursor.</li>
+relative to the workspace, using the token before the cursor. In
+committer mode, while the first word is being typed — the empty line
+included — the merge flow’s remaining steps are offered before those
+entries.</li>
 </ol>
 <p>Path-completion details:</p>
 <ul>

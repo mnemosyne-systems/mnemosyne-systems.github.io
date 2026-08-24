@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -75,6 +75,14 @@
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
         <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -143,7 +151,18 @@ branch is detected in the order <code>origin/main</code>,
 <code>origin/master</code>, <code>main</code>, then
 <code>master</code>.</p>
 <p>As with the core tools, every command below also accepts the
-natural-language aliases listed in its <strong>Examples</strong>.</p>
+natural-language aliases listed in its <strong>Examples</strong>. The
+bare-verb aliases — <code>create</code>, <code>add</code>,
+<code>remove</code>, <code>delete</code>, <code>move</code>,
+<code>restore</code>, <code>merge</code>, <code>checkout</code>,
+<code>switch to</code>, <code>rebase</code> — take exactly one argument,
+a single word or a quoted string, so a sentence that merely starts with
+one of those verbs (<code>create a Pacman like game</code>,
+<code>merge these two functions</code>) is a prompt for the model rather
+than a command; the forms that name their object
+(<code>create file …</code>, <code>delete branch …</code>) are not
+restricted this way. The <em>Core tools</em> chapter’s introduction has
+the full rule.</p>
 <h2 id="status">/status</h2>
 <p>Shows the working-tree status with color highlighting.</p>
 <p>It runs <code>git status --branch --short</code>. Added files and
@@ -315,9 +334,8 @@ rmdir build</code></pre>
 <p>These are the same operations the model’s own
 <code>create_file</code>/<code>move_directory</code>/… tools call, and
 the same ones <code>orangu-server</code> serves over HTTP — one
-implementation behind all three (see the Tools chapter, and the
-Inference server internals chapter’s <strong>File-lifecycle
-API</strong>).</p>
+implementation behind all three (see the Tools chapter, and the <em>HTTP
+endpoints</em> chapter’s <strong>File-lifecycle API</strong>).</p>
 <h2 id="move_file">/move_file</h2>
 <p>Renames or moves a tracked file with <code>git mv</code>.</p>
 <pre class="text"><code>/move_file &lt;source&gt; &lt;destination&gt;</code></pre>

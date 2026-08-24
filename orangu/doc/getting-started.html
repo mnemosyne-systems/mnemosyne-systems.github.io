@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html" class="active">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -79,20 +79,32 @@
     </div>
     <hr class="sidebar-divider" />
     <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
       <div class="sidebar-section-title">On this page</div>
 <ul>
 <li><a href="#getting-started" id="toc-getting-started">Getting
-started</a>
+Started</a>
 <ul>
-<li><a href="#start-orangu-server" id="toc-start-orangu-server">1. Start
+<li><a href="#install-orangu" id="toc-install-orangu">Install
+orangu</a></li>
+<li><a href="#configure-orangu-server"
+id="toc-configure-orangu-server">Configure orangu-server</a></li>
+<li><a href="#download-a-model" id="toc-download-a-model">Download a
+model</a></li>
+<li><a href="#start-orangu-server" id="toc-start-orangu-server">Start
 orangu-server</a></li>
-<li><a href="#create-a-client-configuration"
-id="toc-create-a-client-configuration">2. Create a client
-configuration</a></li>
-<li><a href="#run-the-client" id="toc-run-the-client">3. Run the
-client</a></li>
-<li><a href="#try-a-few-commands" id="toc-try-a-few-commands">4. Try a
-few commands</a></li>
+<li><a href="#configure-orangu" id="toc-configure-orangu">Configure
+orangu</a></li>
+<li><a href="#run-orangu" id="toc-run-orangu">Run orangu</a></li>
+<li><a href="#review-your-first-branch"
+id="toc-review-your-first-branch">Review your first branch</a></li>
 </ul></li>
 </ul>
     </div>
@@ -108,125 +120,358 @@ few commands</a></li>
   </aside>
 
   <main class="doc-content">
-<h1 id="getting-started">Getting started</h1>
-<h2 id="start-orangu-server">1. Start orangu-server</h2>
-<p>Run a local <code>orangu-server</code> instance; it serves an
-OpenAI-compatible endpoint (API port <code>8100</code> by default).</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--all</span> /path/to/model.gguf</span></code></pre></div>
-<h2 id="create-a-client-configuration">2. Create a client
-configuration</h2>
-<p>The quickest way is the interactive wizard, which asks for the LLM
-URL, auto-detects a model the server advertises, walks every option
-showing its default, writes <code>~/.orangu/orangu.conf</code> after a
-confirmation, and installs any bundled skills into
-<code>~/.orangu/skills/</code> if they are not already present:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--init</span></span></code></pre></div>
-<p>Or, with an uninstalled build:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> orangu <span class="at">--</span> <span class="at">--init</span></span></code></pre></div>
-<p>Alternatively, start from the sample file and adjust the model name
-and endpoint if needed:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> doc/etc/orangu.conf ./orangu.conf</span></code></pre></div>
-<h2 id="run-the-client">3. Run the client</h2>
-<p>If you used <code>orangu --init</code>, the configuration already
-lives at <code>~/.orangu/orangu.conf</code> (a default lookup location),
-so just run:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span></span></code></pre></div>
-<p>Otherwise point the client at your configuration file:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> run <span class="at">--bin</span> orangu <span class="at">--</span> <span class="at">--config</span> ./orangu.conf</span></code></pre></div>
-<p>Or with an installed binary:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--config</span> ./orangu.conf</span></code></pre></div>
-<h2 id="try-a-few-commands">4. Try a few commands</h2>
-<ul>
-<li><code>/help</code></li>
-<li><code>/skills</code></li>
-<li><code>/server</code></li>
-<li><code>/disconnect</code></li>
-<li><code>/reload</code></li>
-<li><code>/tools</code></li>
-<li><code>/model</code></li>
-<li><code>/session</code></li>
-<li><code>/list_files</code></li>
-<li><code>/open_file README.md</code></li>
-<li><code>/show_file README.md</code></li>
-<li><code>/debugging reproduce the failing request path</code></li>
-<li><code>/build</code></li>
-<li><code>/shell ls -la</code></li>
-<li><code>/create_file README.md</code></li>
-<li><code>/auto_review</code></li>
-<li><code>/amend &lt;message&gt;</code></li>
-<li><code>/branch main</code></li>
-<li><code>/branch -b feature/new</code></li>
-<li><code>/branch -m new-name</code></li>
-<li><code>/branch -d feature/old</code></li>
-<li><code>/cherry_pick &lt;commit&gt;</code></li>
-<li><code>/comment 51 "My comment"</code></li>
-<li><code>/close -i 51</code></li>
-<li><code>/get_comments -i 51</code></li>
-<li><code>/commit &lt;message&gt;</code></li>
-<li><code>/restore README.md</code></li>
-<li><code>/diff</code></li>
-<li><code>/fetch</code></li>
-<li><code>/fetch upstream</code></li>
-<li><code>/init_repo</code></li>
-<li><code>/log</code></li>
-<li><code>/log 5</code></li>
-<li><code>/show</code></li>
-<li><code>/show aafd1cb</code></li>
-<li><code>/merge feature/foo</code></li>
-<li><code>/move_file old.rs new.rs</code></li>
-<li><code>/pull 42</code></li>
-<li><code>/push</code></li>
-<li><code>/push --force</code></li>
-<li><code>/rebase</code></li>
-<li><code>/rebase develop</code></li>
-<li><code>/rebase origin/main</code></li>
-<li><code>/delete_file README.md</code></li>
-<li><code>/review</code></li>
-<li><code>/squash</code></li>
-<li><code>/status</code></li>
-<li><code>/usage</code></li>
-<li><code>/clear</code></li>
-<li><code>/quit</code></li>
-</ul>
-<p>Then try a natural-language request such as:</p>
-<pre class="text"><code>list files</code></pre>
-<p>You can also create or copy Agent Skills. orangu discovers skills
-from:</p>
-<ul>
-<li><code>~/.orangu/skills/</code></li>
-<li><code>~/.agents/skills/</code></li>
-<li><code>&lt;workspace&gt;/.orangu/skills/</code></li>
-<li><code>&lt;workspace&gt;/.agents/skills/</code></li>
-</ul>
-<p>Each skill lives in its own directory and must contain a
-<code>SKILL.md</code> file. List the discovered skills with:</p>
-<pre class="text"><code>/skills</code></pre>
-<p>Invoke one directly with its directory or frontmatter name:</p>
-<pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
-<p>Built-in commands also accept natural-language forms, for
+<h1 id="getting-started">Getting Started</h1>
+<p>This chapter gets <strong>orangu</strong> running against a local
+<strong>orangu-server</strong>, from nothing installed to a working
+prompt. After installing, it is five commands in this order:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-i</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/gemma-4-E2B-it-GGUF</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--all</span> unsloth/gemma-4-E2B-it-GGUF</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-i</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span></span></code></pre></div>
+<p>The order matters: steps 2 and 3 both read the models directory from
+the configuration step 1 writes, and step 4 asks step 3’s running server
+which model it is serving.</p>
+<h2 id="install-orangu">Install orangu</h2>
+<p>The quickest way to install the latest release is the one-liner
+installer. It installs the whole stack — <code>orangu</code>,
+<code>orangu-coordinator</code>, <code>orangu-server</code>, and the
+benchmarking tool <code>orangu-bench</code>.</p>
+<p><strong>Linux / macOS:</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://mnemosyne-systems.github.io/orangu/install.sh <span class="kw">|</span> <span class="fu">sh</span></span></code></pre></div>
+<p><strong>Windows</strong> (Command Prompt):</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode cmd"><code class="sourceCode dosbat"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>curl <span class="at">-fsSL</span> https:/<span class="at">/mnemosyne-systems</span>.github.io<span class="at">/orangu/install</span>.cmd <span class="at">-o</span> install.cmd <span class="kw">&amp;&amp;</span> install.cmd</span></code></pre></div>
+<p><strong>Windows</strong> (PowerShell alternative):</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Invoke-WebRequest</span> <span class="op">-</span>Uri https<span class="op">://</span>mnemosyne-systems<span class="op">.</span><span class="fu">github</span><span class="op">.</span><span class="fu">io</span><span class="op">/</span>orangu<span class="op">/</span>install<span class="op">.</span><span class="fu">cmd</span> <span class="op">-</span>OutFile install<span class="op">.</span><span class="fu">cmd</span><span class="op">;</span> <span class="op">.</span>\install<span class="op">.</span><span class="fu">cmd</span></span></code></pre></div>
+<p>The script installs to <code>~/.local/bin</code> (Linux/macOS) or
+<code>%USERPROFILE%\.local\bin</code> (Windows) and warns if the
+directory is not in your <code>PATH</code>. See <a
+href="https://github.com/mnemosyne-systems/orangu/blob/1.2.0/BUILDING.md">BUILDING.md</a>
+for instructions on building from source.</p>
+<h2 id="configure-orangu-server">Configure orangu-server</h2>
+<p><code>orangu-server -i</code> (long form <code>--init</code>) writes
+<code>~/.orangu/orangu-server.conf</code>. Run it before anything else:
+downloading and serving both read the models directory from that file,
+and with no configuration present they stop with
+<code>Missing config file; pass --config or add ./orangu-server.conf or ~/.orangu/orangu-server.conf (see --init)</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-i</span></span></code></pre></div>
+<p>Each prompt shows its default in brackets; Enter accepts it.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>models</code></td>
+<td><code>~/.cache/huggingface/hub</code></td>
+<td>Where GGUF files live. Tab-completes paths, and is created if it
+does not exist. Defaulting to the Hugging Face hub cache means models
+already fetched by <code>huggingface-cli</code> or
+<code>llama.cpp</code> are found without moving anything.</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><em>(none)</em></td>
+<td>Which model to serve when the command line names none. Nothing is
+installed yet at this point, so press Enter; the prompt is skipped
+altogether when exactly one model is already present.</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td><code>all</code></td>
+<td>One of <code>all</code>, <code>code</code>, <code>review</code>,
+<code>explorer</code>, <code>embedding</code>.</td>
+</tr>
+<tr>
+<td><code>host</code></td>
+<td><code>all</code></td>
+<td><code>all</code> for every interface, or a literal address such as
+<code>127.0.0.1</code>. Tab-completes the machine’s own interfaces.</td>
+</tr>
+<tr>
+<td><code>port</code></td>
+<td><code>8100</code></td>
+<td>The HTTP API port.</td>
+</tr>
+<tr>
+<td><code>Add web console</code></td>
+<td><code>Y</code></td>
+<td><code>n</code> writes no <code>[web]</code> section and serves no
+console. Accepting asks four more: the console’s <code>host</code>
+(defaulting to the API’s), <code>port</code> (<code>8101</code>),
+<code>reexec</code> (may it load a different model), and
+<code>delete</code> (may it delete models).</td>
+</tr>
+</tbody>
+</table>
+<p>The wizard prints the file before writing it and asks
+<code>Write this configuration? [Y/n]</code>; anything but
+Enter/<code>y</code>/<code>yes</code> aborts with nothing written. Only
+non-defaults are written, so a minimal run yields:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> /home/you/.cache/huggingface/hub</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8100</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span></code></pre></div>
+<p><code>-i</code> always targets
+<code>~/.orangu/orangu-server.conf</code> and ignores
+<code>-c</code>/<code>--config</code>. See the <em>Inference server</em>
+chapter for the full configuration reference.</p>
+<h2 id="download-a-model">Download a model</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
+<p>The argument is a Hugging Face repo,
+<code>&lt;user&gt;/&lt;model&gt;[:quant]</code>. With no
+<code>:quant</code>, <code>Q4_K_M</code> is preferred, then
+<code>Q8_0</code>, then the first GGUF file in the repo; append one to
+pin it, e.g. <code>unsloth/gemma-4-E2B-it-GGUF:Q8_0</code>. Every shard
+of a multi-part model is fetched, plus the matching
+<code>mmproj-*</code> sidecar when the repo has one.</p>
+<p>Before anything is fetched, the repo is planned against this machine:
+each shard’s GGUF header is read over the network — a few hundred
+kilobytes rather than the model — and the result reports how much of the
+model has to stay resident and how much can stream from disk. A model
+that cannot run here at all stops to confirm first; <code>-y</code>
+skips that. <code>orangu-server plan</code> gives the same report for a
+model already downloaded.</p>
+<p>Files land under the <code>models</code> directory from step 1 in
+Hugging Face hub-cache layout. Free space is checked up front, an
+interrupted transfer resumes where it stopped, and progress is redrawn
+in place — one line per file plus a total — ending with:</p>
+<pre class="text"><code>Downloaded to /home/you/.cache/huggingface/hub/models--unsloth--gemma-4-E2B-it-GGUF/snapshots/&lt;commit&gt;/gemma-4-E2B-it-Q4_K_M.gguf</code></pre>
+<p>Gated or private repos need <code>HF_TOKEN</code> set in the
+environment. <code>orangu-server list</code> shows what is installed,
+<code>delete</code> removes a model, and <code>refresh</code> re-fetches
+it at a newer revision; see the <em>Inference server</em> chapter.</p>
+<h2 id="start-orangu-server">Start orangu-server</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--all</span> unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
+<p>The model is the same spec that was downloaded, and now resolves to
+the local copy — nothing is fetched a second time. A local
+<code>.gguf</code> path or an <code>NR</code>/<code>MODEL</code> label
+from <code>orangu-server list</code> works just as well, and omitting
+the argument prints the installed models and asks which one to
+serve.</p>
+<p><code>--all</code> picks the <em>role</em>, not a set of models: it
+is the general-purpose one, and the default. The alternatives are
+<code>--code</code>, <code>--review</code> (suppresses reasoning),
+<code>--explorer</code> (broader, more varied output), and
+<code>--embedding</code> (embeddings only, with the chat and completion
+endpoints disabled). They are mutually exclusive.</p>
+<p>The server binds the host and port from step 1 and serves an
+OpenAI-compatible endpoint, which is what <strong>orangu</strong>
+connects to and what step 4 asks for:</p>
+<pre class="text"><code>http://localhost:8100/v1</code></pre>
+<p><code>-d</code>/<code>--daemon</code> detaches it from the terminal;
+that needs <code>[orangu-server].model</code> set in the configuration,
+because there is no terminal left to prompt on. See the <em>Inference
+server</em> chapter for GPU backend selection and the rest of the
+operational detail.</p>
+<p>To move a working server to another machine without repeating steps
+1–3, bundle it and its model into one executable:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> bundle unsloth/gemma-4-E2B-it-GGUF:Q4_K_M <span class="at">--all</span> <span class="at">-y</span></span></code></pre></div>
+<p>Copy the resulting <code>orangu-server-bundle-&lt;arch&gt;</code>
+over, <code>chmod +x</code> it, and run it: no models directory, no
+download, and no <code>orangu-server.conf</code> — the API comes up on
+<code>127.0.0.1:8100</code> and the web console on
+<code>127.0.0.1:8200</code>. See <em>Bundling</em> in the <em>Inference
+server</em> chapter.</p>
+<h2 id="configure-orangu">Configure orangu</h2>
+<p>With the server from step 3 running:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-i</span></span></code></pre></div>
+<p>The first prompt is <code>LLM URL</code>: enter
+<code>http://localhost:8100/v1</code> (a bare
+<code>http://localhost:8100</code> is accepted too). The wizard queries
+that server’s <code>/v1/models</code> and offers the first model it
+advertises as the default for the <code>Model</code> prompt — if the
+server cannot be reached it says so and asks for the name manually,
+which is why it is worth starting the server first.</p>
+<p>It then walks every remaining option showing its default, so a full
+run is a row of Enters, and omits from the file anything left at its
+default. It finishes by reporting which optional tools it detected
+(<code>git lg</code>, <code>delta</code>, <code>bat</code>,
+<code>gh</code>, <code>glab</code>), printing the configuration, and
+asking <code>Write this configuration? (Yes/No) [Yes]</code>. On
+confirmation it writes <code>~/.orangu/orangu.conf</code> — ignoring
+<code>-c</code>/<code>--config</code>, like the server wizard — and
+installs any bundled skills into <code>~/.orangu/skills/</code> that are
+not already present:</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="dt">server </span><span class="ot">=</span><span class="st"> main-server</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/gemma-4-E2B-it-GGUF</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:8100/v1</span></span></code></pre></div>
+<p>See <a href="configuration.html">Configuration</a> for every key the
+wizard can set.</p>
+<p>Or copy the sample instead:</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> doc/etc/orangu.conf ./orangu.conf</span></code></pre></div>
+<p>Default configuration lookup order is:</p>
+<ol type="1">
+<li><code>./orangu.conf</code></li>
+<li><code>~/.orangu/orangu.conf</code></li>
+</ol>
+<h2 id="run-orangu">Run orangu</h2>
+<p><code>~/.orangu/orangu.conf</code> is one of the lookup locations, so
+there is nothing left to pass:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span></span></code></pre></div>
+<p>Or point at a specific file:</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--config</span> ./orangu.conf</span></code></pre></div>
+<p>Then start with:</p>
+<pre class="text"><code>/help
+/skills
+/server
+/disconnect
+/reload
+/tools
+/model
+/session &lt;UUID&gt;
+/list_files
+/open_file README.md
+/show_file README.md
+/debugging reproduce the failing request path
+/build
+/shell ls -la
+/create_file README.md
+/auto_review
+/amend &quot;[#42] My feature&quot;
+/branch main
+/branch -b feature/new
+/branch -m new-name
+/branch -d feature/old
+/cherry_pick abc1234
+/comment 51 &quot;My comment&quot;
+/close -i 51
+/issue reviewer 114 jesperpedersen
+/get_comments -i 51
+/commit &quot;[#42] My feature&quot;
+/restore README.md
+/diff
+/init_repo
+/log
+/log 5
+/show
+/show aafd1cb
+/merge feature/foo
+/move_file old.rs new.rs
+/pull 42
+/push
+/push --force
+/rebase
+/delete_file README.md
+/review
+/squash
+/status
+/usage
+/clear
+/copy
+/quit</code></pre>
+<p>Most of these are thin wrappers around the matching
+<code>git</code>/<code>gh</code> commands. Two open full-screen views
+instead: <code>/review</code> walks you through the branch’s diff file
+by file for a manual review, and <code>/auto_review</code> has the
+connected model review the branch’s changes by itself — per file and per
+category (Code, Security, Memory, Performance, Test Suite,
+Documentation) — lets you override its verdicts afterwards (approve a
+file, or reject it with your own categorized comments), and copies the
+resulting report to the clipboard on exit.
+<code>/auto_review &lt;file&gt;</code> (Tab-completes on the file name)
+reviews a single file — the whole file on main/master, or just its
+changes on a branch — and <code>/auto_review all</code> reviews every
+Git-tracked file in the project. Both are described in detail in the
+Core tools chapter.</p>
+<p>orangu also supports Agent Skills: reusable directories containing a
+<code>SKILL.md</code>. Skills are discovered from
+<code>~/.orangu/skills/</code>, <code>~/.agents/skills/</code>,
+<code>&lt;workspace&gt;/.orangu/skills/</code>, and
+<code>&lt;workspace&gt;/.agents/skills/</code>. Use <code>/skills</code>
+to list them. Invoke one directly with <code>/skill-name</code>, for
 example:</p>
-<pre class="text"><code>open README.md
-show README.md
-list models
-list files
-pull 42
-log
-status
-rebase
-merge feature/foo
-checkout main
-add README.md
-remove README.md
-move old.rs new.rs
-cherry pick abc1234
-commit &quot;[#42] My feature&quot;
-amend &quot;[#42] My feature&quot;
-push
-force push
-init repo
-squash
-delete feature/foo
-show help</code></pre>
+<pre class="text"><code>/debugging reproduce the failing request path and identify the root cause</code></pre>
+<h2 id="review-your-first-branch">Review your first branch</h2>
+<p>The review workflow is orangu’s standout feature, so it is worth
+trying right away. From a feature branch with some changes (committed or
+just edited in the working tree):</p>
+<pre class="text"><code>review</code></pre>
+<p>This opens the interactive reviewer: a two-pane view with your
+changed files on the right and the selected file’s diff on the left. Use
+<code>Alt+j</code>/<code>Alt+k</code> to move between files,
+<code>Alt+a</code>/<code>Alt+r</code> to approve or reject one, and
+<code>Alt+c</code> to leave a categorized comment on a line. Type a
+question such as <code>is this thread-safe?</code> and press
+<code>Enter</code> to ask the model about the selected file. Press
+<code>Alt+x</code> to leave; the report is copied to your clipboard.</p>
+<p>To have the model do the work, run:</p>
+<pre class="text"><code>auto review</code></pre>
+<p>orangu reviews the whole change and each file across the Overall,
+Code, Security, Memory, Performance, Test Suite, and Documentation
+categories, marks every file with a green or red dot, and ends with an
+<code>orangu approves/rejects this patch</code> verdict. When the run
+finishes you can override any verdict and remove findings before the
+report lands on the clipboard.</p>
+<blockquote>
+<p>The branch must be rebased up to date first — if it is behind, orangu
+points you at <code>/rebase</code>. If you review with a
+<em>thinking</em> model and the answers look truncated, raise
+<code>review_max_tokens</code> in <code>[orangu]</code>
+(e.g. <code>2048</code>); see the Configuration chapter.</p>
+</blockquote>
+<p>Share the result without leaving the terminal:</p>
+<pre class="text"><code>export review              # write the report to a PDF in the workspace root
+comment on 42 with auto review  # post it on GitHub/GitLab issue/PR #42</code></pre>
+<p>By default the tools operate on the current directory. Use
+<code>--workspace /path/to/project</code> to point
+<strong>orangu</strong> at another tree.</p>
+<p>Every startup flag has a short form: <code>-c</code> for
+<code>--config</code>, <code>-t</code> for <code>--theme</code>,
+<code>-w</code> for <code>--workspace</code>, <code>-r</code> for
+<code>--resume</code>, <code>-a</code> for <code>--all</code> (reopen
+the tabs from the previous run), <code>-l</code> for <code>--list</code>
+(print every stored session as a table and exit), <code>-i</code> for
+<code>--init</code>, <code>-p</code> for <code>--prompt</code> (run one
+prompt or command and exit), <code>-q</code> for <code>--quiet</code>
+(print nothing on success), and <code>-s</code> for
+<code>--shell-completions</code>. <code>-h</code>/<code>--help</code>
+and <code>-V</code>/<code>--version</code> are available on all four
+binaries. <code>orangu --help</code> lists them all.</p>
+<p><strong>orangu</strong> automatically resumes an existing session
+when you return to the same workspace and Git branch. When a previous
+session is found, the status bar shows:</p>
+<pre class="text"><code>Resuming session 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>for five seconds or until the first command is run.</p>
+<p>On exit, the resume command is printed so you can return to the
+session from a different branch or machine:</p>
+<pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
+<p>Sessions that had no LLM interaction on <code>main</code>,
+<code>master</code>, or outside a Git repository are deleted
+automatically on exit. Feature branch sessions are always kept.</p>
+<p>Use <code>/session</code> to list all sessions and their branches.
+Use <code>/session &lt;uuid&gt;</code> (Tab completion cycles UUIDs and
+workspace paths) to switch to a specific session; passing a workspace
+switches straight to it when it matches exactly one session, otherwise
+it lists the matches. Passing a directory path that no session uses yet
+opens it as a new workspace — Tab falls back to filesystem completion
+(with <code>~</code> expansion) so you can navigate there,
+e.g. <code>/session ~/Po&lt;Tab&gt;/pga&lt;Tab&gt;/of&lt;Tab&gt;</code>.</p>
 <p>Lines whose first non-whitespace character is <code>#</code> stay
 local and are not sent to the model. Lines whose first non-whitespace
 character is <code>\</code> are ignored.</p>

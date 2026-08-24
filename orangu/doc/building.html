@@ -43,7 +43,6 @@
       <ul>
         <li><a href="introduction.html">Introduction</a></li>
         <li><a href="getting-started.html">Getting Started</a></li>
-        <li><a href="quickstart.html">Quick Start</a></li>
         <li><a href="configuration.html">Configuration</a></li>
         <li><a href="terminal.html">Terminal Interface</a></li>
         <li><a href="tools.html">Tools</a></li>
@@ -61,6 +60,7 @@
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
         <li><a href="completions.html">Shell Completions</a></li>
@@ -75,6 +75,14 @@
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
         <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
       </ul>
     </div>
     <hr class="sidebar-divider" />
@@ -167,33 +175,26 @@ and be able to say what the edit buys.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> fmt</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">cargo</span> test</span></code></pre></div>
 <h2 id="documentation-workflow">Documentation workflow</h2>
+<p>The manual and the cheat sheet are built by <strong>orangu
+itself</strong>: the same printpdf engine that writes the PDFs
+<code>/export</code> produces draws both documents, so they carry the
+reports’ bands, brand colour and embedded Red Hat Text without a second
+toolchain. There is no LaTeX in the project, and no template to
+download. Pandoc is needed only for the HTML manual.</p>
 <ol type="1">
-<li><p>Download dependencies</p>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">dnf</span> install pandoc texlive-scheme-basic</span></code></pre></div></li>
-<li><p>Download Eisvogel</p>
-<p>Use the command <code>pandoc --version</code> to locate the user data
-directory. On Fedora systems, this directory is typically located at
-<code>$HOME/.local/share/pandoc</code>.</p>
-<p>Download the <code>Eisvogel</code> template for <code>pandoc</code>,
-please visit the <a
-href="https://github.com/Wandmalfarbe/pandoc-latex-template">pandoc-latex-template</a>
-repository. For a standard installation, you can follow the steps
-outlined below.</p></li>
+<li>Download dependencies</li>
 </ol>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>    <span class="fu">wget</span> https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/v3.4.0/Eisvogel-3.4.0.tar.gz</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tar</span> <span class="at">-xzf</span> Eisvogel-3.4.0.tar.gz</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$HOME</span>/.local/share/pandoc/templates</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mv</span> Eisvogel-3.4.0/eisvogel.latex <span class="va">$HOME</span>/.local/share/pandoc/templates/</span></code></pre></div>
-<ol start="3" type="1">
-<li><p>Add package for LaTeX</p>
-<p>Download the additional packages required for generating PDF and HTML
-files.</p></li>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dnf</span> install pandoc</span></code></pre></div>
+<ol start="2" type="1">
+<li>Build</li>
 </ol>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>    <span class="ex">dnf</span> install <span class="st">&#39;tex(footnote.sty)&#39;</span> <span class="st">&#39;tex(footnotebackref.sty)&#39;</span> <span class="st">&#39;tex(pagecolor.sty)&#39;</span> <span class="st">&#39;tex(hardwrap.sty)&#39;</span> <span class="st">&#39;tex(mdframed.sty)&#39;</span> <span class="st">&#39;tex(sourcesanspro.sty)&#39;</span> <span class="st">&#39;tex(ly1enc.def)&#39;</span> <span class="st">&#39;tex(sourcecodepro.sty)&#39;</span> <span class="st">&#39;tex(titling.sty)&#39;</span> <span class="st">&#39;tex(csquotes.sty)&#39;</span> <span class="st">&#39;tex(zref-abspage.sty)&#39;</span> <span class="st">&#39;tex(needspace.sty)&#39;</span> <span class="st">&#39;tex(selnolig.sty)&#39;</span> texlive-collection-latexextra</span></code></pre></div>
-<p>Then</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./doc/build_manual.sh</span></span></code></pre></div>
-<p>which will produce a HTML and PDF manual.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./doc/build.sh</span></span></code></pre></div>
+<p>which will produce a HTML and PDF manual, and the PDF cheat sheet.
+Pass <code>manual</code> or <code>cheatsheet</code> to build just one of
+them.</p>
+<p>The sources are <code>doc/manual/en</code> (one file per chapter) and
+<code>doc/cheatsheet/en</code> (one file per page); both are drawn by
+<code>src/bin/orangu/docs.rs</code>.</p>
 <h2 id="orangu-files">Orangu files</h2>
 <ul>
 <li>The default config lookup path is

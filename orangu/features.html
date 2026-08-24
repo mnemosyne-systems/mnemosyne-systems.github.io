@@ -67,6 +67,14 @@
           <p>Discovers <code>SKILL.md</code> skills from user and project directories with progressive disclosure — full instructions load only when relevant. Ships a bundled <code>debugging</code> skill.</p>
         </div>
         <div class="g-cell">
+          <h3>Model Context Protocol</h3>
+          <p>Connect to external tools over MCP. Local server management, refresh, and reconnect are handled inside orangu &mdash; no separate supervisor, and no config file to edit to bring a server back after it drops.</p>
+        </div>
+        <div class="g-cell">
+          <h3>Modes for the task at hand</h3>
+          <p><code>/developer</code> for writing the change, <code>/committer</code> for getting it committed. Same environment, different emphasis, without re-explaining what you are up to.</p>
+        </div>
+        <div class="g-cell">
           <h3>Comfortable terminal</h3>
           <p>Persistent UI with live status, ghost-text hints, Tab completion, a streaming footer, queued commands, double-<code>Esc</code> cancel, and Markdown rendering with syntax highlighting.</p>
         </div>
@@ -187,7 +195,7 @@
         </div>
         <div class="g-cell">
           <h3>Markdown rendering</h3>
-          <p>AI responses render with bold, italic, headings, lists, and syntax-highlighted code blocks, right in the terminal. No browser tab needed.</p>
+          <p>AI responses render with bold, italic, headings, lists, and syntax-highlighted code blocks, right in the terminal &mdash; significantly upgraded in 1.2.0, so answers arrive readable rather than as a wall of source. No browser tab needed.</p>
         </div>
         <div class="g-cell">
           <h3>Per-session history</h3>
@@ -199,7 +207,7 @@
         </div>
         <div class="g-cell">
           <h3>Built in Rust</h3>
-          <p>Fast startup, zero GC pauses, small binary. Tested on Fedora; runs on any Linux. Windows via WSL.</p>
+          <p>Fast startup, zero GC pauses, small binary. Native builds for Linux, macOS, and Windows on x86_64 and aarch64 &mdash; no WSL, no runtime to install.</p>
         </div>
       </div>
     </div>

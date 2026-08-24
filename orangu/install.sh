@@ -19,6 +19,9 @@ set -e
 
 REPO="mnemosyne-systems/orangu"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
+# The cheat sheet goes next to the configuration, not on the PATH.
+DOC_DIR="${DOC_DIR:-$HOME/.orangu}"
+CHEATSHEET="orangu-cheatsheet-en.pdf"
 
 if command -v curl >/dev/null 2>&1; then
     fetch()    { curl -fsSL "$1"; }
@@ -75,13 +78,27 @@ tar -xzf "${TMP}/${ASSET}" -C "$TMP" || { echo "error: could not extract ${ASSET
 mkdir -p "$INSTALL_DIR"
 [ -w "$INSTALL_DIR" ] || { echo "error: ${INSTALL_DIR} is not writable — try sudo or set INSTALL_DIR" >&2; exit 1; }
 
-# The whole stack: the editor plus the coordinator and inference server.
-for bin in orangu orangu-coordinator orangu-server; do
+# The whole stack: the editor plus the coordinator, the inference server and
+# the benchmarking tool — every executable the release archive carries.
+for bin in orangu orangu-coordinator orangu-server orangu-bench; do
     [ -f "${TMP}/${bin}" ] || { echo "error: ${bin} not found in archive" >&2; exit 1; }
     cp "${TMP}/${bin}" "${INSTALL_DIR}/${bin}"
     chmod +x "${INSTALL_DIR}/${bin}"
     echo "Installed: ${INSTALL_DIR}/${bin}"
 done
+
+# The four-page cheat sheet — setup, coding, review, merge and push. Older
+# archives do not carry it, so its absence is not an error.
+CHEATSHEET_INSTALLED=""
+if [ -f "${TMP}/${CHEATSHEET}" ]; then
+    mkdir -p "$DOC_DIR"
+    if cp "${TMP}/${CHEATSHEET}" "${DOC_DIR}/${CHEATSHEET}" 2>/dev/null; then
+        echo "Installed: ${DOC_DIR}/${CHEATSHEET}"
+        CHEATSHEET_INSTALLED="yes"
+    else
+        echo "warning: could not write the cheat sheet to ${DOC_DIR}"
+    fi
+fi
 
 case ":${PATH}:" in
     *":${INSTALL_DIR}:"*) ;;
@@ -91,3 +108,6 @@ esac
 echo ""
 echo "Run 'orangu --help' to get started."
 echo "Run 'orangu -s' to set up shell completions."
+if [ -n "$CHEATSHEET_INSTALLED" ]; then
+    echo "Setup, coding, review, merge and push on four pages: ${DOC_DIR}/${CHEATSHEET}"
+fi

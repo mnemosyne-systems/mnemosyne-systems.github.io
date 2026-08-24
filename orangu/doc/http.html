@@ -1,0 +1,3015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HTTP Endpoints — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="http.html" class="active">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#http-endpoints" id="toc-http-endpoints">HTTP endpoints</a>
+<ul>
+<li><a href="#client" id="toc-client">Client</a></li>
+<li><a href="#server" id="toc-server">Server</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="http-endpoints">HTTP endpoints</h1>
+<p>Everything in the orangu stack talks over HTTP, and this chapter is
+the reference for every path any of it serves or calls. The
+<em>Client</em> half is what <code>orangu</code> itself sends and what a
+program written against these servers has to get right; the
+<em>Server</em> half is the endpoint-by-endpoint contract.</p>
+<p>Four listeners exist, and they are separate sockets with separate
+rules:</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Listener</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Configured by</th>
+<th style="text-align: left;">What is on it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>orangu-server</code> API</td>
+<td style="text-align: left;"><code>127.0.0.1:8100</code></td>
+<td
+style="text-align: left;"><code>[orangu-server].host</code>/<code>port</code></td>
+<td style="text-align: left;">OpenAI-compatible, native, diagnostic and
+file-lifecycle endpoints</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>orangu-server</code> web
+console</td>
+<td style="text-align: left;"><code>127.0.0.1:8101</code></td>
+<td
+style="text-align: left;"><code>[web].host</code>/<code>port</code></td>
+<td style="text-align: left;">the chat page, its <code>/api/…</code>
+surface, and the model manager</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>orangu-coordinator</code></td>
+<td style="text-align: left;"><code>all:9000</code></td>
+<td
+style="text-align: left;"><code>[orangu-coordinator].host</code>/<code>port</code></td>
+<td style="text-align: left;">two coordinator endpoints, a shutdown
+endpoint, and a proxy for everything else</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>orangu-bench</code> console</td>
+<td style="text-align: left;"><code>127.0.0.1:8300</code></td>
+<td
+style="text-align: left;"><code>--host</code>/<code>--port</code></td>
+<td style="text-align: left;">the benchmark console and its
+<code>/api/…</code> surface</td>
+</tr>
+</tbody>
+</table>
+<p>Only the first is an API in the sense of something to build against.
+The two consoles serve their own page’s JavaScript and nothing else
+promises to stay stable; the coordinator is a front door for the
+first.</p>
+<h2 id="client">Client</h2>
+<h3 id="where-to-point-a-client">Where to point a client</h3>
+<p>A server section in <code>orangu.conf</code> names an
+<code>endpoint</code>, and it may be written with or without the
+<code>/v1</code> suffix — <code>http://localhost:8100</code> and
+<code>http://localhost:8100/v1</code> are the same host, normalized
+internally before any path is appended. Each server section must use a
+unique endpoint after that normalization.</p>
+<p>Point a client at the <strong>coordinator’s</strong> address instead
+and nothing about the requests changes: it forwards them to whichever
+<code>orangu-server</code> its routing picks. See
+<strong>Coordinator</strong> below.</p>
+<h3 id="authentication">Authentication</h3>
+<p>When <code>[orangu-server].api_key</code> (or
+<code>ORANGU_API_KEY</code>) is set, every endpoint except
+<code>GET /health</code> and <code>GET /ready</code> requires:</p>
+<pre><code>Authorization: Bearer &lt;key&gt;</code></pre>
+<p>and answers <code>401</code> with
+<code>WWW-Authenticate: Bearer</code> without it. The
+<code>orangu</code> client sends its own <code>api_key</code> this way
+on every request, including the <code>/v1/models</code> probe, and so
+does any OpenAI-shaped client.</p>
+<p>The <strong>web console</strong> port has no key of its own and is
+not loopback-restricted — it assumes a trusted network. A server
+reachable from an untrusted one should not have a <code>[web]</code>
+section at all.</p>
+<h3 id="what-orangu-calls-and-when">What <code>orangu</code> calls, and
+when</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;">When the client sends it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GET /v1/coordinator</code></td>
+<td style="text-align: left;">once per endpoint to tell a coordinator
+from a plain server, then every status cycle against a confirmed
+coordinator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /v1/models</code></td>
+<td style="text-align: left;">startup model detection,
+<code>/model</code> completion, <code>/server</code>, and as the health
+check against a plain server</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/chat/completions</code></td>
+<td style="text-align: left;">every prompt and every tool round
+trip</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/embeddings</code></td>
+<td style="text-align: left;"><code>/search</code>, when a server has
+the <code>embeddings</code> role (or the default <code>all</code>
+role)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /props</code></td>
+<td style="text-align: left;">once per endpoint, to learn the slot count
+for pinning</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /slots/{id}?action=save\|restore</code></td>
+<td style="text-align: left;">to keep a workspace tab’s KV cache across
+restarts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /health</code>,
+<code>/slots</code>, <code>/metrics</code></td>
+<td style="text-align: left;">the <code>/information</code> report
+only</td>
+</tr>
+</tbody>
+</table>
+<p><code>/information</code> is the command that probes all of these and
+prints one row per capability — see the <em>Core tools</em> chapter. A
+plain OpenAI-compatible server answers only the <code>/v1/…</code> rows,
+and the rest are reported unavailable rather than failing the
+command.</p>
+<p><strong>The coordinator probe is asked once, not every
+cycle.</strong> The client’s status refresh runs on a timer — every 60 s
+idle, every 500 ms while the startup git sync is in flight — and
+<code>/v1/coordinator</code> exists on nothing but a coordinator, so
+probing it each cycle is a <code>404</code> each cycle against a plain
+server. The client remembers what each endpoint answered: a known-plain
+one skips the probe entirely and lets <code>GET /v1/models</code> serve
+as both the model list and the health check, halving the requests a poll
+costs. A <em>confirmed</em> coordinator is still probed every cycle,
+since for it this endpoint is the health check and
+<code>/v1/models</code> is deliberately never called.</p>
+<p>The memo is dropped the moment an endpoint stops answering, so a
+server restarted as a coordinator — or a coordinator that simply was not
+up yet when the client started — is identified afresh rather than
+assumed to be whatever was there before. <code>/server</code> drops it
+too, in both its forms: listing the servers re-opens the question for
+the active endpoint, and <code>/server &lt;name&gt;</code> for the one
+it selects, including when that is the server already in use. Listing or
+selecting a server is the moment a user is asking about the connection
+rather than working through it, and the moment the answer is most likely
+to have just changed. The memo keeps an unchanging answer from being
+re-asked on a timer; it is not meant to outlast a direct question about
+it.</p>
+<h3 id="slot-pinning-from-a-client">Slot pinning from a client</h3>
+<p>Each workspace tab probes <code>GET /props</code> once per endpoint,
+takes a slot round-robin from <code>total_slots</code>, and pins every
+request in that tab to it with <code>id_slot</code>, so tabs stop
+evicting each other’s KV cache. One-shot requests
+(<code>orangu -p</code>) do not pin — there is no later turn to keep a
+cache warm for. See <code>id_slot</code> under
+<code>POST /v1/chat/completions</code> for what that buys and what it
+costs.</p>
+<h3 id="pre-warming-through-the-coordinator">Pre-warming through the
+coordinator</h3>
+<p><code>orangu</code> fires <code>POST /v1/coordinator/activate</code>
+at the start of <code>/review</code> and <code>/auto_review</code>,
+naming the <code>review</code> role, so a cold load happens behind local
+work (diff collection, the auto-review prestart screen) instead of
+stalling the first real request. It is fire-and-forget: any failure is
+ignored, since the real request that follows triggers the same swap on
+its own if the hint did not get there first.</p>
+<h3 id="the-file-lifecycle-api-from-a-client">The file-lifecycle API
+from a client</h3>
+<p>The eight file endpoints, the model’s
+<code>create_file</code>/<code>modify_file</code>/… tools, and the typed
+<code>/create_file</code>, <code>/delete_file</code>, “create myfile.txt
+with 0644” style commands are <strong>one implementation</strong> with
+the same fields, defaults and errors. Whatever you learn from one
+surface holds for the other two; the fields are documented once, under
+<strong>File-lifecycle API</strong> below.</p>
+<p>That router is library code rather than something the server binary
+owns, so a host that wants the same eight endpoints in its own axum
+service can mount them:
+<code>orangu::files_http::router::&lt;S&gt;()</code>, where
+<code>S</code> implements
+<code>orangu::files_http::WorkspaceState</code> and names the workspace
+root every request is resolved against and confined to.
+<code>orangu-server</code> mounts it beside its inference endpoints;
+<code>orangu-coordinator</code> forwards to it.</p>
+<h2 id="server">Server</h2>
+<h3 id="rules-that-apply-to-every-endpoint">Rules that apply to every
+endpoint</h3>
+<p>Three things apply to the whole API port rather than to any one path,
+and are easy to miss looking down a table:</p>
+<ul>
+<li><strong><code>401</code></strong> — the bearer-token rule
+above.</li>
+<li><strong><code>503</code></strong> — when
+<code>[orangu-server].queue_limit</code> is set and that many requests
+are already waiting for a slot, a generating endpoint answers
+<code>503</code> with <code>Retry-After: 1</code> instead of joining the
+queue. <code>503</code> rather than <code>500</code> deliberately: this
+request could be served later, and the distinction is the whole point of
+bounding the queue. Requests pinned with <code>id_slot</code> bypass the
+limit — they are waiting for one specific slot’s warm cache, not
+competing for admission.</li>
+<li><strong><code>https</code></strong> — when
+<code>tls_cert</code>/<code>tls_key</code> are set, every endpoint is
+served over TLS on the same port; there is no plaintext listener
+alongside.</li>
+</ul>
+<p>And one that applies to the generating endpoints: an
+<code>embedding</code>-role server answers
+<code>POST /v1/chat/completions</code>, <code>/v1/completions</code> and
+<code>/completion</code> with <strong><code>501</code></strong> naming
+the mode, rather than pretending to generate.</p>
+<h3 id="endpoints-at-a-glance">Endpoints at a glance</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GET /v1/models</code></td>
+<td style="text-align: left;">the one model this process serves</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/chat/completions</code></td>
+<td style="text-align: left;">streaming (SSE) and non-streaming;
+<code>tools</code>/<code>tool_calls</code> and
+<code>response_format</code>;
+<code>cache_prompt</code>/<code>id_slot</code>/<code>timings_per_token</code>/<code>return_progress</code>;
+needs a chat template; disabled under <code>--embedding</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/completions</code></td>
+<td style="text-align: left;">legacy completion, no chat template
+needed;
+<code>cache_prompt</code>/<code>id_slot</code>/<code>response_format</code>/<code>ignore_eos</code>;
+disabled under <code>--embedding</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/embeddings</code></td>
+<td style="text-align: left;">pooled and L2-normalized; carries OpenAI’s
+<code>usage</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /health</code></td>
+<td style="text-align: left;">liveness: is this process up. Stays
+<code>200</code> while the server is merely busy</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /ready</code></td>
+<td style="text-align: left;">readiness: would a request sent now be
+served</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /props</code></td>
+<td style="text-align: left;">model and server metadata: backend,
+devices, build, slot count, workspace</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /slots</code></td>
+<td style="text-align: left;">per-slot busy/prompt/generated-token
+state</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /slots/{id_slot}</code></td>
+<td style="text-align: left;"><code>?action=save\|restore</code> —
+persist or reload that slot’s KV cache</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /metrics</code></td>
+<td style="text-align: left;">Prometheus text: gauges, latency
+histograms, outcome and token counters</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /completion</code></td>
+<td style="text-align: left;">native, streaming;
+<code>cache_prompt</code>/<code>id_slot</code>; disabled under
+<code>--embedding</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /embedding</code></td>
+<td style="text-align: left;">native embeddings</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /tokenize</code>,
+<code>POST /detokenize</code></td>
+<td style="text-align: left;">text to token ids and back</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /apply-template</code></td>
+<td style="text-align: left;">renders the chat template without
+generating</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/create_file</code> …
+<code>/v1/delete_directory</code></td>
+<td style="text-align: left;">the eight file-lifecycle endpoints</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /moe-stats</code></td>
+<td style="text-align: left;">mixture-of-experts counters since the
+previous call, and reset</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /gpu-timings</code></td>
+<td style="text-align: left;">per-stage GPU timings since the previous
+call, and reset</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /model-cache</code></td>
+<td style="text-align: left;">how much of the model is in the page cache
+right now</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /model-cache/drop</code></td>
+<td style="text-align: left;">evict the model from the page cache;
+loopback-only</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/shutdown</code></td>
+<td style="text-align: left;">stop the server; loopback-only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="openai-compatible-endpoints">OpenAI-compatible endpoints</h3>
+<h4 id="get-v1models"><code>GET /v1/models</code></h4>
+<p>The model this process serves, in OpenAI’s listing shape. One entry,
+always — <code>orangu-server</code> loads exactly one model, and
+switching to another restarts the process (see <strong>Loading a
+different model</strong> in the <em>Inference server</em> chapter).</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;object&quot;</span><span class="fu">:</span><span class="st">&quot;list&quot;</span><span class="fu">,</span><span class="dt">&quot;data&quot;</span><span class="fu">:</span><span class="ot">[</span><span class="fu">{</span><span class="dt">&quot;id&quot;</span><span class="fu">:</span><span class="st">&quot;ggml-org/gemma-4-E4B-it-GGUF&quot;</span><span class="fu">,</span><span class="dt">&quot;object&quot;</span><span class="fu">:</span><span class="st">&quot;model&quot;</span><span class="fu">,</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;created&quot;</span><span class="fu">:</span><span class="dv">1755600000</span><span class="fu">,</span><span class="dt">&quot;owned_by&quot;</span><span class="fu">:</span><span class="st">&quot;orangu-server&quot;</span><span class="fu">}</span><span class="ot">]</span><span class="fu">}</span></span></code></pre></div>
+<h4
+id="post-v1chatcompletions"><code>POST /v1/chat/completions</code></h4>
+<p>The endpoint every prompt and tool round trip actually goes through.
+It needs the model to carry a <code>tokenizer.chat_template</code>;
+without one it answers <code>501</code> and points at
+<code>/v1/completions</code>.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>messages</code></td>
+<td style="text-align: left;"><code>[]</code></td>
+<td style="text-align: left;">the conversation, in OpenAI’s shape</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>stream</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">SSE instead of one JSON body</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>max_tokens</code></td>
+<td style="text-align: left;"><code>8192</code></td>
+<td style="text-align: left;">response-length cap, clamped to what is
+left of the context window; reaching it reports
+<code>finish_reason: "length"</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>temperature</code>,
+<code>top_p</code></td>
+<td style="text-align: left;">role’s own</td>
+<td style="text-align: left;">OpenAI’s sampler fields</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>top_k</code>, <code>min_p</code>,
+<code>repeat_penalty</code>, <code>seed</code></td>
+<td style="text-align: left;">role’s own</td>
+<td style="text-align: left;">the rest of the sampler</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cache_prompt</code></td>
+<td style="text-align: left;"><code>true</code></td>
+<td style="text-align: left;">may this request reuse an already-computed
+KV prefix</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>id_slot</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">pin to one slot</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>timings_per_token</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">attach <code>timings</code> to every
+streamed chunk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>return_progress</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">emit <code>prompt_progress</code> chunks
+during prefill</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>response_format</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;"><code>{"type": "json_object"}</code>
+constrains output to JSON</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tools</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">OpenAI’s tool array, handed to the chat
+template</td>
+</tr>
+</tbody>
+</table>
+<p><code>top_k</code>, <code>min_p</code>, <code>repeat_penalty</code>
+and <code>seed</code> are <strong>not</strong> OpenAI’s fields, and they
+are accepted anyway: the sampler has knobs OpenAI’s schema has no word
+for, and an unknown key is dropped silently rather than rejected. A
+caller sending <code>repeat_penalty</code> and seeing no change would
+conclude the penalty does nothing, when in fact the value never arrived.
+Every sampler field is optional in the strict sense — leaving one out
+keeps the role’s default, which is not the same as setting it to zero,
+since <code>temperature: 0.0</code> is greedy and
+<code>repeat_penalty: 1.0</code> is off.</p>
+<p>A non-streaming reply is <code>chat.completion</code>:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;id&quot;</span><span class="fu">:</span><span class="st">&quot;chatcmpl-1755600000&quot;</span><span class="fu">,</span><span class="dt">&quot;object&quot;</span><span class="fu">:</span><span class="st">&quot;chat.completion&quot;</span><span class="fu">,</span><span class="dt">&quot;created&quot;</span><span class="fu">:</span><span class="dv">1755600000</span><span class="fu">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;model&quot;</span><span class="fu">:</span><span class="st">&quot;…&quot;</span><span class="fu">,</span><span class="dt">&quot;choices&quot;</span><span class="fu">:</span><span class="ot">[</span><span class="fu">{</span><span class="dt">&quot;index&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>   <span class="dt">&quot;message&quot;</span><span class="fu">:{</span><span class="dt">&quot;role&quot;</span><span class="fu">:</span><span class="st">&quot;assistant&quot;</span><span class="fu">,</span><span class="dt">&quot;content&quot;</span><span class="fu">:</span><span class="st">&quot;…&quot;</span><span class="fu">},</span><span class="dt">&quot;finish_reason&quot;</span><span class="fu">:</span><span class="st">&quot;stop&quot;</span><span class="fu">}</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;usage&quot;</span><span class="fu">:{</span><span class="er">…</span><span class="fu">},</span><span class="dt">&quot;timings&quot;</span><span class="fu">:{</span><span class="er">…</span><span class="fu">}}</span></span></code></pre></div>
+<p>A streaming reply is a series of <code>chat.completion.chunk</code>
+events, each carrying a <code>delta</code>, ending with a chunk that
+carries <code>finish_reason</code> (plus <code>usage</code>,
+<code>timings</code> and <code>prompt_progress</code>) and then
+<code>[DONE]</code>.</p>
+<h5 id="cache_prompt"><code>cache_prompt</code></h5>
+<p><code>/v1/chat/completions</code>, <code>/v1/completions</code> and
+<code>/completion</code> all accept it, and it defaults to
+<code>true</code>. It controls whether a request may
+<strong>reuse</strong> an already-computed KV cache for whatever prefix
+of its prompt one exists for — the cross-slot prefix pool, or a slot’s
+own retained cache. Leaving it at the default is what makes a growing
+conversation cheap: only the new suffix is processed.</p>
+<p>Set it <code>false</code> to force the whole prompt through a real
+forward pass. That is what a prefill measurement needs, since a cached
+prompt is reported as processing thousands of tokens per second while
+doing almost nothing —
+<code>usage.prompt_tokens_details.cached_tokens</code> and
+<code>prompt_progress.cache</code> show exactly how much was skipped.
+The flag governs only what a request <em>reads</em>: the resulting cache
+is still stored for later requests either way.</p>
+<h5 id="id_slot"><code>id_slot</code></h5>
+<p><code>/v1/chat/completions</code>, <code>/v1/completions</code> and
+<code>/completion</code> accept <code>id_slot</code>, pinning a request
+to one specific slot instead of letting it take whichever is free. An
+unknown slot number is a <code>400</code>, not a silent fallback.</p>
+<p>What it buys is <strong>cache affinity</strong>. A slot retains the
+<code>(tokens, KV cache)</code> of the last request that ran on it, so a
+conversation that returns to its own slot continues from a warm prefix
+and prefills only the new turn. Landing on a neighbour instead finds
+another conversation’s cache there and reprefills the whole prompt — and
+since an idle server hands out the <em>lowest</em> free slot, two
+alternating conversations otherwise both land on slot 0 and evict each
+other every turn.</p>
+<p>Two conversations interleaved on a two-slot server, three turns each
+(<code>gemma-4-E2B-it:Q4_K_M</code>, ~430-token prompts):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">tokens actually prefilled</th>
+<th style="text-align: right;">prefill time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>without <code>id_slot</code></td>
+<td style="text-align: right;">2 567</td>
+<td style="text-align: right;">13.4 s</td>
+</tr>
+<tr>
+<td>with <code>id_slot</code></td>
+<td style="text-align: right;"><strong>889</strong></td>
+<td style="text-align: right;"><strong>5.0 s</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Steady-state per turn is where it shows: 2.0 s of prefill becomes
+0.25 s, because the whole previous turn is served from the slot’s own
+cache (<code>cached_tokens</code> 417 of 433, rather than 7).</p>
+<p>A pinned request <strong>waits</strong> for its slot rather than
+being bounced to a free one — that is the point, and it is a trade the
+caller has already chosen. Waiting costs no one else any concurrency: a
+queued request holds nothing.</p>
+<h5
+id="timings_per_token-and-return_progress"><code>timings_per_token</code>
+and <code>return_progress</code></h5>
+<p>Both apply to a <strong>streaming</strong> request, and both exist
+for the same reason: the longest part of a turn is the part a client
+otherwise knows nothing about.</p>
+<p><code>return_progress: true</code> emits a
+<code>prompt_progress</code> chunk after every prefill chunk
+(<code>ORANGU_PREFILL_BATCH</code> tokens, or the width the backend and
+the model’s residency choose when that is unset) rather than only at the
+end. <code>processed</code> counts cached tokens as already done, so a
+mostly-cached prompt does not appear to start from zero. On a 2712-token
+prompt that is six updates across a 12.8-second prefill:</p>
+<pre><code> 512/2712   2725 ms      2048/2712   9573 ms
+1024/2712   4996 ms      2560/2712  11904 ms
+1536/2712   7274 ms      2712/2712  12845 ms</code></pre>
+<p><code>timings_per_token: true</code> attaches a <code>timings</code>
+object to every generated token, not just the last chunk, so a client
+can display a live decode rate measured by the server. The first token
+is deliberately skipped: it was sampled from the prefill’s own logits,
+so a rate computed there is a division by a few microseconds and comes
+out in the tens of thousands of tokens per second.</p>
+<p>Each arrives as its own chunk with an empty <code>delta</code>, which
+is what lets them keep flowing while content is briefly held back by the
+tool-call splitter.</p>
+<p>The <code>orangu</code> client requests both. They are what its
+status line shows: a <code>n/total tok</code> prefill bar while the
+prompt is processing, then the server’s
+<code>predicted_per_second</code> while the answer streams.</p>
+<h5 id="structured-output-response_format">Structured output
+(<code>response_format</code>)</h5>
+<p><code>POST /v1/chat/completions</code> and
+<code>/v1/completions</code> accept OpenAI’s
+<code>response_format</code>. With <code>{"type": "json_object"}</code>
+the server does not ask the model for JSON — it makes anything else
+<strong>unsampleable</strong>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/v1/chat/completions <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Give me a person record with a name and an age.&quot;}],</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;response_format&quot;: {&quot;type&quot;: &quot;json_object&quot;},</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;temperature&quot;: 0</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">}&#39;</span></span></code></pre></div>
+<p>Unconstrained, the same request returns
+<code>Here is a person record with a name and an age:</code> followed by
+prose. Constrained, it returns
+<code>{"Name": "John Doe", "Age": 32}</code>.</p>
+<p>At every step the sampler is offered only tokens that keep the output
+a prefix of some valid JSON object, and the end-of-sequence token is
+withheld until the document is <strong>complete</strong> — so a model
+cannot stop at <code>{"a":</code> and leave a caller parsing a fragment.
+Once the document is complete, stopping is the only move left, which is
+what keeps a model from trailing blank lines to <code>max_tokens</code>
+after it has finished.</p>
+<p><code>json_object</code> means an <strong>object</strong>, matching
+the field’s name: a bare string is technically valid JSON, and a caller
+asking for a record and receiving <code>"Name: Sophia, Age: 32"</code>
+gets something that parses and then fails at
+<code>result["name"]</code>, which is worse than failing outright.
+<code>json_schema</code> is accepted and treated the same way — output
+is constrained to valid JSON, but <strong>not</strong> to the schema’s
+shape. Constraining to a schema is a larger job and is not implemented;
+the type is honoured rather than ignored so that a caller asking for it
+is not silently given free text.</p>
+<p>Two limits worth knowing. A constrained request cannot use the GPU’s
+argmax fast path or prompt-lookup speculation, because both pick tokens
+without consulting the constraint — so constrained decoding is somewhat
+slower than unconstrained. And a constraint makes invalid output
+unreachable; it cannot make a model cooperate. Told <em>“reply with the
+single word hello, do not use JSON”</em>, the model spends its budget on
+whitespace and returns no document at all — the response is then not
+valid JSON, and <code>finish_reason</code> is <code>length</code>. Ask
+for JSON in the prompt as well as the parameter.</p>
+<h5 id="tool-calling">Tool calling</h5>
+<p><code>/v1/chat/completions</code> accepts OpenAI’s <code>tools</code>
+array and answers with OpenAI’s <code>tool_calls</code>. Nothing about
+the tools themselves is interpreted here: the array is handed to the
+model’s own <code>tokenizer.chat_template</code> as the
+<code>tools</code> variable, which is what every tool-capable template
+gates its declaration block on (<code>{%- if tools -%}</code>). A model
+whose template has no tool support simply ignores it. An empty
+<code>tools: []</code> counts as no tools.</p>
+<p>Messages carry the other half of the conversation:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">On</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>tool_calls</code></td>
+<td style="text-align: left;"><code>assistant</code></td>
+<td style="text-align: left;">the calls that turn made, passed to the
+template verbatim</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tool_call_id</code></td>
+<td style="text-align: left;"><code>tool</code></td>
+<td style="text-align: left;">which call this message answers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>name</code></td>
+<td style="text-align: left;"><code>tool</code></td>
+<td style="text-align: left;">the function’s name; some templates use it
+directly, others resolve it from <code>tool_call_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>All three are required for a <strong>multi-turn</strong> tool
+conversation. Without them the transcript replayed on turn N+1 shows an
+assistant message with empty content and no record of any call, and the
+model calls the same tool again.</p>
+<p><strong>Reading the model’s answer back.</strong> There is no
+standard for how a model <em>writes</em> a call — its template teaches
+it one, and the forms differ far more than the OpenAI shape they all
+become. Six delimiter-anchored forms are recognised:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Family</th>
+<th style="text-align: left;">Form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">gemma-4</td>
+<td
+style="text-align: left;"><code>&lt;\|tool_call&gt;call:NAME{key:value,…}&lt;tool_call\|&gt;</code>
+(the markers are special tokens; <code>call:</code> is optional)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Qwen / Hermes</td>
+<td
+style="text-align: left;"><code>&lt;tool_call&gt;{"name": …, "arguments": {…}}&lt;/tool_call&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">GLM, Ling 3.0</td>
+<td
+style="text-align: left;"><code>&lt;tool_call&gt;NAME&lt;arg_key&gt;k&lt;/arg_key&gt;&lt;arg_value&gt;v&lt;/arg_value&gt;…&lt;/tool_call&gt;</code>
+(Ling spells all six delimiters as special tokens)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Nemotron</td>
+<td
+style="text-align: left;"><code>&lt;tool_call&gt;&lt;function=NAME&gt;&lt;parameter=k&gt;v&lt;/parameter&gt;…&lt;/function&gt;&lt;/tool_call&gt;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Mistral</td>
+<td
+style="text-align: left;"><code>[TOOL_CALLS][{"name": …, "arguments": {…}}]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Muse-Glimmer, DeepSeek-V4</td>
+<td style="text-align: left;">an
+<code>&lt;…invoke name="NAME"&gt;</code> block of
+<code>&lt;…parameter name="k"&gt;v&lt;/…&gt;</code> elements, in each
+model’s own tag namespace</td>
+</tr>
+</tbody>
+</table>
+<p>gemma-4’s string values are delimited by its own
+<code>&lt;|"|&gt;</code> token, not by a plain <code>"</code>, and are
+taken <strong>verbatim</strong> between the two — the template escapes
+nothing writing them, so nothing is unescaped reading them. That is what
+lets a <code>create_file</code> carry a source file containing quotes,
+braces and backslashes; a value the model delimits with a plain
+<code>"</code> instead is still accepted, with JSON-style escapes, but
+there a quote inside the value ends it early.</p>
+<p>Note the three that share <code>&lt;tool_call&gt;</code>: the
+delimiters are the same and the bodies are not, so the body’s own
+leading structure decides which it is. A value is read as JSON where it
+parses as JSON and as a plain string otherwise, so <code>3</code> stays
+a number and a sentence stays a sentence; where a format marks a
+parameter <code>string="true"</code>, that wins, and a version like
+<code>1.20</code> is not quietly turned into <code>1.2</code>.</p>
+<p>Only these delimiters count. A bare JSON object that merely
+<em>looks</em> like a call is left as ordinary content — an answer that
+explains an API must not be mistaken for a request to invoke one, and a
+model asked to <em>write</em> a tool call has to be able to. A span that
+opens and never closes, or whose body matches none of the forms, is also
+left as content rather than silently dropped.</p>
+<p>A turn that produced calls reports
+<code>finish_reason: "tool_calls"</code> and carries them in
+<code>choices[0].message.tool_calls</code> (non-streaming) or in a
+<code>delta.tool_calls</code> chunk (streaming).
+<code>function.arguments</code> is a JSON <strong>string</strong>, as
+OpenAI specifies. Streaming emits each call complete in one delta rather
+than character by character, since a call is only recognised once it is
+fully written.</p>
+<h4 id="post-v1completions"><code>POST /v1/completions</code></h4>
+<p>The legacy completion endpoint: a raw <code>prompt</code> string, no
+chat template involved, which makes it the one endpoint that works
+against a model with no <code>tokenizer.chat_template</code> at all. It
+is also what <code>orangu-bench</code> measures through.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>prompt</code></td>
+<td style="text-align: left;"><em>required</em></td>
+<td style="text-align: left;">the raw prompt, sent to the tokenizer
+as-is</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>max_tokens</code></td>
+<td style="text-align: left;"><code>256</code></td>
+<td style="text-align: left;">response-length cap</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>temperature</code>,
+<code>top_p</code>, <code>top_k</code>, <code>min_p</code>,
+<code>repeat_penalty</code>, <code>seed</code></td>
+<td style="text-align: left;">role’s own</td>
+<td style="text-align: left;">the sampler, as above</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>stream</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">SSE instead of one JSON body</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ignore_eos</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">keep generating to <code>max_tokens</code>
+even if the model emits EOS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cache_prompt</code></td>
+<td style="text-align: left;"><code>true</code></td>
+<td style="text-align: left;">as above</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>id_slot</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">as above</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>response_format</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">as above</td>
+</tr>
+</tbody>
+</table>
+<p><code>ignore_eos</code> exists for benchmarks: timing a fixed number
+of decode steps at a given context depth needs the step count to be the
+same whatever the model would otherwise have stopped on.</p>
+<p>The reply is <code>text_completion</code>, with the generated text in
+<code>choices[0].text</code> — one JSON body, or a stream of chunks
+ending with a final chunk carrying
+<code>usage</code>/<code>timings</code>/<code>prompt_progress</code> and
+then <code>[DONE]</code>.</p>
+<h4 id="post-v1embeddings"><code>POST /v1/embeddings</code></h4>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/v1/embeddings <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;input&quot;: [&quot;first text&quot;, &quot;second text&quot;]}&#39;</span></span></code></pre></div>
+<p><code>input</code> is a string or an array of strings. Each vector is
+pooled — mean or last-token, per the model’s own
+<code>pooling_type</code> — and L2-normalized, and comes back in
+OpenAI’s <code>data</code> list with its <code>index</code>. The reply
+carries OpenAI’s embeddings <code>usage</code>, which has
+<code>prompt_tokens</code> and <code>total_tokens</code> and no
+<code>completion_tokens</code>, summed across a batched
+<code>input</code>. That count is not recoverable from the response
+otherwise, so without it anything measuring embedding throughput would
+have to tokenize the input a second time with another tool to learn what
+it just paid for.</p>
+<p>This is the endpoint <code>/search</code> embeds code through, and
+the one a server tagged <code>role = embeddings</code> exists to
+serve.</p>
+<h3 id="what-a-request-cost">What a request cost</h3>
+<p>Every generation endpoint reports what the request cost, so a client
+never has to infer it from its own wall clock — which cannot separate
+prompt processing from generation, nor a cache hit from real work:</p>
+<ul>
+<li><strong><code>usage</code></strong> (OpenAI’s shape) —
+<code>prompt_tokens</code>, <code>completion_tokens</code>,
+<code>total_tokens</code>, and
+<code>prompt_tokens_details.cached_tokens</code> for the part of the
+prompt served from the prefix cache.</li>
+<li><strong><code>timings</code></strong> (the ecosystem’s shape, field
+for field) — <code>prompt_n</code>, <code>prompt_ms</code>,
+<code>prompt_per_second</code>, <code>predicted_n</code>,
+<code>predicted_ms</code>, <code>predicted_per_second</code> and their
+per-token equivalents. These are the same figures the per-request
+console log prints.</li>
+<li><strong><code>prompt_progress</code></strong> (likewise) —
+<code>total</code>, <code>cache</code>, <code>processed</code>,
+<code>time_ms</code>, reported once per prefill chunk while the prompt
+is still being processed (see <code>return_progress</code> above).</li>
+</ul>
+<p>On a streaming response they ride on the final chunk (the one
+carrying <code>finish_reason</code>), immediately before
+<code>[DONE]</code>; on a non-streaming response they are top-level
+fields. <code>orangu-bench --pp</code> reads them to report prefill
+throughput, and the orangu client reads them for its status-line
+rates.</p>
+<h3 id="native-endpoints">Native endpoints</h3>
+<p>These are <code>orangu-server</code>’s own, in the shapes the wider
+ecosystem’s tooling already reads. They are close enough for
+<code>/information</code>, <code>orangu-bench</code> and
+<code>curl</code> inspection; they are not a byte-for-byte schema match
+with anything.</p>
+<h4 id="get-health"><code>GET /health</code></h4>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span><span class="st">&quot;ok&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>Liveness, and nothing more: is this process up. It is what a
+supervisor uses to decide whether to restart the server, and it must
+stay <code>200</code> while the server is merely busy, because
+restarting a loaded server under load is the worst possible response to
+load. Reachable without an <code>api_key</code> — a liveness probe that
+needs a credential is a liveness probe that fails before credentials are
+distributed, and this endpoint names no model and discloses nothing.</p>
+<h4 id="get-ready"><code>GET /ready</code></h4>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;queue full&quot;</span><span class="fu">,</span> <span class="dt">&quot;queue_depth&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;queue_limit&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;slots_busy&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">&quot;slots_total&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span></span></code></pre></div>
+<p>Readiness: would a request sent now be served. That is what a load
+balancer needs, and it is a different question from <code>/health</code>
+— here “busy” is exactly the case worth reporting.</p>
+<p>Two things make it <code>503</code>, and the body names which,
+because a probe that only flips a status code leaves an operator with
+the alert and none of the reason:</p>
+<ul>
+<li><strong><code>"queue full"</code></strong> — the admission queue is
+at <code>queue_limit</code>. A new unpinned request would be refused
+with <code>503</code> anyway, so saying so up front lets a balancer send
+it somewhere that can take it instead of spending a round trip to find
+out. With no <code>queue_limit</code> set the queue never refuses, so
+the server is never unready for this reason however deep the queue
+gets.</li>
+<li><strong><code>"device lost"</code></strong> — the GPU device was
+lost and this process is on its way out. It has not stopped being
+<em>alive</em>, and a supervisor restarting it is precisely the intended
+recovery, but nothing should be routed to it meanwhile. Checked first: a
+lost device makes every answer wrong, including a cheerful one about an
+empty queue.</li>
+</ul>
+<p><code>200</code> with <code>"ok"</code> otherwise. Reachable without
+an <code>api_key</code>, like <code>/health</code> — a readiness probe
+that needed a credential would fail closed exactly when a balancer most
+needs an answer. It is a deliberate widening of what an unauthenticated
+caller can see: <code>/ready</code> does disclose load, where
+<code>/health</code> discloses nothing. That one fact is the price of
+being routable.</p>
+<h4 id="get-props"><code>GET /props</code></h4>
+<p>Model and server metadata — the closest thing the server exposes over
+HTTP to <em>how it was started</em>:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>model</code>,
+<code>architecture</code></td>
+<td style="text-align: left;">which model, and which architecture family
+reads it</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>backend</code>,
+<code>gpu</code></td>
+<td style="text-align: left;">the backend and device it runs on, every
+other device that backend saw, <code>gpu.footprint</code> for what this
+model costs on it, and <code>gpu.kernels</code> for which kernel each
+quantization resolved to. <code>null</code> on a backend with no kernel
+selection to report</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>version</code>,
+<code>commit</code></td>
+<td style="text-align: left;">which build answered</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>n_ctx</code>, <code>n_vocab</code>,
+<code>n_embd</code></td>
+<td style="text-align: left;">context length, vocabulary size, embedding
+width</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>total_slots</code></td>
+<td style="text-align: left;">how many concurrent requests, and the
+range <code>id_slot</code> may name</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>chat_template</code></td>
+<td style="text-align: left;">the template source, or <code>null</code>
+when the model carries none</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>workspace</code></td>
+<td style="text-align: left;">the root the file-lifecycle endpoints
+resolve against</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>uptime_seconds</code>,
+<code>pid</code></td>
+<td style="text-align: left;">which process answered, and for how long
+it has been up</td>
+</tr>
+</tbody>
+</table>
+<p><code>version</code> dates the release; <code>commit</code> is the
+only field that tells two builds of one version apart, which during
+performance work is every pair of builds that matters. Paired with
+<code>pid</code> and <code>uptime_seconds</code> it is what lets a
+benchmark prove it is talking to the build it just launched rather than
+one left over from a previous run.</p>
+<p>Hardware-only startup flags — thread count, GPU layer count, batch
+size — are not exposed here or anywhere else over HTTP; they appear only
+in the server’s own startup log.</p>
+<h4 id="get-slots"><code>GET /slots</code></h4>
+<p>One entry per slot: <code>id</code>, <code>busy</code>,
+<code>prompt_tokens</code>, <code>generated_tokens</code>. This is the
+live view behind <code>/information</code>’s <code>/slots</code> row and
+the arithmetic <code>/metrics</code> reports as gauges.</p>
+<h4
+id="post-slotsid_slotactionsaverestore"><code>POST /slots/{id_slot}?action=save|restore</code></h4>
+<p>Persists a slot’s KV cache to, or restores it from,
+<code>~/.orangu/server/&lt;fingerprint&gt;/slots/&lt;filename&gt;</code>.
+The body is a JSON object with one field:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST <span class="st">&#39;localhost:8100/slots/0?action=save&#39;</span> <span class="dt">\</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;filename&quot;: &quot;tab-a.bin&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;id_slot&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">&quot;filename&quot;</span><span class="fu">:</span><span class="st">&quot;tab-a.bin&quot;</span><span class="fu">,</span><span class="dt">&quot;n_saved&quot;</span><span class="fu">:</span><span class="dv">433</span><span class="fu">}</span></span></code></pre></div>
+<p><code>restore</code> answers the same shape with
+<code>n_restored</code>. A missing or model-incompatible saved file is
+<strong>not</strong> an error: <code>restore</code> succeeds with
+<code>n_restored: 0</code>, so a stale sidecar never trips a client’s
+“persistence unavailable” notice and simply costs a full reprefill.</p>
+<p><code>501</code> when durable slot persistence is off
+(<code>ORANGU_NO_SLOT_SAVE</code>, or no resolvable home directory);
+<code>400</code> for an out-of-range <code>id_slot</code>, an empty or
+missing <code>filename</code>, or an <code>action</code> that is neither
+<code>save</code> nor <code>restore</code>. Persisted files are swept by
+<code>orangu-server prune</code> once untouched for 30 days — they are a
+pure reprefill-avoidance cache, so an over-eager sweep only ever costs a
+one-time prefill.</p>
+<h4 id="get-metrics"><code>GET /metrics</code></h4>
+<p>Prometheus text (<code>text/plain; version=0.0.4</code>). Four gauges
+describe the scheduler right now:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">gauge</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_slots_total</code></td>
+<td style="text-align: left;">configured concurrent request slots</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>orangu_server_slots_busy</code></td>
+<td style="text-align: left;">slots currently generating</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_queue_depth</code></td>
+<td style="text-align: left;">requests waiting for a slot</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_queue_limit</code></td>
+<td style="text-align: left;">waiting requests allowed before refusing;
+<code>0</code> is unbounded</td>
+</tr>
+</tbody>
+</table>
+<p>Beyond them it carries four latency <strong>histograms</strong>,
+which is what makes a latency question answerable at all: a mean is
+dominated by whichever requests happened to be long, and the useful
+questions are about the tail.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">metric</th>
+<th style="text-align: left;">what it measures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_queue_wait_seconds</code></td>
+<td style="text-align: left;">arrival to holding a slot</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_time_to_first_token_seconds</code></td>
+<td style="text-align: left;">arrival to the first generated token</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_inter_token_seconds</code></td>
+<td style="text-align: left;">the gap between consecutive tokens, one
+observation <em>per token</em></td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_request_seconds</code></td>
+<td style="text-align: left;">arrival to the last token</td>
+</tr>
+</tbody>
+</table>
+<p>Each is a standard histogram (<code>_bucket{le="…"}</code>,
+<code>_sum</code>, <code>_count</code>), so a quantile is a query rather
+than a setting:</p>
+<pre><code>histogram_quantile(0.95, rate(orangu_server_time_to_first_token_seconds_bucket[5m]))</code></pre>
+<p><strong>Queue wait is the one to reach for first.</strong> “Slow” and
+“overloaded” look identical from outside and have opposite fixes: if
+queue wait is near zero the requests themselves are expensive (bigger
+model than the device holds, longer prompts), and if it is not, the
+server is short of slots.</p>
+<p>Counters carry the totals a rate is taken from:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">counter</th>
+<th style="text-align: left;">notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_requests_total{outcome="…"}</code></td>
+<td style="text-align: left;"><code>stop</code>, <code>length</code>,
+<code>cancelled</code>, <code>overloaded</code>, <code>error</code> —
+every label is exported from the start, at zero</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_prompt_tokens_total</code></td>
+<td style="text-align: left;">prompt tokens accepted, cached or not</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_cached_prompt_tokens_total</code></td>
+<td style="text-align: left;">the part served from a reused KV prefix;
+the two together are the cache-hit rate</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_generated_tokens_total</code></td>
+<td style="text-align: left;">tokens generated</td>
+</tr>
+</tbody>
+</table>
+<p><code>outcome="overloaded"</code> counts requests refused by
+<code>queue_limit</code> and is the one to alert on.
+<code>outcome="length"</code> is not an error — it counts answers
+truncated by <code>max_tokens</code> — but a rate that climbs usually
+means clients are asking for less room than the model wants.
+<code>outcome="cancelled"</code> counts clients that disconnected
+mid-generation; the server stops within a token of noticing and frees
+the slot, so a rate here is not a fault, but one that climbs usually
+means a client-side timeout set below what this server can deliver.</p>
+<h4 id="post-completion"><code>POST /completion</code></h4>
+<p>The native generation endpoint. Same engine, a smaller surface, and
+its own field names:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>prompt</code></td>
+<td style="text-align: left;"><em>required</em></td>
+<td style="text-align: left;">the raw prompt</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>n_predict</code></td>
+<td style="text-align: left;"><code>256</code></td>
+<td style="text-align: left;">response-length cap</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>stream</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">SSE instead of one JSON body</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>temperature</code>,
+<code>top_p</code>, <code>top_k</code>, <code>min_p</code>,
+<code>repeat_penalty</code>, <code>seed</code></td>
+<td style="text-align: left;">role’s own</td>
+<td style="text-align: left;">the sampler</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cache_prompt</code></td>
+<td style="text-align: left;"><code>true</code></td>
+<td style="text-align: left;">as on
+<code>/v1/chat/completions</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>id_slot</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">as on
+<code>/v1/chat/completions</code></td>
+</tr>
+</tbody>
+</table>
+<p>Non-streaming, the reply is
+<code>{"content": "…", "stop": true, "timings": {…}}</code>. Streaming,
+each event is <code>{"content": "…", "stop": false}</code> and the last
+is
+<code>{"content": "", "stop": true, "finish_reason": …, "timings": {…}, "prompt_progress": {…}}</code>.
+There is no <code>response_format</code> here — structured output is a
+<code>/v1/…</code> feature.</p>
+<h4 id="post-embedding"><code>POST /embedding</code></h4>
+<p><code>{"content": "…"}</code> in, <code>{"embedding": [...]}</code>
+out. The vector is pooled and normalized exactly as
+<code>/v1/embeddings</code> does it; the token count is dropped, which
+is what <code>/v1/embeddings</code>’ <code>usage</code> is for.</p>
+<h4 id="post-tokenize-and-post-detokenize"><code>POST /tokenize</code>
+and <code>POST /detokenize</code></h4>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/tokenize <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;content&quot;: &quot;hello&quot;, &quot;add_special&quot;: true}&#39;</span></span></code></pre></div>
+<p><code>tokenize</code> takes <code>content</code> and an optional
+<code>add_special</code> (default <code>false</code>, for the model’s
+own BOS-style framing) and answers <code>{"tokens": [...]}</code>.
+<code>detokenize</code> takes <code>{"tokens": [...]}</code> and answers
+<code>{"content": "…"}</code>, with the model’s tokenization-space
+cleanup applied — so a round trip gives back readable text rather than
+the tokenizer’s internal spelling.</p>
+<h4 id="post-apply-template"><code>POST /apply-template</code></h4>
+<p><code>{"messages": [...]}</code> in, <code>{"prompt": "…"}</code>
+out: exactly the string <code>/v1/chat/completions</code> would build
+from those messages and hand to the model, including a
+<code>review</code>-role server’s reasoning-suppression prefill. Nothing
+is generated. <code>501</code> when the model carries no
+<code>tokenizer.chat_template</code>.</p>
+<p>This is the endpoint to reach for when an answer looks like the model
+was asked something other than what you sent.</p>
+<h4 id="post-v1shutdown"><code>POST /v1/shutdown</code></h4>
+<p>Stops the server — the API listener and, if enabled, the web console
+listener together. <strong>Loopback-only</strong>: a <code>403</code>
+from a non-localhost peer, because a server bound to a non-loopback
+<code>host</code> must not let an arbitrary network peer kill it.
+<code>Ctrl+C</code>, <code>SIGINT</code> and this endpoint all converge
+on the same shutdown path.</p>
+<h3 id="diagnostic-endpoints">Diagnostic endpoints</h3>
+<p>Four endpoints exist for measurement rather than for serving. Three
+of them are <strong>drain-on-read</strong>: they report what accumulated
+since the previous call and reset, so a client brackets a window by
+reading once before the workload (discarding whatever the warmup left),
+running it, and reading again.</p>
+<h4 id="get-gpu-timings"><code>GET /gpu-timings</code></h4>
+<p>The per-stage GPU timestamp breakdown for the decode steps in the
+window.</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;enabled&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span> <span class="dt">&quot;timings&quot;</span><span class="fu">:</span> <span class="kw">null</span><span class="fu">,</span> <span class="dt">&quot;unavailable&quot;</span><span class="fu">:</span> <span class="st">&quot;split&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p><code>steps: 0</code> means no timestamped decode step happened —
+either <code>ORANGU_GPU_TIMESTAMPS=1</code> is not set, or this adapter
+has no timestamp query. Reported as zero <em>steps</em> rather than zero
+milliseconds, so “not measured” cannot be read as “took no time”.</p>
+<p><code>unavailable</code> extends that rule one step further out. A
+<strong>split</strong> model has no single device to ask — a timestamp
+query set belongs to one device and a split resolves none of them — so
+the reason is named (<code>"split"</code>, or
+<code>"no_wgpu_backend"</code>) rather than left as an empty result. A
+client that reports nothing when it receives nothing makes a split run
+look like one whose GPU stages cost nothing.</p>
+<h4 id="get-moe-stats"><code>GET /moe-stats</code></h4>
+<p>Mixture-of-experts counters since the previous call, and reset:
+expert visits, bytes dequantized, <code>stats.union_ratio</code> for the
+redundancy in the per-token expert loop, the expert store’s
+<code>hit_rate</code>, <code>route_ahead.accuracy</code>, and
+<code>process.major_faults_window</code>.</p>
+<p>This is what makes work on models too large for RAM scoreable:
+throughput alone cannot separate a change that moves fewer bytes from
+one that moves the same bytes faster, and on a model whose weights
+stream from disk it cannot see either one over the I/O.
+<code>major_faults_window</code> is the only honest signal that the
+weights came from the disk rather than the page cache.</p>
+<p><code>stats.layer_calls: 0</code> means no MoE layer ran in the
+window — a dense model, or an empty window; <code>store.hit_rate</code>
+and <code>route_ahead.accuracy</code> are <code>null</code> unless
+<code>ORANGU_EXPERT_RESIDENCY=1</code> and
+<code>ORANGU_ROUTE_AHEAD=1</code> respectively asked for them, reporting
+“not measured” rather than a made-up zero. <code>process</code> is
+<code>null</code> off Linux.</p>
+<h4 id="get-model-cache"><code>GET /model-cache</code></h4>
+<p>How much of the model’s weights are in RAM right now —
+<code>model_bytes</code>, <code>resident_bytes</code>, and a
+per-<code>shards</code> breakdown. Not drain-on-read: this is a state,
+not a window. A benchmark records it beside its numbers so a later
+reader can tell a cold run from a warm one instead of assuming; on a
+model larger than memory those are different experiments and their rates
+are not comparable.</p>
+<p><code>resident_bytes</code> is <code>null</code> where the platform
+cannot measure it, <strong>never zero</strong> — “nothing is cached” and
+“this machine cannot say” would otherwise be the same answer, and only
+one of them means the run was cold.</p>
+<h4 id="post-model-cachedrop"><code>POST /model-cache/drop</code></h4>
+<p>Evicts the model’s weights from the page cache, so the next request
+reads them from disk. <strong>Loopback-only</strong>, like
+<code>/v1/shutdown</code>: it makes the server dramatically slower on
+purpose, which is not something an arbitrary network peer should be able
+to do to it.</p>
+<p>The reply reports residency <strong>before and after</strong> rather
+than a success flag, because a partial drop is the realistic failure and
+it reads exactly like a successful one from the outside.</p>
+<h3 id="file-lifecycle-api">File-lifecycle API</h3>
+<p>Served on the <strong>API port</strong>, alongside the
+OpenAI-compatible and native endpoints, eight dedicated endpoints cover
+the whole life cycle of a file, plus the directories it lives in:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>POST /v1/create_file</code></td>
+<td style="text-align: left;">write a new file, with optional
+permissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/modify_file</code></td>
+<td style="text-align: left;">replace named line ranges, returning a
+diff</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/move_file</code></td>
+<td style="text-align: left;">rename a file, optionally re-setting
+permissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/delete_file</code></td>
+<td style="text-align: left;">delete a file</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/show_file</code></td>
+<td style="text-align: left;">return a file’s entire content</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/create_directory</code></td>
+<td style="text-align: left;">create one directory, with optional
+permissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /v1/move_directory</code></td>
+<td style="text-align: left;">move an entire directory tree</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/delete_directory</code></td>
+<td style="text-align: left;">delete an empty directory</td>
+</tr>
+</tbody>
+</table>
+<p>Every one is <code>POST</code> with a JSON body and a JSON reply,
+including <code>show_file</code> — one request shape across the whole
+API is worth more than matching HTTP verbs to intent for a single
+read.</p>
+<p>Nothing here is recursive except <code>move_directory</code>, which
+moves a tree because a rename inherently does. Everything else touches
+exactly one file or one directory, so a mistyped path costs one
+entry.</p>
+<p><strong>In a Git repository, these are Git operations</strong> — a
+file is created, modified, moved and deleted with <code>git add</code>,
+<code>git mv</code> and <code>git rm</code>, so the change is staged
+rather than only written to disk. <strong>Nothing is ever
+committed</strong>; see <strong>Git integration</strong> below.</p>
+<p>Through <code>orangu-coordinator</code> they work exactly the same
+way — it forwards them untouched — but the workspace they act in is the
+backend <code>orangu-server</code>’s, not the coordinator’s, which has
+none. See <strong>Coordinator</strong> below.</p>
+<p>One implementation serves all three surfaces — these endpoints,
+<code>orangu</code>’s own local tools, and its typed commands of the
+same names (<code>create_file</code>, <code>modify_file</code>,
+<code>/delete_file</code>, “create myfile.txt with 0644”, …) — so a tool
+call, a typed command and an API request are the same operation with the
+same fields, defaults and errors. What follows documents the fields for
+all three.</p>
+<p><strong>Everything is confined to the workspace.</strong> Each path
+in a request is resolved against the server’s workspace root
+(<code>-w</code>/<code>--workspace</code>, default the current working
+directory — see <strong>Workspace</strong> in the <em>Inference
+server</em> chapter) and refused if it lands outside it. A path may be
+given relative to the workspace (<code>src/main.rs</code>) or as an
+absolute path that is itself inside it; anything else — a
+<code>..</code> that climbs out, an absolute path elsewhere on the
+machine, or a symlink inside the tree pointing out of it — is a
+<code>403 outside_workspace</code> before any file is touched. Two
+checks back that up: a lexical one that folds <code>..</code> away
+before comparing — the same resolution <code>orangu</code>’s own file
+tools use — and a physical one that canonicalizes the nearest
+<em>existing</em> ancestor of the target. The nearest existing one, so
+it works for <code>create_file</code>, whose target does not exist yet
+by definition.</p>
+<p>Paths come back in replies relative to the workspace, in the same
+shape a client sent them, never as the server’s absolute layout.</p>
+<p>Three types recur across the endpoints below:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">a string, either relative to the workspace
+(<code>src/main.rs</code>) or an absolute path inside it. Never
+empty</td>
+</tr>
+<tr>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">in a <strong>request</strong>: an octal
+string (<code>"0644"</code>, <code>"644"</code>, <code>"0o644"</code>)
+or the number <code>chmod</code> takes (<code>420</code>); at most
+<code>0o7777</code>. In a <strong>response</strong>: always the
+four-digit octal string (<code>"0644"</code>), or <code>null</code> on a
+non-Unix platform</td>
+</tr>
+<tr>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">the object described under <strong>Git
+integration</strong> below, or <code>null</code> when the workspace is
+not a repository or the request passed <code>"git": false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Unknown fields in a request body are rejected by neither serde nor
+these handlers — they are ignored. A missing required field, a wrong
+type, or malformed JSON is a <code>400 bad_request</code> carrying
+serde’s own message.</p>
+<h4 id="post-v1create_file"><code>POST /v1/create_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to write</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>content</code></td>
+<td style="text-align: left;">optional, default <code>""</code></td>
+<td style="text-align: left;">the file’s full content</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits, as an octal string
+(<code>"0644"</code>) or the number <code>chmod</code> takes
+(<code>420</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwrite</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">replace the file if it already exists;
+<code>false</code> for create-if-absent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_file <span class="dt">\</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;, &quot;content&quot;: &quot;print(1)\n&quot;, &quot;mode&quot;: &quot;0640&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes_written&quot;</span><span class="fu">:</span><span class="dv">9</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0640&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file written, relative to the
+workspace</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bytes_written</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">byte length of <code>content</code> as
+written</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">the file’s permission bits after the
+write</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwritten</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;"><code>true</code> when an existing file
+was replaced (only possible with <code>overwrite</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>An existing path is <strong>overwritten</strong> — creating a file
+that is already there is an override, and the same is true of
+<code>orangu</code>’s own <code>create_file</code> tool and its typed
+<code>/create_file</code>, which share this implementation. Pass
+<code>"overwrite": false</code> for create-if-absent, which turns an
+existing path into a <code>409 already_exists</code>. Without
+<code>parents</code>, a missing parent directory is a
+<code>404 not_found</code> rather than a quietly-created tree.
+<code>mode</code> is parsed and validated <em>before</em> anything is
+written, so a bad mode never leaves a file behind with the wrong
+permissions. Leaving <code>mode</code> out lets the process umask
+decide, exactly as an ordinary <code>create</code> would.</p>
+<h4 id="post-v1modify_file"><code>POST /v1/modify_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to edit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits</code></td>
+<td style="text-align: left;">required, non-empty</td>
+<td style="text-align: left;">the changes, each naming the lines it
+replaces</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits[].start_line</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">first line replaced, 1-based</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits[].end_line</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">last line replaced, inclusive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits[].replacement</code></td>
+<td style="text-align: left;">optional, default <code>""</code></td>
+<td style="text-align: left;">the lines to put in their place</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<p>Every range refers to the file <strong>as it was read</strong>, not
+to the numbering left behind by an earlier edit in the same request —
+edits are applied last-first internally so a caller never has to
+re-number around its own changes. Ranges must not overlap, and must
+address real lines; the one exception is an insert at
+<code>start_line = &lt;line count&gt; + 1</code>, which appends.</p>
+<ul>
+<li><code>end_line = start_line - 1</code> inserts before
+<code>start_line</code> without replacing anything.</li>
+<li><code>"replacement": ""</code> deletes the range.</li>
+<li>The file’s trailing-newline state is preserved — a file that ended
+without a newline still does afterwards.</li>
+</ul>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/modify_file <span class="dt">\</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;,</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">       &quot;edits&quot;: [{&quot;start_line&quot;: 2, &quot;end_line&quot;: 2, &quot;replacement&quot;: &quot;TWO\n&quot;},</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="st">                 {&quot;start_line&quot;: 4, &quot;end_line&quot;: 3, &quot;replacement&quot;: &quot;four\n&quot;}]}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;lines_before&quot;</span><span class="fu">:</span><span class="dv">3</span><span class="fu">,</span><span class="dt">&quot;lines_after&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;edits_applied&quot;</span><span class="fu">:</span><span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;diff&quot;</span><span class="fu">:</span><span class="st">&quot;--- a/a.txt</span><span class="ch">\n</span><span class="st">+++ b/a.txt</span><span class="ch">\n</span><span class="st">@@ -2,1 +2,1 @@</span><span class="ch">\n</span><span class="st">-two</span><span class="ch">\n</span><span class="st">+TWO</span><span class="ch">\n</span><span class="st">@@ -3,0 +4,1 @@</span><span class="ch">\n</span><span class="st">+four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file edited</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lines_before</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">line count before the edits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lines_after</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">line count after them</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>edits_applied</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">how many entries of <code>edits</code>
+were applied — always all of them, since any invalid range rejects the
+whole request</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>diff</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">a zero-context unified diff of exactly
+what changed (see below)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>diff</code> is a <strong>zero-context unified diff</strong>
+— what <code>diff -U0</code> prints. No diff algorithm is involved: the
+caller said exactly which lines it was replacing, so each edit is one
+exact hunk, and adjacent edits never end up with two hunks fighting over
+the same context lines. The <code>+++</code> side’s line numbers carry
+the running length change from the hunks before them, the same way real
+unified diff output does.</p>
+<p>A file that isn’t valid UTF-8 has no line structure to edit, so it is
+a <code>400 not_utf8</code> rather than a mangled write.</p>
+<h4 id="post-v1move_file"><code>POST /v1/move_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to move</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">its new path</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits to set at the destination;
+unset keeps what the file already had</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwrite</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">replace the destination if it exists</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories of the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_file <span class="dt">\</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;a.txt&quot;, &quot;to&quot;: &quot;docs/b.txt&quot;, &quot;mode&quot;: &quot;0600&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0600&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where the file was</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where it now is</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its permission bits at the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>overwritten</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;"><code>true</code> when an existing
+destination was replaced</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>Both paths are workspace-checked, so a move can neither read from nor
+write to anything outside the tree.</p>
+<h4 id="post-v1delete_file"><code>POST /v1/delete_file</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to delete</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git rm -f src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file deleted</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>deleted</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">always <code>true</code> — a failure is an
+error response, not <code>false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">what Git did</td>
+</tr>
+</tbody>
+</table>
+<p>Only regular files: a directory is a <code>400 not_a_file</code>.
+This API is a <em>file’s</em> life cycle, and a recursive delete behind
+one JSON field is a much bigger gun than anything else here hands
+out.</p>
+<h4 id="post-v1show_file"><code>POST /v1/show_file</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">file to read</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/show_file <span class="dt">\</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;content&quot;</span><span class="fu">:</span><span class="st">&quot;one</span><span class="ch">\n</span><span class="st">TWO</span><span class="ch">\n</span><span class="st">three</span><span class="ch">\n</span><span class="st">four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes&quot;</span><span class="fu">:</span><span class="dv">19</span><span class="fu">,</span><span class="dt">&quot;lines&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the file read</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>content</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">the whole file, verbatim</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bytes</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">its byte length</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lines</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">its line count — a trailing newline does
+not add an empty last line</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its current permission bits</td>
+</tr>
+</tbody>
+</table>
+<p>The only endpoint that changes nothing, so it has no <code>git</code>
+field and takes no <code>git</code> flag. A file that isn’t valid UTF-8
+has no JSON representation here, so it is a <code>400 not_utf8</code>
+rather than a lossy conversion.</p>
+<h4
+id="post-v1create_directory"><code>POST /v1/create_directory</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">directory to create</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits, as an octal string
+(<code>"0755"</code>) or the number <code>chmod</code> takes
+(<code>493</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories too</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_directory <span class="dt">\</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;, &quot;mode&quot;: &quot;0750&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0750&quot;</span><span class="fu">,</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the directory created</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its permission bits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">always
+<code>skipped: "nothing_to_stage"</code> in a repository — Git tracks no
+directories</td>
+</tr>
+</tbody>
+</table>
+<p><code>mode</code> applies to the directory named by
+<code>path</code>; parents created along the way keep the umask’s own
+permissions, the same way <code>mkdir -p -m</code> behaves. Leaving
+<code>mode</code> out lets the umask decide for all of them, exactly as
+an ordinary <code>mkdir</code> would. Like <code>create_file</code>, the
+mode is parsed and validated before anything is created.</p>
+<p>An existing path — file or directory — is a
+<code>409 already_exists</code>. There is deliberately no
+<code>overwrite</code> counterpart: replacing a directory that is
+already there would mean deleting whatever it holds, which is precisely
+what <code>delete_directory</code> refuses to do.</p>
+<h4 id="post-v1move_directory"><code>POST /v1/move_directory</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">directory to move</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">its new path</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;">optional</td>
+<td style="text-align: left;">permission bits to set on the moved
+directory; unset keeps what it had</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>parents</code></td>
+<td style="text-align: left;">optional, default <code>false</code></td>
+<td style="text-align: left;">create missing parent directories of the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_directory <span class="dt">\</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;src&quot;, &quot;to&quot;: &quot;lib/src&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;src&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0755&quot;</span><span class="fu">,</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv src lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>from</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where the directory was</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>to</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">where it now is</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>mode</code></td>
+<td style="text-align: left;"><em>mode</em></td>
+<td style="text-align: left;">its permission bits at the
+destination</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">one <code>git mv</code> covering every
+tracked file in the subtree — or <code>skipped: "untracked"</code> when
+the directory holds nothing Git tracks</td>
+</tr>
+</tbody>
+</table>
+<p>The whole subtree moves — everything under <code>from</code> comes
+along — in a single <code>rename</code>, so it is atomic, and a move
+that would cross filesystems fails outright (<code>EXDEV</code>,
+reported as <code>io_error</code>) rather than half-copying a tree.
+<code>mode</code> applies to the moved directory itself, never to
+anything inside it.</p>
+<p>The destination must not exist (<code>409 already_exists</code>):
+there is no <code>overwrite</code> here, for the same reason
+<code>create_directory</code> has none. Moving a directory into itself
+(<code>{"from": "src", "to": "src/nested"}</code>) is a
+<code>400 bad_request</code> rather than the kernel’s bare “Invalid
+argument”, and the workspace root itself cannot be moved.</p>
+<h4
+id="post-v1delete_directory"><code>POST /v1/delete_directory</code></h4>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;">required</td>
+<td style="text-align: left;">directory to delete</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;">optional, default <code>true</code></td>
+<td style="text-align: left;">perform the change with its Git command
+(<code>git add</code>/<code>git mv</code>/<code>git rm</code>) when the
+workspace is a repository; <code>false</code> for a plain filesystem
+change</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_directory <span class="dt">\</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Response field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>path</code></td>
+<td style="text-align: left;"><em>path</em></td>
+<td style="text-align: left;">the directory deleted</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>deleted</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">always <code>true</code> — a failure is an
+error response, not <code>false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>git</code></td>
+<td style="text-align: left;"><em>git</em></td>
+<td style="text-align: left;">always
+<code>skipped: "nothing_to_stage"</code> in a repository — an empty
+directory holds nothing Git tracks</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The directory has to be empty.</strong> Anything still in it
+— files or subdirectories — is a <code>409 not_empty</code>, and nothing
+is removed. Emptiness is checked explicitly rather than left to
+<code>remove_dir</code>’s own errno, so the refusal is one stable code
+on every platform. A path that isn’t a directory is a
+<code>400 not_a_directory</code>, and the workspace root itself cannot
+be deleted: every later request resolves against it.</p>
+<p>There is no recursive form. Deleting a tree is the caller’s to do,
+one <code>delete_file</code>/<code>delete_directory</code> at a time,
+which keeps the blast radius of a single mistyped path to a single
+directory.</p>
+<h4 id="git-integration">Git integration</h4>
+<p>When the workspace sits inside a Git repository, every endpoint above
+performs its change <strong>with the matching Git command</strong>, so
+the result is staged rather than merely written:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;">Git command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>create_file</code>,
+<code>modify_file</code></td>
+<td style="text-align: left;"><code>git add &lt;path&gt;</code> — after
+the write, so the staged content is what is now on disk</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>move_file</code>,
+<code>move_directory</code></td>
+<td
+style="text-align: left;"><code>git mv &lt;from&gt; &lt;to&gt;</code> —
+Git performs the move itself, so the index records a
+<strong>rename</strong> rather than a delete plus an add</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>delete_file</code></td>
+<td style="text-align: left;"><code>git rm -f &lt;path&gt;</code> — Git
+deletes the file and stages the deletion in one step</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>create_directory</code>,
+<code>delete_directory</code></td>
+<td style="text-align: left;">none — Git tracks files, not
+directories</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Nothing is ever committed.</strong> Every operation stops at
+the index; what to commit, when, and with what message is the user’s
+decision, and this API gives no way to make it for them.
+<code>git rm</code> is forced (<code>-f</code>) because the endpoint’s
+contract is that the file goes away — without it Git refuses whenever
+the working copy differs from the index, which is exactly when a
+deletion is most likely to be wanted. <code>git mv</code> is forced only
+when the request itself passed <code>"overwrite": true</code>.</p>
+<p>Each reply carries a <code>git</code> object saying what happened, or
+<code>null</code> when the workspace isn’t a repository:</p>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/orangu&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>repo_root</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">absolute path of the repository the
+workspace resolved to</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>forge</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td
+style="text-align: left;"><code>"github"</code>/<code>"gitlab"</code>,
+and only when that forge’s CLI (<code>gh</code>/<code>glab</code>) is
+installed</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>staged</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;">whether the change reached the index</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>command</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td style="text-align: left;">the Git command that ran, verbatim;
+<code>null</code> when none was run</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>skipped</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td style="text-align: left;">why nothing was staged:
+<code>"untracked"</code>, <code>"ignored"</code>, or
+<code>"nothing_to_stage"</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>error</code></td>
+<td style="text-align: left;">string or <code>null</code></td>
+<td style="text-align: left;">Git’s own stderr, when its command
+failed</td>
+</tr>
+</tbody>
+</table>
+<p>Exactly one of <code>staged: true</code>, <code>skipped</code>, or
+<code>error</code> describes the outcome: a staged change has both
+others <code>null</code>, a skip carries no <code>error</code>, and a
+failure carries no <code>skipped</code>.</p>
+<p>Three cases are skipped rather than treated as failures:</p>
+<ul>
+<li><strong><code>untracked</code></strong> — Git has no record of the
+path, so there is nothing for <code>git mv</code>/<code>git rm</code> to
+rewrite; the move or delete is a plain filesystem operation and the file
+stays untracked.</li>
+<li><strong><code>ignored</code></strong> — <code>.gitignore</code>
+covers the path. <code>git add</code> refuses an ignored path outright,
+so writing into e.g. <code>build/</code> succeeds and simply isn’t
+staged.</li>
+<li><strong><code>nothing_to_stage</code></strong> — the directory
+endpoints. Git tracks no directories of its own; a new one becomes
+visible to Git with the first file created inside it.</li>
+</ul>
+<p>Where the Git command <em>performs</em> the change
+(<code>git mv</code>, <code>git rm</code>), a failure means nothing
+happened, and the endpoint returns an <code>io_error</code>. Where it
+only stages an already-written change (<code>git add</code>), the file
+operation has already succeeded, so the reply is a normal
+<code>200</code> with <code>staged: false</code> and Git’s message in
+<code>git.error</code> — the response tells the truth about what
+happened rather than implying the write was rolled back.</p>
+<p>To bypass Git entirely for one request, pass
+<code>"git": false</code>:</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;scratch.txt&quot;, &quot;git&quot;: false}&#39;</span></span></code></pre></div>
+<p>The file is removed from disk and the index is left alone. Outside a
+repository this is what every request does anyway, and <code>git</code>
+comes back <code>null</code>.</p>
+<p><code>gh</code>/<code>glab</code> are detected (by
+<code>origin</code>’s URL, and only when the matching CLI is on
+<code>PATH</code>) and reported as <code>forge</code>, so a client knows
+which platform it is working against. Neither CLI can touch the index —
+there is no <code>gh add</code> — so the staging itself always runs
+through plain <code>git</code>.</p>
+<h4 id="errors">Errors</h4>
+<p>Every failure — including a malformed request body — comes back with
+the same shape and a stable <code>code</code> a client can branch on,
+rather than message text:</p>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;error&quot;</span><span class="fu">:{</span><span class="dt">&quot;code&quot;</span><span class="fu">:</span><span class="st">&quot;outside_workspace&quot;</span><span class="fu">,</span><span class="dt">&quot;message&quot;</span><span class="fu">:</span><span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">../secret.txt</span><span class="ch">\&quot;</span><span class="st">: path escapes the configured workspace&quot;</span><span class="fu">}}</span></span></code></pre></div>
+<p>The body is always a single <code>error</code> object and nothing
+else:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>error.code</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">one of the stable codes below</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>error.message</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">a human-readable explanation, naming the
+path it concerns. Wording is not part of the contract — branch on
+<code>code</code></td>
+</tr>
+</tbody>
+</table>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>code</code></th>
+<th style="text-align: left;">HTTP</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>outside_workspace</code></td>
+<td style="text-align: left;">403</td>
+<td style="text-align: left;">the path resolves outside the workspace
+root</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_found</code></td>
+<td style="text-align: left;">404</td>
+<td style="text-align: left;">no such file, or a missing parent
+directory without <code>parents</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>already_exists</code></td>
+<td style="text-align: left;">409</td>
+<td style="text-align: left;">the target exists:
+<code>create_file</code> with <code>"overwrite": false</code>,
+<code>move_file</code> without <code>overwrite</code>, or
+<code>create_directory</code>/<code>move_directory</code>, which have no
+overwrite at all</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_a_file</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">the path exists but isn’t a regular
+file</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_a_directory</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">a directory endpoint was given a path that
+isn’t a directory</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_empty</code></td>
+<td style="text-align: left;">409</td>
+<td style="text-align: left;"><code>delete_directory</code> was given a
+directory that still has something in it</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bad_request</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">unparsable body, empty path, bad mode, an
+invalid/overlapping line range, a move into itself, or an attempt on the
+workspace root</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>not_utf8</code></td>
+<td style="text-align: left;">400</td>
+<td style="text-align: left;">the file isn’t valid UTF-8</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>io_error</code></td>
+<td style="text-align: left;">500</td>
+<td style="text-align: left;">the filesystem refused the operation</td>
+</tr>
+</tbody>
+</table>
+<h4 id="permissions-on-non-unix-platforms">Permissions on non-Unix
+platforms</h4>
+<p>Permission bits are a Unix concept. Elsewhere <code>mode</code> is
+reported as <code>null</code> in every reply, and a request that tries
+to <em>set</em> one is refused with <code>bad_request</code> rather than
+silently ignored.</p>
+<h3 id="web-console">Web console</h3>
+<p>The built-in web console is served on its own
+<code>[web].port</code>, separate from the API’s <code>port</code>, and
+exists only when the config has a <code>[web]</code> section. Its
+<code>/api/…</code> surface is used by that page’s own JavaScript; it is
+<strong>not</strong> part of the OpenAI-compatible API above, carries no
+<code>api_key</code>, and is not loopback-restricted.</p>
+<p>The page itself and its assets:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GET /</code></td>
+<td style="text-align: left;">the console page</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /static/app.css</code>,
+<code>GET /static/app.js</code></td>
+<td style="text-align: left;">its stylesheet and script</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /static/katex/…</code></td>
+<td style="text-align: left;">the vendored math renderer and its fonts,
+served from an allowlist rather than from disk</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>GET /api/diagrams/{key}/{name}</code></td>
+<td style="text-align: left;">one rendered diagram, kept off the
+streamed message payload — a PNG’s base64 form would grow every event by
+about a third</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/asset-version</code></td>
+<td style="text-align: left;">the served page’s own asset fingerprint,
+which powers the Reload prompt shown when a newer build is running
+behind an already-open tab</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/system-report</code></td>
+<td style="text-align: left;">plain-text hardware report plus
+model/backend identity — what an error bubble’s <strong>Save</strong>
+button bundles into its downloadable debug report, alongside the visible
+conversation. Detected fresh on every call, since the parts that change
+over a long run (VRAM and RAM in use) are exactly the parts worth
+knowing at the moment a request just failed</td>
+</tr>
+</tbody>
+</table>
+<p>Chat sessions:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>POST /api/sessions</code></td>
+<td style="text-align: left;">creates a new, empty chat session,
+returning its id</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/sessions</code></td>
+<td style="text-align: left;">lists every non-empty session,
+newest-updated first</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/sessions/{id}</code></td>
+<td style="text-align: left;">one session’s full message history, each
+assistant reply already rendered to HTML</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /api/sessions/{id}/messages</code></td>
+<td style="text-align: left;">sends one chat turn against that session;
+SSE reply</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>DELETE /api/sessions/{id}</code></td>
+<td style="text-align: left;">deletes one chat session, directory and
+all — History’s per-row cross</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/sessions</code></td>
+<td style="text-align: left;">deletes every chat session — History’s
+<strong>Clear all</strong> footer</td>
+</tr>
+</tbody>
+</table>
+<p><code>POST /api/sessions/{id}/messages</code> takes
+<code>{"content": "…", "attachments": […]}</code>; attachments ride
+along as base64 in the JSON, which is why this port raises its body cap
+to 64 MB. Its SSE events are typed rather than OpenAI-shaped, because
+the browser is being handed rendered HTML rather than raw tokens: an
+<code>attachments</code> event first (what each upload turned into, sent
+before the first token so the user’s own message can show it while the
+reply generates), then a <code>token</code> event per token carrying the
+whole answer re-rendered to HTML, then one <code>done</code> event with
+the final HTML, the raw <code>content</code>, <code>truncated</code>,
+and <code>generation_ms</code>. Errors arrive as an <code>error</code>
+event. An empty message with no attachments is a <code>400</code>, and a
+model with no chat template makes the whole endpoint a
+<code>501</code>.</p>
+<p>The model manager, on the same port:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GET /api/models</code></td>
+<td style="text-align: left;">the models directory as the manager panel
+draws it: <code>list</code>’s own table, which row is loaded, disk use,
+and any download in flight. Serves a cached scan;
+<code>?rescan=true</code> re-reads the directory</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/models/updates</code></td>
+<td style="text-align: left;">which rows are behind their Hugging Face
+repo — <code>list</code>’s <code>(Refresh)</code> marker, one Hub
+request per distinct repo</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>GET /api/models/metadata?model=…</code></td>
+<td style="text-align: left;">a model’s full GGUF metadata as plain text
+— <code>show</code>’s own output. <code>&amp;tensors=true</code> and
+<code>&amp;full=true</code> are
+<code>show --tensors</code>/<code>--full</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /api/models/select</code></td>
+<td style="text-align: left;">restarts the server on a different model,
+keeping both listening sockets and the pid; answers <code>202</code>
+before it acts, since there is nothing left to answer from
+afterwards</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /api/models/download</code></td>
+<td style="text-align: left;">starts a Hugging Face download in the
+background, returning at once</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/models</code></td>
+<td style="text-align: left;">deletes a model, refusing the one
+currently loaded</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/models/job</code></td>
+<td style="text-align: left;">clears a finished download’s result</td>
+</tr>
+</tbody>
+</table>
+<p>The scan behind <code>GET /api/models</code> opens the GGUF header of
+every model — and every shard of every model — under the directory,
+which is seconds of disk work on a directory holding a few dozen
+multi-shard models. So it is cached and rebuilt explicitly: when the
+panel opens, after anything that changes the directory, and whenever
+<code>?rescan=true</code> asks, which is also the answer for a
+<code>.gguf</code> copied in by hand. The panel’s once-a-second poll for
+download progress does not rescan, because that progress lives in
+memory.</p>
+<p><code>GET /api/models/updates</code> is its own endpoint rather than
+part of the listing precisely because it is a network round trip per
+repo: the panel opens instantly on local state and marks rows when this
+answers — or never, on a machine with no internet, which is the same
+“unknown, so not behind” the CLI table already treats it as.</p>
+<p>A download runs <strong>detached, not inside a request</strong>: it
+takes minutes to hours, far past any browser’s patience, so
+<code>POST /api/models/download</code> takes
+<code>{"repo": "&lt;user&gt;/&lt;model&gt;[:quant]"}</code>, starts the
+job and returns. Only one runs at a time — two concurrent fetches into
+one models directory would compete for the same disk and the same
+free-space check — and a second <code>POST</code> while one is running
+is a <code>409</code> naming what is already downloading, rather than a
+silent wait.</p>
+<p>The three endpoints that name a model take
+<code>{"model": "…"}</code> — an <code>NR</code>, a <code>MODEL</code>
+label, a bare filename, or a path, exactly as the matching subcommand’s
+own argument does. The panel sends the <code>NR</code>, since that is
+the only spelling that names one row exactly (a repo with several
+quantizations on disk prints the same bare <code>MODEL</code> on each of
+their rows), and for a load or a delete it also sends the
+<code>path</code> that row showed. Given both, the server checks they
+still agree before acting: an <code>NR</code> is a <em>position</em>,
+and a download finishing while a confirmation dialog is open re-sorts
+the listing underneath it. <code>select</code> is a <code>403</code>
+when <code>[web].reexec</code> is <code>no</code>, and
+<code>DELETE /api/models</code> a <code>403</code> when
+<code>[web].delete</code> is <code>no</code>.</p>
+<p>Finally, a read-only MCP inventory, since configuration belongs to
+the server process and edits only take effect on restart:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GET /api/mcps</code></td>
+<td style="text-align: left;">every configured MCP section:
+<code>name</code>, <code>endpoint</code>, <code>enabled</code>,
+<code>approval_mode</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/mcps/{name}</code></td>
+<td style="text-align: left;">one of them, or <code>404</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="coordinator">Coordinator</h3>
+<p><code>orangu-coordinator</code> serves three endpoints of its own and
+<strong>proxies everything else</strong> to whichever profile’s
+<code>orangu-server</code> its routing selects. There is no separate API
+surface to learn: point an OpenAI-compatible client at the coordinator’s
+address and every endpoint in this chapter works, because the request is
+forwarded untouched and the reply streamed back.</p>
+<h4 id="get-v1coordinator"><code>GET /v1/coordinator</code></h4>
+<p>A fixed, side-effect-free identity marker, answered directly and
+never proxied — it must work even before any profile has been activated.
+Neither <code>orangu-server</code> nor a generic OpenAI-compatible
+server exposes this path, so a client can probe it to tell the three
+apart:</p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;orangu_coordinator&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;0.12.0&quot;</span><span class="fu">,</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;models&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;all&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;review&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;explorer&quot;</span><span class="fu">:</span> <span class="st">&quot;unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;embeddings&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>models</code> reports the model each conventional role
+currently resolves to, so a caller can see what <code>model</code> to
+send for a given role without needing its own copy of
+<code>orangu-coordinator.conf</code>. A role with no profile of its own
+falls back to the <code>all</code>-role default’s model, exactly as
+routing does. See <strong>What <code>orangu</code> calls, and
+when</strong> above for how often a client should ask.</p>
+<h4
+id="post-v1coordinatoractivate"><code>POST /v1/coordinator/activate</code></h4>
+<p>A pre-warming hint a caller can send <em>before</em> the request that
+actually needs a model:</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST localhost:9000/v1/coordinator/activate <span class="dt">\</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;model&quot;: &quot;review&quot;}&#39;</span></span></code></pre></div>
+<p><code>model</code> is a real model id or a role name, matched exactly
+the way ordinary routing matches one. Answered directly, never
+proxied.</p>
+<p>The swap is <strong>spawned detached and not awaited</strong>: the
+handler resolves the target profile, starts the swap, and returns
+<code>202 Accepted</code> immediately. That is the whole point — the
+hint is sent ahead of the real request, so it has to survive the caller
+disconnecting early or never reading the response, and it must never
+itself block on a slow cold load. A caller that does want to fail loudly
+should send its real request instead, which does wait.</p>
+<p>Unlike ordinary routing, an unmatched <code>model</code> here is a
+<strong><code>404</code></strong>, not a silent fallback to
+<code>all</code> or to whatever is currently active. Those fallbacks
+exist so a request that must be answered <em>somehow</em> always is; an
+explicit “activate X” call has no such obligation, and silently
+activating the wrong thing would be worse than saying so.</p>
+<h4
+id="get-v1coordinatorshutdowntoken"><code>GET /v1/coordinator/shutdown?token=…</code></h4>
+<p>Stops the coordinator, and with it whatever
+<code>orangu-server</code> is active or still starting up. Disabled
+unless <code>[orangu-coordinator].shutdown_token</code> is set — a
+<code>404</code> naming the missing key rather than a silent refusal.
+With it set, the caller must present a matching <code>?token=</code>
+(<code>403</code> otherwise) <strong>and</strong> connect from localhost
+(<code>403</code> otherwise, even with a valid token).</p>
+<h4 id="everything-else-the-proxy">Everything else: the proxy</h4>
+<p>Any other path is forwarded. Three things decide where:</p>
+<ol type="1">
+<li>The request body’s top-level <code>model</code> field, when the body
+is a JSON object carrying one.</li>
+<li>The path, for the one endpoint that names a distinct capability
+rather than a model: a path ending in <code>/v1/embeddings</code>
+implies the <code>embeddings</code> role. Matched by suffix, so a
+request arriving through a mount point or a reverse proxy prefix still
+resolves the same way.</li>
+<li>Otherwise — a bodyless request such as <code>/health</code>,
+<code>/props</code>, <code>/v1/models</code>, <code>/slots</code>,
+<code>/metrics</code>, or a file-lifecycle call, none of which name a
+model — the currently active profile, then the <code>all</code>
+profile.</li>
+</ol>
+<p>Hop-by-hop headers (<code>connection</code>, <code>keep-alive</code>,
+<code>transfer-encoding</code>, <code>upgrade</code>, <code>host</code>,
+<code>content-length</code>, and the <code>proxy-*</code> and
+<code>te</code>/<code>trailers</code> pair) are dropped in both
+directions; everything else is carried over unchanged, including
+<code>Authorization</code>. Bodies are capped by
+<code>[orangu-coordinator].max_body_bytes</code>, 64 MiB by default.</p>
+<p>A profile that cannot be started falls back to the <code>all</code>
+profile, and only a failure of <em>both</em> is a <code>502</code>. A
+backend that was alive when the coordinator checked and gone by the time
+the request reached it gets the request sent again, exactly once, after
+the profile is brought back up — nothing had been written back to the
+caller yet, so the request was still whole. A second failure is a
+<code>502</code> rather than another retry.</p>
+<h3 id="benchmark-console">Benchmark console</h3>
+<p><code>orangu-bench --web</code> serves a console on
+<code>127.0.0.1:8300</code> by default. Like the server’s own console,
+its <code>/api/…</code> surface exists for that page and is not an API
+to build against.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GET /</code> ,
+<code>GET /static/app.css</code>, <code>GET /static/app.js</code></td>
+<td style="text-align: left;">the console page and its assets</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/defaults</code></td>
+<td style="text-align: left;">what the form starts from, plus whether
+the profiler and its PNG renderer are actually available on this machine
+— checked here so the UI can say so beside the checkbox rather than
+failing twenty minutes into a sweep</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/runs</code></td>
+<td style="text-align: left;">every run this console has kept</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>POST /api/runs</code></td>
+<td style="text-align: left;">starts one; the fields are validated into
+flags, and nothing reaches a shell</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/runs</code></td>
+<td style="text-align: left;"><strong>Clear all</strong>. A run still
+measuring is kept and named in the reply rather than killed</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GET /api/runs/{id}</code></td>
+<td style="text-align: left;">one run: its status and its captured log,
+stdout and stderr kept apart</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DELETE /api/runs/{id}</code></td>
+<td style="text-align: left;">deletes one run</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /api/runs/{id}/cancel</code></td>
+<td style="text-align: left;">stops the run in flight</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /api/runs/{id}/compare</code></td>
+<td style="text-align: left;">compares two runs from their archived
+bundles; allowed while a benchmark is running, since it reads two files
+and talks to no server</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /api/runs/{id}/report</code></td>
+<td style="text-align: left;">builds the PDF report from the archived
+bundle, on the one click that wants it</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>GET /api/runs/{id}/artifacts/{name}</code></td>
+<td style="text-align: left;">one of the run’s own files, by name from a
+fixed allowlist</td>
+</tr>
+</tbody>
+</table>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

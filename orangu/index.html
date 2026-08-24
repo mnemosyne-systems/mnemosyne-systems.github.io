@@ -38,8 +38,8 @@
 
     <div class="hero-left">
       <a class="hero-badge" href="#whats-new">
-        <span class="hero-badge-ver">1.1</span>
-        orangu 1.1.0 is out
+        <span class="hero-badge-ver">1.2</span>
+        orangu 1.2.0 is out
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
       </a>
 
@@ -351,21 +351,21 @@
 
       <div class="release-card">
         <div class="release-head">
-          <span class="release-ver">orangu 1.1.0</span>
+          <span class="release-ver">orangu 1.2.0</span>
           <span class="release-badge">Latest</span>
-          <span class="release-date">August 3, 2026</span>
+          <span class="release-date">August 24, 2026</span>
         </div>
         <ul class="release-list">
-          <li><strong>15% to 450% faster</strong> — A unified attention implementation across every backend, with the largest gains where the old paths were least optimized.</li>
-          <li><strong>Metal for Apple Silicon</strong> — Initial Metal backend, the first step toward native GPU acceleration on the Mac.</li>
-          <li><strong><code>orangu-bench</code></strong> — A benchmarking tool, shipped in the release archives, for measuring performance on your own hardware.</li>
-          <li><strong>Web console: model management</strong> — List and inspect models from the browser instead of only from the command line.</li>
-          <li><strong>Web console: Mermaid and history</strong> — Diagrams render inline, and conversations can be deleted from the console.</li>
-          <li><strong>Better machine information</strong> — More accurate OS and GPU detection to guide backend selection and troubleshooting.</li>
+          <li><strong>Eight new model families</strong> — DeepSeek 4, GLM, Kimi K3, Muse-Glimmer, Inkling-Small, Ling, NVIDIA Nemotron, and Qwen 3.8.</li>
+          <li><strong>KV caching and multi-card</strong> — Long conversations stop paying full price every turn, and a large model spreads across the GPUs you already have.</li>
+          <li><strong>Model Context Protocol</strong> — Connect to external tools over MCP, with server management, refresh, and reconnect handled inside orangu.</li>
+          <li><strong><code>/developer</code> and <code>/committer</code></strong> — Two new modes: one for writing the change, one for getting it committed.</li>
+          <li><strong>Markdown and PlantUML</strong> — A much better Markdown renderer in the terminal, and PlantUML alongside Mermaid in the web console.</li>
+          <li><strong>Initial license header support</strong> — A first pass at keeping license headers consistent across a codebase as you work in it.</li>
         </ul>
         <p class="release-note">
-          <strong>Upgrading?</strong>
-          The configuration files changed in 1.1.0 — run <code>--init</code> for <code>orangu</code>, <code>orangu-coordinator</code>, and <code>orangu-server</code>.
+          <strong>Also in 1.2.0:</strong>
+          Model last-use tracking, additional answer save formats, <code>orangu-bench</code> in the web console, an improved <code>/review</code>, a <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf" style="color:var(--amber);text-decoration:none">cheat sheet</a> and endpoint documentation, and macOS and WGPU stability fixes. The <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf" style="color:var(--amber);text-decoration:none">complete manual</a> ships as PDF and HTML, and is embedded in the binary for <code>/manual</code>.
         </p>
       </div>
 
@@ -534,6 +534,31 @@
           <p><code>orangu-server</code>: backends, model inventory, endpoints, and tuning.</p>
         </a>
 
+      </div>
+
+      <style>
+        .dl-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; align-items: center; }
+        .dl-link {
+          display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none;
+          font-size: 0.85rem; font-weight: 600; color: var(--text);
+          background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px;
+          padding: 0.6rem 1rem; transition: border-color 0.15s, background 0.15s, color 0.15s;
+        }
+        .dl-link:hover { border-color: var(--amber); background: var(--amber-soft); color: var(--amber); }
+        .dl-link .dl-tag {
+          font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700;
+          letter-spacing: 0.08em; color: var(--amber);
+        }
+        .dl-row-note { font-size: 0.82rem; color: var(--text-3); line-height: 1.6; }
+      </style>
+      <div class="dl-row">
+        <a class="dl-link" href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">
+          <span class="dl-tag">PDF</span> The complete manual
+        </a>
+        <a class="dl-link" href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">
+          <span class="dl-tag">PDF</span> Four-page cheat sheet
+        </a>
+        <span class="dl-row-note">Always the latest release &mdash; or run <code>/manual</code> for the same text, offline, inside orangu.</span>
       </div>
     </div>
   </section>

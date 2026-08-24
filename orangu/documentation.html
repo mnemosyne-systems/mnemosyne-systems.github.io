@@ -62,13 +62,13 @@
         <a href="doc/getting-started.html" class="doc-cell">
           <span class="doc-cell-label">Guide</span>
           <h3>Getting Started</h3>
-          <p>Start llama.cpp, create a configuration, run the client, try your first commands.</p>
+          <p>From nothing installed to a working prompt: install the stack, configure and start <code>orangu-server</code>, download a model, and review your first branch.</p>
         </a>
 
-        <a href="doc/quickstart.html" class="doc-cell">
-          <span class="doc-cell-label">Guide</span>
-          <h3>Quick Start</h3>
-          <p>The condensed path from a running LLM server to a working orangu session.</p>
+        <a href="doc/http.html" class="doc-cell">
+          <span class="doc-cell-label">Reference</span>
+          <h3>HTTP Endpoints</h3>
+          <p>Every path the stack serves or calls: the OpenAI-compatible API, the web console, the coordinator, and <code>orangu-bench</code>.</p>
         </a>
 
         <a href="doc/configuration.html" class="doc-cell">
@@ -105,17 +105,61 @@
     </div>
   </section>
 
+  <!-- ─── Offline: manual and cheat sheet ───── -->
+  <style>
+    .dl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 2.5rem; }
+    .dl-card {
+      display: block; text-decoration: none;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1.75rem 2rem; transition: border-color 0.15s, background 0.15s;
+    }
+    .dl-card:hover { border-color: var(--amber); background: var(--amber-soft); }
+    .dl-card-kind {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--amber);
+    }
+    .dl-card h3 { font-size: 1.05rem; font-weight: 600; color: var(--text); margin: 0.6rem 0 0.5rem; }
+    .dl-card p { font-size: 0.87rem; color: var(--text-2); line-height: 1.65; margin: 0; }
+    @media (max-width: 700px) { .dl-grid { grid-template-columns: 1fr; } }
+  </style>
+  <section class="section reveal" style="padding-top: 0;">
+    <div class="container">
+      <span class="section-label">Offline</span>
+      <div class="sep"></div>
+      <h2 class="section-title">Take the docs with you.</h2>
+      <p style="font-size: 0.95rem; color: var(--text-2); max-width: 640px; margin-top: 1rem; line-height: 1.8;">
+        Every release publishes the manual and the cheat sheet as PDFs. The manual is also embedded in the
+        binary &mdash; run <code>/manual</code> for the same text with full-text search and no network.
+      </p>
+
+      <div class="dl-grid">
+        <a class="dl-card" href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">
+          <span class="dl-card-kind">PDF &middot; Manual</span>
+          <h3>The complete manual</h3>
+          <p>Every chapter of the documentation in one PDF &mdash; configuration, tools, the coordinator, the inference server, and the internals.</p>
+        </a>
+        <a class="dl-card" href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">
+          <span class="dl-card-kind">PDF &middot; Cheat sheet</span>
+          <h3>The four-page cheat sheet</h3>
+          <p>Setup, coding, review, and tools on four pages. The installer drops a copy in <code>~/.orangu</code>.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <section class="section" style="padding-top: 0;">
     <div class="container-sm">
       <div class="cta-band reveal">
-        <span class="section-label" style="display:block; margin-bottom: 1.25rem;">Local LLM Guide</span>
+        <span class="section-label" style="display:block; margin-bottom: 1.25rem;">Serving Models</span>
         <h2 class="section-title" style="font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; margin-bottom: 1rem;">
-          Running orangu with llama.cpp
+          One model per role, on <code>orangu-server</code>
         </h2>
-        <p style="font-size: 0.95rem; color: var(--text-2); max-width: 420px; margin: 0 auto 1.75rem; line-height: 1.8;">
-          Recommended server flags, example configuration, quick verification steps, and tips for tool-calling workloads.
+        <p style="font-size: 0.95rem; color: var(--text-2); max-width: 460px; margin: 0 auto 1.75rem; line-height: 1.8;">
+          A good starting model for each role &mdash; <code>--all</code>, <code>--code</code>, <code>--review</code>,
+          <code>--explorer</code>, and <code>--embedding</code> &mdash; the flags to serve it with, and where the
+          host, port, and backend settings live.
         </p>
-        <a href="doc/local-llm.html" class="btn-primary">Read the Local LLM guide</a>
+        <a href="doc/local-llm.html" class="btn-primary">Read the serving guide</a>
       </div>
     </div>
   </section>
