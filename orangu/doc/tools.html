@@ -59,7 +59,9 @@
       <div class="sidebar-section-title">The Stack</div>
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -74,6 +76,7 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
         <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
@@ -427,10 +430,11 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="
 <code>[truncated]</code></li>
 </ul>
 <h2 id="expand_context"><code>expand_context</code></h2>
-<p><code>expand_context</code> retrieves massive text blobs (like large
-file diffs or lengthy command outputs) that <code>orangu</code>
-automatically truncated before they reached your context window to save
-tokens.</p>
+<p><code>expand_context</code> retrieves exact session-cached context
+that <code>orangu</code> kept outside the prompt to save tokens. Most
+truncation markers point directly to the complete original blob; bounded
+workflows such as <code>/create_patch</code> may instead point to a
+small index whose entries can be expanded selectively.</p>
 <div class="sourceCode" id="cb5"><pre
 class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;abc1234567&quot;</span></span>
@@ -441,8 +445,9 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="
 ID.</li>
 <li>You will find these IDs injected into your context as markers
 (e.g. <code>[Note: Output truncated. Run expand_context(id="abc1234567")]</code>).</li>
-<li>The tool returns the full, uncompressed, raw text of the original
-output.</li>
+<li>The tool returns the exact cached node. This is normally the full,
+uncompressed original output; a bounded index node contains IDs for
+smaller exact chunks.</li>
 <li>The cache ID is a SHA-256 hash prefix of the content, meaning it is
 mathematically guaranteed to perfectly match the truncated payload.</li>
 <li>Cache files are strictly scoped to the active session and

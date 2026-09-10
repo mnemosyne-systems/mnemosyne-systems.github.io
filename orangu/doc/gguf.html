@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a Model — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html" class="active">Building a Model</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#building-a-model" id="toc-building-a-model">Building a
+model</a>
+<ul>
+<li><a href="#quick-start" id="toc-quick-start">Quick start</a></li>
+<li><a href="#the-manifest" id="toc-the-manifest">The manifest</a></li>
+<li><a href="#the-command-line" id="toc-the-command-line">The command
+line</a></li>
+<li><a href="#sizes" id="toc-sizes">Sizes</a></li>
+<li><a href="#weight-formats" id="toc-weight-formats">Weight
+formats</a></li>
+<li><a href="#what-comes-out" id="toc-what-comes-out">What comes
+out</a></li>
+<li><a href="#the-work-directory" id="toc-the-work-directory">The work
+directory</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="building-a-model">Building a model</h1>
+<p><code>orangu-gguf</code> builds a model file. It has two jobs, and
+they are the two ends of one pipeline:</p>
+<ul>
+<li><strong>Train one from nothing.</strong> Given a JSON manifest of
+permissively-licensed repositories, it clones them, trains a tokenizer
+on what it finds, packs the text into tokens, pretrains a transformer
+from random weights, and writes the result as a GGUF file that
+<code>orangu-server</code> serves directly.</li>
+<li><strong>Convert one you already have.</strong> Given an existing
+full-precision model, it writes it out again at a smaller weight format
+— <code>Q6_K</code>, <code>Q4_K_M</code>, or any of the dozen in
+<em>Weight formats</em> below.</li>
+</ul>
+<p>There is nothing to install beside the binary, and no conversion step
+between the two: what training produces is already the file the server
+loads.</p>
+<h2 id="quick-start">Quick start</h2>
+<p>Rewrite a model you already have at 4-bit:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> <span class="at">-m</span> ./my-model-BF16.gguf <span class="at">-q</span> q4_k_m</span></code></pre></div>
+<p>Train a small one, end to end, from three repositories:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> corpus.json <span class="op">&lt;&lt;&#39;JSON&#39;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;name&quot;: &quot;my-model&quot;,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;training_size&quot;: &quot;smoke&quot;,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;context_size&quot;: &quot;8k&quot;,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">  &quot;repositories&quot;: [</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">    { &quot;url&quot;: &quot;https://github.com/BurntSushi/ripgrep&quot;,  &quot;license&quot;: &quot;MIT&quot; },</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">    { &quot;url&quot;: &quot;https://github.com/sharkdp/fd&quot;,          &quot;license&quot;: &quot;Apache-2.0&quot; },</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">    { &quot;url&quot;: &quot;https://github.com/rust-lang/rustlings&quot;, &quot;license&quot;: &quot;MIT&quot; }</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">  ]</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="op">JSON</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> corpus.json</span></code></pre></div>
+<p>The manifest is the whole command: the size, the context length, the
+weight format, the corpus and the schedule all live in it, and
+everything it does not mention takes a documented default.
+<code>smoke</code> trains in about a quarter of an hour and exists to
+prove the whole pipeline works on your machine before you commit a week
+to it; <code>tiny</code> is a smaller shape again, for when the question
+is only whether the tool runs at all. Then serve what came out:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> ./my-model-smoke-BF16.gguf</span></code></pre></div>
+<h2 id="the-manifest">The manifest</h2>
+<p>The manifest is the whole build. Every setting of a run lives in it,
+the training material lives under <code>repositories</code>, and nothing
+is passed on the command line that the file cannot say — which is what
+makes a build reproducible. The file <em>is</em> the description of the
+model, and re-running it months later against a newer binary produces
+the same thing.</p>
+<p>Reproducible means bit-for-bit, and it does not depend on the
+machine’s parallel width: the same manifest and the same
+<code>seed</code> write the same file on one core or on thirty-two.</p>
+<p>The smallest useful manifest is the material and nothing else,
+because every other field has a default:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;repositories&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://github.com/owner/repo&quot;</span><span class="fu">,</span> <span class="dt">&quot;license&quot;</span><span class="fu">:</span> <span class="st">&quot;MIT&quot;</span> <span class="fu">}</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>That trains a 2B model at a 256k context and writes it as BF16. The
+full form says everything out loud:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;orangu-code&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;license&quot;</span><span class="fu">:</span> <span class="st">&quot;Apache-2.0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;A small code model trained on permissive Rust and C.&quot;</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;training_size&quot;</span><span class="fu">:</span> <span class="st">&quot;2b&quot;</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;context_size&quot;</span><span class="fu">:</span> <span class="st">&quot;256k&quot;</span><span class="fu">,</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;quantization&quot;</span><span class="fu">:</span> <span class="st">&quot;bf16&quot;</span><span class="fu">,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;vocab_size&quot;</span><span class="fu">:</span> <span class="dv">32768</span><span class="fu">,</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sequence_length&quot;</span><span class="fu">:</span> <span class="dv">2048</span><span class="fu">,</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;batch&quot;</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;epochs&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;seed&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;checkpoint_every&quot;</span><span class="fu">:</span> <span class="dv">200</span><span class="fu">,</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;repositories&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://github.com/owner/repo&quot;</span><span class="fu">,</span> <span class="dt">&quot;license&quot;</span><span class="fu">:</span> <span class="st">&quot;MIT&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://github.com/other/repo&quot;</span><span class="fu">,</span> <span class="dt">&quot;license&quot;</span><span class="fu">:</span> <span class="st">&quot;ISC&quot;</span><span class="fu">,</span> <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;stable&quot;</span> <span class="fu">}</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>An unknown key is an error rather than being ignored. A misspelled
+<code>traning_size</code> that silently trained the default size for a
+week is a worse outcome than a parse failure.</p>
+<h3 id="identity">Identity</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>name</code></td>
+<td style="text-align: left;"><code>orangu</code></td>
+<td style="text-align: left;">The model’s name, and the stem of the file
+written</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>license</code></td>
+<td style="text-align: left;"><em>(none)</em></td>
+<td style="text-align: left;">The licence the <strong>model</strong> is
+published under. Absent writes no such key rather than inventing
+one</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>description</code></td>
+<td style="text-align: left;"><em>(none)</em></td>
+<td style="text-align: left;">Free text, written into the file</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-model">The model</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>training_size</code></td>
+<td style="text-align: left;"><code>2b</code></td>
+<td style="text-align: left;"><code>tiny</code>, <code>smoke</code>,
+<code>0.5b</code>, <code>1b</code> or <code>2b</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>context_size</code></td>
+<td style="text-align: left;"><code>256k</code></td>
+<td style="text-align: left;">The context length the model declares.
+Accepts <code>8192</code>, <code>8k</code>, <code>1M</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>quantization</code></td>
+<td style="text-align: left;"><code>bf16</code></td>
+<td style="text-align: left;">The weight format written</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vocab_size</code></td>
+<td style="text-align: left;"><code>32768</code></td>
+<td style="text-align: left;">Tokens in a newly trained vocabulary</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>chat_template</code></td>
+<td style="text-align: left;"><em>(ChatML)</em></td>
+<td style="text-align: left;">The Jinja2 template written as
+<code>tokenizer.chat_template</code>; <code>""</code> writes none</td>
+</tr>
+</tbody>
+</table>
+<h3 id="training">Training</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>sequence_length</code></td>
+<td style="text-align: left;"><code>2048</code></td>
+<td style="text-align: left;">Tokens per training sequence</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>batch</code></td>
+<td style="text-align: left;"><code>4</code></td>
+<td style="text-align: left;">Sequences per optimizer step</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>steps</code></td>
+<td style="text-align: left;"><em>(from <code>epochs</code>)</em></td>
+<td style="text-align: left;">Optimizer steps to run</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>epochs</code></td>
+<td style="text-align: left;"><code>1</code></td>
+<td style="text-align: left;">Passes over the corpus, when
+<code>steps</code> is absent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>learning_rate</code></td>
+<td style="text-align: left;"><em>(per size)</em></td>
+<td style="text-align: left;">Peak learning rate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>seed</code></td>
+<td style="text-align: left;"><code>1</code></td>
+<td style="text-align: left;">Weight initialization and batch
+sampling</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>log_every</code></td>
+<td style="text-align: left;"><code>60</code></td>
+<td style="text-align: left;">Seconds between progress lines;
+<code>0</code> prints only the last step</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>eval_every</code></td>
+<td style="text-align: left;"><code>200</code></td>
+<td style="text-align: left;">Steps between validation passes;
+<code>0</code> disables</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>checkpoint_every</code></td>
+<td style="text-align: left;"><code>200</code></td>
+<td style="text-align: left;">Steps between checkpoints; <code>0</code>
+disables</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resume</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Continue from the checkpoint in the work
+directory</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>export_only</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Write the model from the checkpoint
+without training further</td>
+</tr>
+</tbody>
+</table>
+<p><code>log_every</code> is in <strong>seconds</strong>, unlike
+<code>eval_every</code> and <code>checkpoint_every</code>. A step is
+seconds at <code>tiny</code> and minutes at <code>2b</code>, so a count
+of steps is a different amount of output at every size — and it is worst
+at the size that runs for days, which is the one somebody is watching to
+see that it is still alive. A run prints a line a minute:</p>
+<pre><code>step 47/200  loss 7.6696  lr 9.23e-4  |g| 1.687  2.4k tok/s  elapsed 0d:0h:0m:20s  eta 0d:0h:1m:5s</code></pre>
+<p>The interval is wall-clock and holds <em>inside</em> a step as well
+as between them — at <code>0.5b</code> and <code>2b</code> one step is
+minutes, and a line that waited for a step boundary would not arrive on
+any schedule you could predict. Those lines name the step in flight and
+carry the last finished step’s numbers:</p>
+<pre><code>step 1/411527  elapsed 0d:0h:4m:0s</code></pre>
+<p>The estimate is against <strong>tokens</strong>, not against finished
+steps. Tokens are counted as each sequence lands, so it moves during a
+step as well as at the end of one — the difference between an estimate
+and a number that stands still for four minutes and then jumps — and it
+is against the run’s own average rate, so a slow patch shows up as the
+estimate lengthening rather than as a rate the next line
+contradicts.</p>
+<p>Whatever the interval, the last step always prints, and its rate is
+the run’s rather than the last minute’s. Validation and checkpoints stay
+on step counts: those are work the run does, not a report on it.</p>
+<h3 id="the-corpus">The corpus</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>repositories</code></td>
+<td style="text-align: left;"><em>(required)</em></td>
+<td style="text-align: left;">The training material — see below</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>wikipedia</code></td>
+<td style="text-align: left;"><em>(absent)</em></td>
+<td style="text-align: left;">English (or another language’s) Wikipedia,
+as prose to train on beside the code</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>jobs</code></td>
+<td style="text-align: left;"><code>4</code></td>
+<td style="text-align: left;">Repositories cloned at once</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>max_file_size</code></td>
+<td style="text-align: left;"><code>1048576</code></td>
+<td style="text-align: left;">Largest corpus file read, in bytes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tokenizer_sample</code></td>
+<td style="text-align: left;"><code>268435456</code></td>
+<td style="text-align: left;">Bytes of corpus text the tokenizer is
+trained on</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>offline</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Use the corpus already in the work
+directory; clone nothing</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rebuild</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Retrain the tokenizer and repack,
+discarding what is there</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>allow_any_license</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">Train on sources whose licence is not an
+OSI-approved one, instead of excluding them</td>
+</tr>
+</tbody>
+</table>
+<h3 id="paths">Paths</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>work_dir</code></td>
+<td
+style="text-align: left;"><code>~/.orangu/gguf/&lt;manifest&gt;</code></td>
+<td style="text-align: left;">Corpus, tokenizer, packed tokens and
+checkpoints</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>output</code></td>
+<td
+style="text-align: left;"><code>&lt;name&gt;-&lt;size&gt;-&lt;format&gt;.gguf</code></td>
+<td style="text-align: left;">Where to write the model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-training-material">The training material</h3>
+<p>Each entry of <code>repositories</code> names a repository and the
+licence it is under:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>url</code></td>
+<td style="text-align: left;">The source — a Git remote, a local
+repository, a directory of files, or an archive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>license</code></td>
+<td style="text-align: left;">The SPDX identifier the source is under.
+Required</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>branch</code></td>
+<td style="text-align: left;">A branch or tag to clone instead of the
+default. Git sources only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A source is not always a repository</strong>, and
+<code>orangu-gguf</code> works out which it is by looking rather than
+assuming:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>url</code></th>
+<th style="text-align: left;">What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>https://…</code>,
+<code>git@…</code></td>
+<td style="text-align: left;"><code>git clone --depth 1</code> into the
+work directory</td>
+</tr>
+<tr>
+<td style="text-align: left;">a local path containing
+<code>.git</code></td>
+<td style="text-align: left;">the same clone, which Git makes nearly
+free by hard-linking</td>
+</tr>
+<tr>
+<td style="text-align: left;">a local directory</td>
+<td style="text-align: left;"><strong>read where it is</strong> — a
+corpus directory can be tens of gigabytes, and copying it to look at it
+would be absurd</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>*.tar.gz</code>, <code>*.tgz</code>,
+<code>*.tar.bz2</code>, <code>*.tar</code>, <code>*.zip</code></td>
+<td style="text-align: left;">unpacked into the work directory,
+downloading it first if it is remote</td>
+</tr>
+</tbody>
+</table>
+<p>Files inside a source may be compressed: a <code>.gz</code> or
+<code>.bz2</code> is read through, and what decides whether it is
+training text is the name <em>underneath</em> — <code>main.rs.gz</code>
+is Rust, <code>logo.png.gz</code> is still a picture. An archive entry
+that tries to climb out of its directory is dropped rather than
+unpacked.</p>
+<p><strong>The licence is checked, not decorated.</strong> A source is
+trained on if its declared licence is one of the OSI-approved ones (<a
+href="https://opensource.org/license"
+class="uri">https://opensource.org/license</a>, by SPDX identifier,
+deprecated spellings like <code>GPL-3.0</code> included). Copyleft is in
+that set: what a corpus licence decides is not whether a model can be
+trained but what the trained weights may then be published under, and
+that is the manifest author’s call, not this tool’s. Every licence in
+the corpus is written into the finished model’s metadata, so the
+question can be answered from the file itself.</p>
+<p>Anything that is <em>not</em> an OSI-approved identifier — an
+unrecognised name, a source-available licence that is not open source,
+or a compound expression like <code>MIT OR Apache-2.0</code>, where
+which licence you are relying on is a choice this tool will not make for
+you — is <strong>excluded from the corpus</strong> and named in the
+run’s output. Excluded rather than fatal, because one odd entry in a
+list of hundreds should not stop a run; named rather than dropped,
+because a corpus quietly smaller than the manifest says is a training
+run nobody can reproduce. Excluding <em>everything</em> is an error.
+Setting <code>"allow_any_license": true</code> trains on them anyway; it
+sits in the same file as the declarations it overrides, which is where a
+decision like that belongs.</p>
+<p>What is checked is the licence the manifest <em>declares</em>.
+<code>orangu-gguf</code> does not read each repository’s own
+<code>LICENSE</code> file to confirm the claim; making that claim
+correctly is the manifest author’s job, which is exactly why the field
+is mandatory rather than inferred.</p>
+<p>The list of repositories and the set of licences they were taken
+under are written into the finished model file, so the weights carry
+their own provenance rather than a note beside them.</p>
+<h3 id="english-and-where-it-comes-from">English, and where it comes
+from</h3>
+<p>A corpus of source code teaches a model to write code and nothing
+else — not to follow an instruction, not to explain what it wrote, not
+to write a sentence. Adding <code>wikipedia</code> to the manifest fixes
+that:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;wikipedia&quot;</span><span class="er">:</span> <span class="fu">{</span> <span class="dt">&quot;language&quot;</span><span class="fu">:</span> <span class="st">&quot;en&quot;</span><span class="fu">,</span> <span class="dt">&quot;max_bytes&quot;</span><span class="fu">:</span> <span class="dv">8589934592</span> <span class="fu">}</span></span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>language</code></td>
+<td style="text-align: left;"><code>en</code></td>
+<td style="text-align: left;">The wiki’s language code: <code>en</code>,
+<code>de</code>, <code>simple</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>max_bytes</code></td>
+<td style="text-align: left;"><code>8589934592</code> (8 GiB)</td>
+<td style="text-align: left;">How much <em>extracted article text</em>
+to take</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>date</code></td>
+<td style="text-align: left;"><em>(newest)</em></td>
+<td style="text-align: left;">A dump date (<code>YYYYMMDD</code>) to
+pin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Which dump, and why it matters.</strong> Wikimedia publishes
+the same articles several ways, and only one of them is already what a
+language model should read:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Dump</th>
+<th style="text-align: left;">What is in it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td
+style="text-align: left;"><code>mediawiki_content_current</code></td>
+<td style="text-align: left;">Raw wikitext: templates, infoboxes,
+tables, <code>[[File:…\|thumb\|300px\|…]]</code> embeds. Needs a
+wikitext parser, and a hand-written one leaks citation markup into the
+corpus</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>mediawiki_content_history</code></td>
+<td style="text-align: left;">The same wikitext, but <em>every revision
+of every page</em> — 3,374 files against 19, and the same article dozens
+of times over with small edits</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><strong><code>cirrus_search_index</code></strong></td>
+<td style="text-align: left;"><strong>The article text with all of that
+already resolved — plain running prose, line-delimited JSON, sharded,
+updated weekly</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The third is what <code>orangu-gguf</code> reads, because it is the
+only one that needs no parser to be wrong in. Only namespace-0 pages are
+taken, and only the article <code>text</code>; the dump’s
+<code>auxiliary_text</code> — where image captions, table cells and
+navbox links live — is deliberately not read. Measured over a thousand
+consecutive articles of the real dump, that leaves one mention of an
+image file name (inside a citation URL) and no markup at all.</p>
+<p>Text is written into <code>&lt;work_dir&gt;/wikipedia/</code> a shard
+at a time, and a shard already there is not fetched again — so an
+interrupted download resumes, and a second run costs nothing. The stream
+stops at <code>max_bytes</code>, so the cap is what you download, not
+what you filter afterwards. Roughly: a gigabyte of compressed shard
+yields most of a gigabyte of prose.</p>
+<p>Wikipedia text is CC BY-SA 4.0. That is not a software licence and
+never goes through the repository gate, but it is written into the
+model’s provenance alongside the corpus’s other licences, because it
+bears on the same question they do.</p>
+<h3 id="a-ready-made-corpus-and-the-scripts-that-build-it">A ready-made
+corpus, and the scripts that build it</h3>
+<p><code>contrib/orangu-model/</code> is the whole thing ready to run:
+two manifests, and a script per stage from the smoke test through BF16
+to both quantizations, plus one that installs the result. Its own
+<code>README.md</code> covers the settings and what each stage costs;
+this is the summary.</p>
+<p><code>contrib/orangu-model/corpus.json</code> is the training list —
+this project’s own family, the large codebases it is written against,
+and the top of GitHub in the three languages they are written in:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Project</th>
+<th style="text-align: left;">Licence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">pgagroal, pgmoneta, pgexporter,
+pgvictoria</td>
+<td style="text-align: left;">BSD-3-Clause</td>
+</tr>
+<tr>
+<td style="text-align: left;">pgmoneta_mcp, orangu</td>
+<td style="text-align: left;"><strong>GPL-3.0-or-later</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">pgopr, billetsys</td>
+<td style="text-align: left;"><strong>EPL-2.0</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">linux</td>
+<td style="text-align: left;"><strong>GPL-2.0-only</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">postgres</td>
+<td style="text-align: left;">PostgreSQL</td>
+</tr>
+<tr>
+<td style="text-align: left;">quarkus, wildfly</td>
+<td style="text-align: left;">Apache-2.0</td>
+</tr>
+</tbody>
+</table>
+<p>Beside them are the most-starred open source projects on GitHub in
+each of <strong>C</strong>, <strong>Rust</strong> and
+<strong>Java</strong> — 54 more, from <code>scrcpy</code>,
+<code>git</code>, <code>FFmpeg</code> and <code>php-src</code> through
+<code>rust</code>, <code>deno</code>, <code>ripgrep</code> and
+<code>alacritty</code> to <code>spring-boot</code>, <code>guava</code>,
+<code>ghidra</code> and <code>dubbo</code>. Sixty-six in all.</p>
+<p>Every one of them is open source, so every one trains. Nineteen are
+copyleft — five of those AGPL — which bears on the licence of the
+finished weights, and <code>corpus.json</code> answers that: the model
+is <code>Apache-2.0</code>, which is what the file’s
+<code>general.license</code> says.</p>
+<p>A few of the most-starred projects in those languages are
+<em>not</em> in the list, and each for the same reason — the gate is an
+OSI-approved SPDX identifier, and they do not have one.
+<code>hello-algo</code> is CC BY-NC-SA (non-commercial),
+<code>LeetCodeAnimation</code> carries no licence at all,
+<code>advanced-java</code> is CC BY-SA, <code>curl</code> is under its
+own <code>curl</code> licence, and <code>wrk</code> is under a
+<em>modified</em> Apache 2.0. Adding any of them means saying so
+deliberately with <code>allow_any_license</code>.</p>
+<p>The stages, in order:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> contrib/orangu-model</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./00-smoke.sh</span>       <span class="co"># the whole pipeline, on 20 MB, in about twenty minutes</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./10-bf16.sh</span>        <span class="co"># the real run, entirely per corpus.json</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./20-q6_k.sh</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./30-q4_k_m.sh</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ex">./install.sh</span>        <span class="co"># into the models directory, so the server can see them</span></span></code></pre></div>
+<p>The scripts hold no settings of their own — everything is in the two
+manifests, so changing the run means editing <code>corpus.json</code>
+rather than hunting through shell. <code>install.sh</code> is the
+exception to “everything is in the manifest”, and only because the
+setting it needs is not a property of the model: it reads the models
+directory out of <code>orangu-server.conf</code>, the same file and the
+same key the server reads, and lays each file out as
+<code>models--&lt;org&gt;--&lt;model&gt;-&lt;size&gt;-GGUF/snapshots/&lt;rev&gt;/</code>
+so that <code>orangu-server list</code> shows it as
+<code>mnemosynesystems/orangu-smoke-GGUF:Q4_K_M</code> rather than as a
+bare filename — which is also the form <code>--model</code> takes. Its
+own <code>README.md</code> has the details. <code>00-smoke.sh</code>
+uses <code>corpus-smoke.json</code> — the four smallest permissive
+projects, about 20 MB — so it clones in seconds and keeps its output in
+<code>smoke/</code>. Its result is meant to be gibberish; what it proves
+is that every stage runs on this machine, which is worth knowing before
+committing days to the next one. Both quantization stages read the
+<strong>BF16</strong> file rather than each other, and find it in the
+current directory unless you name one.</p>
+<p>Expect the real corpus to take a while and a fair amount of disk: the
+Linux kernel alone is over a gigabyte of source at
+<code>--depth 1</code>, and the whole set is several. It is also worth
+being honest about its scale — it is a corpus of hundreds of millions of
+tokens, which is a real training set for <code>smoke</code> and
+<code>0.5b</code>, and short of the budget the <code>2b</code> size
+wants from a single pass (see <strong>Sizes</strong> below).</p>
+<h2 id="the-command-line">The command line</h2>
+<p>There is almost none of it, and that is the point. Training reads the
+manifest:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> corpus.json</span></code></pre></div>
+<p>Converting an existing model has no manifest to read, so it takes
+what it needs as arguments:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> <span class="at">-m</span> ./my-model-BF16.gguf <span class="at">-q</span> q4_k_m</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Option</th>
+<th style="text-align: left;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>-m</code>, <code>--model</code></td>
+<td style="text-align: left;">Convert this file instead of training</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>-ts</code>,
+<code>--training-size</code></td>
+<td style="text-align: left;">Override the manifest’s size for this
+run</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>-q</code>,
+<code>--quantization</code></td>
+<td style="text-align: left;">Override the weight format written</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>-cs</code>,
+<code>--context-size</code></td>
+<td style="text-align: left;">Override the declared context length</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>-o</code>,
+<code>--output</code></td>
+<td style="text-align: left;">Override where the model is written</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--list-quantizations</code></td>
+<td style="text-align: left;">Print the weight formats and exit</td>
+</tr>
+</tbody>
+</table>
+<p>The four overrides exist for the one-off — trying <code>0.5b</code>
+before committing to <code>2b</code>, or writing a second quantization
+of a model you already have. Anything you want to keep belongs in the
+manifest, where the next run will still find it. <code>-ts</code> and
+<code>-cs</code> are two letters behind a single dash, which most tools
+read as two separate short flags; they are accepted here anyway, in both
+the <code>-ts 1b</code> and <code>-ts=1b</code> spellings, alongside the
+long forms.</p>
+<h2 id="sizes">Sizes</h2>
+<p>Five sizes, sharing one vocabulary, so a tokenizer trained once
+carries across all of them. The parameter counts are for the default
+32,768-token vocabulary; a smaller one takes two tensors down with it,
+which is most of what <code>tiny</code> is.</p>
+<p>Every hidden and feed-forward width is a multiple of
+<strong>256</strong>, and that is a requirement rather than a
+preference: 256 is the K-quants’ super-block, and a row length it does
+not divide cannot be a K-quant at all. The feed-forward <em>down</em>
+projection is the one that decides it, because its row length is the
+feed-forward width rather than the hidden one.</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Size</th>
+<th style="text-align: right;">Hidden</th>
+<th style="text-align: right;">Feed-forward</th>
+<th style="text-align: right;">Blocks</th>
+<th style="text-align: right;">Heads</th>
+<th style="text-align: right;">KV heads</th>
+<th style="text-align: right;">Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>tiny</code></td>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">768</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">~20M</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>smoke</code></td>
+<td style="text-align: right;">768</td>
+<td style="text-align: right;">2048</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">~100M</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>0.5b</code></td>
+<td style="text-align: right;">1280</td>
+<td style="text-align: right;">3584</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">~0.53B</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>1b</code></td>
+<td style="text-align: right;">1536</td>
+<td style="text-align: right;">5632</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">~1.0B</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>2b</code></td>
+<td style="text-align: right;">2048</td>
+<td style="text-align: right;">8192</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">~2.0B</td>
+</tr>
+</tbody>
+</table>
+<p>The two small ones have different jobs. <code>tiny</code> answers
+“does this machine run the tool at all”, and it answers it in a couple
+of minutes. <code>smoke</code> answers “does this machine run the tool
+<em>properly</em>”, and it takes about half an hour, because the things
+that go wrong quietly need a model shaped like a real one to go wrong
+in: it has fewer key/value heads than query heads, so grouped-query
+attention is actually grouped; three query heads to a key/value head, so
+the group is not a power of two and an index that works by alignment
+stops working; eight blocks; and a feed-forward matrix larger than a
+last-level cache, which is what makes a measurement taken on it mean
+anything at the sizes below.</p>
+<p><strong>These are real training runs, and they cost what training
+costs.</strong> Everything runs on the CPU in 32-bit floating point.
+<code>tiny</code> is minutes and <code>smoke</code> is about a quarter
+of an hour; the three real sizes are days to weeks of continuous compute
+on a corpus large enough to be worth it, and they need memory to match —
+training holds four numbers per parameter (the weight, its gradient, and
+the optimizer’s two moments), so a <code>2b</code> run needs roughly 32
+GB before activations. <code>checkpoint_every</code> and
+<code>resume</code> exist because a run that long will be
+interrupted.</p>
+<p>A model is only as good as the token budget it saw. Below roughly 20
+tokens of training data per parameter, a run is not worth evaluating;
+the sizes above earn their keep well past that.</p>
+<h2 id="weight-formats">Weight formats</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>-q</code></th>
+<th style="text-align: left;">Bits per weight</th>
+<th style="text-align: left;">Use it when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>bf16</code></td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">The reference file. Quantize <em>from</em>
+this.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>f16</code></td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">Same size as <code>bf16</code>, less
+exponent range.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>f32</code></td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">Twice the size, no more accurate in
+practice.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q6_k</code></td>
+<td style="text-align: left;">~6.6</td>
+<td style="text-align: left;">Indistinguishable from <code>bf16</code>
+on anything measurable.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q5_k_m</code></td>
+<td style="text-align: left;">~5.7</td>
+<td style="text-align: left;">Half the size of <code>bf16</code>,
+nothing visibly lost.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q5_k_s</code></td>
+<td style="text-align: left;">~5.6</td>
+<td style="text-align: left;">As above, without the reinforced
+tensors.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q4_k_m</code></td>
+<td style="text-align: left;">~4.8</td>
+<td style="text-align: left;">The size and quality sweet spot.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q4_k_s</code></td>
+<td style="text-align: left;">~4.7</td>
+<td style="text-align: left;">A little smaller than <code>q4_k_m</code>,
+a little weaker.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>iq4_nl</code></td>
+<td style="text-align: left;">~4.5</td>
+<td style="text-align: left;">Four bits on rows a K-quant’s 256-wide
+block will not divide.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>iq4_xs</code></td>
+<td style="text-align: left;">~4.3</td>
+<td style="text-align: left;">The smallest four-bit file.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q3_k_l</code></td>
+<td style="text-align: left;">~4.3</td>
+<td style="text-align: left;">Three bits with the most
+reinforcement.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q3_k_m</code></td>
+<td style="text-align: left;">~4.0</td>
+<td style="text-align: left;">Three bits, usable; the model is now
+measurably worse.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q3_k_s</code></td>
+<td style="text-align: left;">~3.6</td>
+<td style="text-align: left;">Three bits throughout.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>q2_k</code></td>
+<td style="text-align: left;">~3.2</td>
+<td style="text-align: left;">The smallest file worth writing. Expect to
+notice.</td>
+</tr>
+</tbody>
+</table>
+<p><code>--list-quantizations</code> prints the same table with a line
+on each. Bits per weight are approximate and for a whole file, mixture
+included — which is why <code>q3_k_l</code> and <code>iq4_xs</code> land
+so close together, and why every K-quant reads higher than its own block
+would suggest. The exact figure depends on how much of a model is
+vocabulary.</p>
+<h3 id="what-the-suffix-means">What the suffix means</h3>
+<p>A <code>Q4_K_M</code> file is not a file of <code>Q4_K</code>
+tensors. The <code>_S</code>, <code>_M</code> and <code>_L</code> are
+<em>mixtures</em>: which tensors are carried above the file’s base
+format, and by how much. They are the standard spellings — a model
+published as <code>Q4_K_M</code> anywhere means the same mixture this
+writes — and the tensors that earn the extra bits are always the same
+ones:</p>
+<ul>
+<li><strong>The vocabulary projection</strong>
+(<code>output.weight</code>) is six bits in every quantized file. It is
+the last thing before the softmax, where an error becomes a wrong token
+directly.</li>
+<li><strong>The value and down projections</strong> are reinforced on
+the outer blocks, and on every third block in between. An error there
+lands on every token that attends through them.</li>
+<li><strong>Norms are never quantized</strong>, in any format. They are
+the divisor of every activation and a rounding error’s worth of file
+size.</li>
+</ul>
+<p><code>_S</code> reinforces least, <code>_M</code> more,
+<code>_L</code> most; <code>Q6_K</code>, <code>IQ4_NL</code> and
+<code>IQ4_XS</code> have no variants because there is nothing above them
+worth spending on. Grouped-query attention shifts the rules slightly: it
+makes the value projection small, so carrying it high costs almost
+nothing, and the mixtures spend there whenever the model has four or
+more query heads per key/value head.
+<code>orangu-server show --tensors</code> prints what a finished file
+actually contains.</p>
+<h3 id="what-is-not-written-and-why">What is not written, and why</h3>
+<p>The format defines more types than this writes. Two groups are left
+out deliberately.</p>
+<p>The <strong>round-number quantizations</strong> — <code>Q4_0</code>,
+<code>Q4_1</code>, <code>Q5_0</code>, <code>Q5_1</code>,
+<code>Q8_0</code> — are the generation before the K-quants. A K-quant
+beats them at every size, and offering both mostly offers a way to pick
+the worse one. <code>Q6_K</code> is <code>Q8_0</code>’s size and more
+accurate. Asking for one says so rather than failing as unknown.</p>
+<p>The <strong>very low bit I-quants</strong> — <code>IQ1_S</code>,
+<code>IQ1_M</code>, <code>IQ2_XXS</code>, <code>IQ2_XS</code>,
+<code>IQ2_S</code>, <code>IQ3_XXS</code>, <code>IQ3_S</code>, and
+<code>Q2_K_S</code> — are a search against a fixed codebook of lattice
+points. Below about three bits that search only lands anywhere useful
+when it is told which weights matter, which means an <em>importance
+matrix</em>: a measurement of how much each weight moves the output,
+taken by running the finished model over calibration text. This tool
+does not measure one yet, and a file written without it looks fine and
+answers badly. They are refused with that reason, not written badly.
+<code>IQ4_NL</code> and <code>IQ4_XS</code> are in the same family but
+wide enough not to need it, so they are written.</p>
+<p>You may also see <code>_XL</code> on models published elsewhere. It
+is not a standard suffix: it belongs to one vendor’s dynamic
+quantizations, which are derived from an importance matrix, and it is
+not written here for the same reason.</p>
+<p>Converting works from a full-precision file only. Quantizing an
+already-quantized model would round twice and produce something worse
+than quantizing the original once, so it is refused with a message
+saying which file to start from instead.</p>
+<h2 id="what-comes-out">What comes out</h2>
+<p>A GGUF file with a dense decoder architecture: grouped-query
+attention with rotary positions, RMSNorm, a SwiGLU feed-forward, and a
+per-head norm on the queries and keys. <code>orangu-server</code> serves
+it on its fully-supported dense path, and so does anything else that
+reads the format.</p>
+<p>The tokenizer is a byte-level BPE vocabulary trained on your corpus
+and carried inside the file. Every byte has a token, so there is no
+input it cannot represent. <code>&lt;|endoftext|&gt;</code> separates
+documents during training and is the model’s stop token;
+<code>&lt;|im_start|&gt;</code> and <code>&lt;|im_end|&gt;</code> are in
+the vocabulary from the start, and the file declares the ChatML template
+that uses them.</p>
+<p>That template is about the <em>file</em>, not the model. A chat
+endpoint has no way to turn a list of messages into a prompt without
+one, and refuses the request rather than guessing — so a model with no
+template cannot be opened in the web console or any other chat client at
+all, which makes a perfectly good file look broken. Writing the template
+makes the file serveable everywhere. It does not make the model an
+instruct model: a pretrained base model has never been taught what a
+conversation is, and its answers will read like the corpus continuing
+rather than like a reply. Instruction tuning is the step that earns
+those tokens, and it is not what this tool does. Set
+<code>"chat_template": ""</code> for a file that carries none, and
+<code>"chat_template": "&lt;jinja&gt;"</code> for one of your own.</p>
+<p><code>--context-size</code> sets the context length the file declares
+and scales the rotary base to match it. It is not the same thing as the
+sequence length trained on (<code>sequence_length</code>, 2048 by
+default): a longer declared context costs nothing at training time and
+lets the model be <em>used</em> further out than it was trained, with
+the quality falling off the further past the training window you go.</p>
+<h2 id="the-work-directory">The work directory</h2>
+<p>Every stage lands on disk, so a run that stops can be picked up:</p>
+<pre><code>~/.orangu/gguf/&lt;manifest&gt;/
+  corpus/            one directory per cloned repository
+  wikipedia/         article text, one shard per file
+  tokenizer.json     the trained vocabulary and merge table
+  tokens.bin         the packed token stream
+  checkpoint.bin     weights, optimizer state, and the step reached</code></pre>
+<p>Re-running the same command reuses each of these. A checkpoint left
+by a run that reached its last step is replaced, and the run says so; a
+checkpoint from an <em>interrupted</em> run stops the command instead,
+because silently discarding days of compute is the worse mistake. Set
+<code>"resume": true</code> to continue from that one, or
+<code>"rebuild": true</code> to throw the tokenizer and the packed
+tokens away and start from nothing. <code>"offline": true</code> skips
+cloning entirely, which is what to use once the corpus is on disk and
+you would rather not talk to the network again.</p>
+<p>Deleting a stage is a supported way to redo it: remove
+<code>tokens.bin</code> to repack, remove <code>tokenizer.json</code> to
+retrain the vocabulary. Removing <code>corpus/</code> or
+<code>wikipedia/</code> fetches that source again — and removing one
+shard out of <code>wikipedia/</code> fetches just that shard.</p>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

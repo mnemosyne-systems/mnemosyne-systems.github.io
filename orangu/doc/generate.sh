@@ -14,7 +14,7 @@
 # ORANGU_REF picks the ref fetched from GitHub — use it to publish the manual as
 # it stood at a release rather than whatever main happens to hold:
 #
-#     ORANGU_REF=1.2.0 ./generate.sh
+#     ORANGU_REF=1.3.0 ./generate.sh
 #
 # Requirements: pandoc, python3, and (unless ORANGU_SRC is set) gh + base64.
 #
@@ -51,7 +51,9 @@ workspaces|manual/en/31-workspaces|Workspaces
 skills|manual/en/32-skills|Skills
 extra|manual/en/72-extra|External Tools
 coordinator|manual/en/44-coordinator|Coordinator
+workflows|manual/en/45-workflows|Workflow Files
 server|manual/en/46-server|Inference Server
+gguf|manual/en/47-gguf|Building a Model
 http|manual/en/80-http|HTTP Endpoints
 local-llm|manual/en/73-openai|Serving Models per Role
 compression|manual/en/75-compression|Compression
@@ -60,6 +62,7 @@ building|manual/en/70-dev|Developer Information
 coordinator-internals|manual/en/76-coordinator|Coordinator Internals
 server-internals|manual/en/78-server|Server Internals
 benchmarking|manual/en/79-bench|Benchmarking
+gguf-internals|manual/en/81-gguf|Model Building Internals
 contributing|manual/en/71-git|Contributing
 "
 
@@ -82,6 +85,26 @@ else
 fi
 printf '%s\n' "$LIST" | while IFS='|' read -r slug src title; do
   fetch "$src.md" "$SRC/$slug.md"
+done
+
+# The page table is hand-maintained, so a chapter added upstream would
+# otherwise be dropped in silence. List what the manual actually holds and
+# report whatever the table does not place. Front and back matter belong to
+# the printed book alone and never become pages here.
+SKIP="00-frontpage 95-sponsors 97-acknowledgement 98-licenses 99-references"
+
+chapters() {
+  if [ -n "${ORANGU_SRC:-}" ]; then
+    ls "$ORANGU_SRC/$DOCROOT/manual/en"
+  else
+    gh api "repos/$REPO/contents/$DOCROOT/manual/en?ref=$BRANCH" --jq '.[].name'
+  fi | sed -n 's|^\([0-9][0-9]-[A-Za-z0-9_-]*\)\.md$|\1|p'
+}
+
+for chapter in $(chapters); do
+  case " $SKIP " in *" $chapter "*) continue ;; esac
+  printf '%s\n' "$LIST" | cut -d'|' -f2 | grep -qx "manual/en/$chapter" ||
+    echo "  warn: manual/en/$chapter.md is not in the page table" >&2
 done
 
 # Rewrite inter-chapter Markdown links (43-usage_tools.md -> usage-tools.html)

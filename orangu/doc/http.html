@@ -59,7 +59,9 @@
       <div class="sidebar-section-title">The Stack</div>
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="http.html" class="active">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -74,6 +76,7 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
         <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
@@ -580,6 +583,22 @@ events, each carrying a <code>delta</code>, ending with a chunk that
 carries <code>finish_reason</code> (plus <code>usage</code>,
 <code>timings</code> and <code>prompt_progress</code>) and then
 <code>[DONE]</code>.</p>
+<h5 id="reasoning_content"><code>reasoning_content</code></h5>
+<p>A reasoning model’s chain of thought is reported <strong>apart from
+the answer</strong>, never inside <code>content</code>. Whole, it is
+<code>message.reasoning_content</code>; streaming, it arrives as
+<code>delta.reasoning_content</code> chunks, which come before the
+<code>delta.content</code> ones the answer arrives in. The field is
+absent — not empty — when the model wrote no thinking, so “does not
+reason” and “reasoned about nothing” stay distinguishable, and a client
+that does not know the field ignores it and sees the answer alone.</p>
+<p>This covers every format that <em>names</em> a reasoning body: a
+<code>&lt;think&gt;</code>…<code>&lt;/think&gt;</code> span, a message
+addressed <code>to=self</code>, a body opened with
+<code>&lt;|content_thinking|&gt;</code>. Thinking never passes through
+the tool-call splitter — a call is something the model addresses to the
+caller, not part of a body it addressed to itself — so
+<code>tool_calls</code> are parsed from the answer only.</p>
 <h5 id="cache_prompt"><code>cache_prompt</code></h5>
 <p><code>/v1/chat/completions</code>, <code>/v1/completions</code> and
 <code>/completion</code> all accept it, and it defaults to
@@ -1288,9 +1307,12 @@ its own field names:</p>
 </tbody>
 </table>
 <p>Non-streaming, the reply is
-<code>{"content": "…", "stop": true, "timings": {…}}</code>. Streaming,
-each event is <code>{"content": "…", "stop": false}</code> and the last
-is
+<code>{"content": "…", "stop": true, "timings": {…}}</code>. This
+endpoint has one text field and no message shape to split a reasoning
+model’s thinking out into, so — unlike <code>/v1/chat/completions</code>
+— thinking stays in <code>content</code>, which is what a caller who
+prefilled <code>&lt;think&gt;</code> here asked for. Streaming, each
+event is <code>{"content": "…", "stop": false}</code> and the last is
 <code>{"content": "", "stop": true, "finish_reason": …, "timings": {…}, "prompt_progress": {…}}</code>.
 There is no <code>response_format</code> here — structured output is a
 <code>/v1/…</code> feature.</p>

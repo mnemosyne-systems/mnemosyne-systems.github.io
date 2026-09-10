@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Building Internals — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html" class="active">Model Building Internals</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#model-building-internals"
+id="toc-model-building-internals">Model building internals</a>
+<ul>
+<li><a href="#the-modules" id="toc-the-modules">The modules</a></li>
+<li><a href="#the-manifest-is-the-interface"
+id="toc-the-manifest-is-the-interface">The manifest is the
+interface</a></li>
+<li><a href="#two-kinds-of-corpus-root"
+id="toc-two-kinds-of-corpus-root">Two kinds of corpus root</a></li>
+<li><a href="#the-architecture-and-why-this-one"
+id="toc-the-architecture-and-why-this-one">The architecture, and why
+this one</a></li>
+<li><a href="#forward-and-backward"
+id="toc-forward-and-backward">Forward and backward</a></li>
+<li><a href="#the-tokenizers-one-hard-constraint"
+id="toc-the-tokenizers-one-hard-constraint">The tokenizer’s one hard
+constraint</a></li>
+<li><a href="#the-matmul-is-load-bound-not-bandwidth-bound"
+id="toc-the-matmul-is-load-bound-not-bandwidth-bound">The matmul is
+load-bound, not bandwidth-bound</a></li>
+<li><a href="#reductions-run-in-a-fixed-order"
+id="toc-reductions-run-in-a-fixed-order">Reductions run in a fixed
+order</a></li>
+<li><a href="#the-mixture-rules" id="toc-the-mixture-rules">The mixture
+rules</a></li>
+<li><a href="#finding-out-where-the-time-goes"
+id="toc-finding-out-where-the-time-goes">Finding out where the time
+goes</a></li>
+<li><a href="#the-writers-invariant" id="toc-the-writers-invariant">The
+writer’s invariant</a></li>
+<li><a href="#the-checkpoint" id="toc-the-checkpoint">The
+checkpoint</a></li>
+<li><a href="#extending-it" id="toc-extending-it">Extending it</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="model-building-internals">Model building internals</h1>
+<p>This chapter is the developer’s view of <code>orangu-gguf</code>
+(<code>src/bin/orangu-gguf/</code>) — how the pipeline is put together,
+which decisions are load-bearing, and what the tests are actually
+proving. The user-facing chapter is <em>Building a model</em>.</p>
+<h2 id="the-modules">The modules</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Module</th>
+<th style="text-align: left;">What it owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>main.rs</code></td>
+<td style="text-align: left;">The command line, and the two pipelines
+(train, convert).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>manifest.rs</code></td>
+<td style="text-align: left;">The JSON manifest: every setting of a run,
+its default, and the licence policy.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>corpus.rs</code></td>
+<td style="text-align: left;">Cloning, and the walk that decides what
+counts as training text.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>wikipedia.rs</code></td>
+<td style="text-align: left;">Prose: which Wikimedia dump, and streaming
+article text out of it.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vocab.rs</code></td>
+<td style="text-align: left;">Byte-level BPE: training the merges, and
+encoding with them.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>pack.rs</code></td>
+<td style="text-align: left;">Corpus text to a token stream on disk, and
+reading windows back.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>model.rs</code></td>
+<td style="text-align: left;">The architecture: sizes, parameter layout,
+forward, backward.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>train.rs</code></td>
+<td style="text-align: left;">AdamW, the schedule, the loop, and the
+checkpoint.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>quant.rs</code></td>
+<td style="text-align: left;">Float encodings, block quantizations, and
+the per-tensor type rules.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>write.rs</code></td>
+<td style="text-align: left;">The GGUF writer.</td>
+</tr>
+</tbody>
+</table>
+<p>Each stage’s output is a file in the work directory, and each stage
+reads the previous stage’s file rather than a value passed to it. That
+is what makes the pipeline restartable at any point, and it is why the
+stages have no shared state to speak of.</p>
+<h2 id="the-manifest-is-the-interface">The manifest is the
+interface</h2>
+<p><code>Manifest</code> in <code>manifest.rs</code> is not a list of
+repositories with a few extras bolted on — it is the whole description
+of a run, and every field but <code>repositories</code> carries a
+<code>serde</code> default. That has two consequences worth keeping:</p>
+<ul>
+<li><strong>The defaults live in exactly one place.</strong> Not in
+<code>clap</code>, not in the scripts, not in the manual. A
+<code>default_*</code> function per field is verbose and it is the
+reason <code>a_manifest_of_material_alone_takes_every_default</code> can
+assert the whole set at once.</li>
+<li><strong><code>deny_unknown_fields</code> is load-bearing.</strong> A
+misspelled key that parsed and was ignored would train the default for a
+week and report success.</li>
+</ul>
+<p>The command line keeps four overrides and the convert mode, and
+<code>build</code> applies those overrides <em>onto</em> the manifest
+before anything reads it — so there is one description of the run
+downstream, not a manifest plus a parallel set of arguments that could
+disagree with it.</p>
+<h2 id="two-kinds-of-corpus-root">Two kinds of corpus root</h2>
+<p><code>corpus::Root</code> carries a per-directory file-size cap, and
+the reason is a bug worth remembering. The cap — skip anything over a
+megabyte — is a heuristic about <em>repositories</em>, where a large
+file is a minified bundle or a generated table. Applied to the prose
+this tool downloads itself it threw away every Wikipedia shard,
+silently: the run reported “1 too large” and trained on a corpus a
+twentieth the size it should have been.</p>
+<p>Cloned repositories get <code>Root::repository</code> and the cap;
+the prose directory gets <code>Root::generated</code> and no cap. The
+prose also lives <em>beside</em> <code>corpus/</code> rather than inside
+it, so the two roots never overlap and the offline path (which walks
+<code>corpus/</code> whole) cannot pick prose up under the wrong
+rules.</p>
+<h2 id="the-architecture-and-why-this-one">The architecture, and why
+this one</h2>
+<p><code>ARCHITECTURE</code> is <code>qwen3</code>: a dense block of
+grouped-query attention with rotary positions, RMSNorm, and a SwiGLU
+feed-forward, plus a per-head RMSNorm on the queries and keys before the
+rotation.</p>
+<p>It is not the plainest option, and both of its departures from the
+plainest option are the reason it was chosen:</p>
+<ul>
+<li><strong>The query and key norms</strong> hold attention logits in
+range through the early steps of a from-scratch run, which is exactly
+when a model trained without them diverges.</li>
+<li><strong>Grouped-query attention</strong> is what makes the declared
+context affordable. The KV cache is proportional to the number of
+<em>key/value</em> heads, so eight instead of sixteen halves it.</li>
+</ul>
+<p>It is also on the inference side’s fully-supported dense path, which
+means a file this tool writes is served without a conversion step and
+without a new code path to keep working. Note that the rotation pairing
+follows from the architecture name: everything but the original
+<code>llama</code> name is read back with the NeoX pairing (index
+<code>i</code> against <code>i + dim/2</code>), and <code>rope</code> in
+<code>model.rs</code> applies exactly that.</p>
+<h2 id="forward-and-backward">Forward and backward</h2>
+<p>There is no autodiff framework here. Each operation’s backward is
+written beside its forward in <code>model.rs</code>, and the whole
+network is one flat <code>f32</code> buffer (<code>Layout</code>) rather
+than a tree of tensors — so the gradient, and both of AdamW’s moments,
+are arrays of exactly the same length, and none of them needs to know
+the architecture.</p>
+<p><strong>Activations are recomputed, not stored.</strong> The forward
+pass keeps only each block’s <em>input</em>, one
+<code>[tokens, hidden]</code> buffer per block; the backward pass
+re-runs <code>layer_forward</code> on that input to get the
+intermediates it needs. The cost is one extra forward pass. What it buys
+is an activation footprint that does not grow with the feed-forward
+width — with the width at four times the hidden size and three matrices
+through it, storing them would dominate everything else.</p>
+<p>The attention backward goes further and recomputes the probabilities
+too, because the alternative is a <code>[heads, tokens, tokens]</code>
+array that grows with the <em>square</em> of the sequence length and
+would be the largest thing in the process.</p>
+<h3 id="the-test-that-matters">The test that matters</h3>
+<p><code>gradients_match_finite_differences</code> takes the
+largest-magnitude gradient entry in <em>every</em> parameter tensor and
+compares it against a central difference of the loss. It is the only
+thing standing between a wrong derivative and a training run that looks
+healthy and learns nothing — a wrong backward does not crash, it just
+converges to something worse, over days.</p>
+<p>Two details of that test are deliberate:</p>
+<ul>
+<li>The step is <code>1e-3</code>. A central difference has two error
+terms pulling in opposite directions: truncation, which falls with the
+square of the step, and the floating-point noise of subtracting two
+nearly equal losses, which grows as the step shrinks. At
+<code>1e-2</code> the truncation term alone put the embedding gradient
+5% out.</li>
+<li>The tolerance is absolute <em>plus</em> relative. The norms’
+gradients are genuinely tiny, and for those the noise floor —
+<code>f32::EPSILON * loss / step</code> — is the whole budget.</li>
+</ul>
+<p><code>attention_is_causal</code> is the other structural check:
+truncating the input before an edited position must leave the loss
+bit-identical, which it can only do if no earlier position ever saw a
+later one.</p>
+<h2 id="the-tokenizers-one-hard-constraint">The tokenizer’s one hard
+constraint</h2>
+<p>The vocabulary is trained with the <em>same</em> pre-tokenizer split
+that a reader applies. <code>SPLIT_PATTERN</code> in
+<code>vocab.rs</code> is the generic pattern, and the file declares
+<code>tokenizer.ggml.pre = "gpt-2"</code>, which is what the reader
+resolves to that pattern.</p>
+<p>Getting this wrong does not fail loudly. It produces merges that the
+encoder can never reproduce, so every prompt tokenizes into sequences
+the model was not trained on, and the model appears merely bad. If the
+split pattern on either side ever changes, they change together or not
+at all.</p>
+<p><code>Splitter</code> applies that pattern by hand rather than by
+DFA, because it is one fixed expression run over every byte of the
+corpus twice. It is a scanner for exactly the pattern’s four classes and
+five alternatives — and it is only a scanner where it can be sure:
+<code>\p{L}</code> outside ASCII is a Unicode table, not a range, so any
+match that could involve a non-ASCII byte is handed back to the pattern
+itself and the scan resumes after it. The two must agree byte for byte,
+and three tests say so, one of them over whatever corpus is on the
+machine.</p>
+<p>Encoding merges by rescanning for the lowest-ranked pair — quadratic,
+and the fastest thing there is at the length of a word. Past
+<code>RESCAN_MAX</code> bytes it switches to a heap over a linked list,
+which is the same algorithm the engine’s tokenizer uses. Both paths must
+produce the same ids; a test runs the same input through each.</p>
+<p>The merge loop keeps pair counts incrementally with a
+lazily-validated heap: a pair’s count changes as other merges consume
+it, so the heap holds stale entries by design and a popped entry is
+checked against the current count before it is used. When a word is
+rewritten, its <em>whole</em> pair multiset is subtracted and the new
+one added — doing it wholesale rather than per-occurrence is what keeps
+a repeated symbol (<code>aaa</code> merging <code>aa</code>) correct
+without a special case.</p>
+<h2 id="the-matmul-is-load-bound-not-bandwidth-bound">The matmul is
+load-bound, not bandwidth-bound</h2>
+<p>Worth knowing before optimizing it, because the two want opposite
+things.</p>
+<p>The kernel issues two loads for every fused multiply-add — a vector
+of weights and a vector of activations — and the core retires two loads
+and two FMAs a cycle. The loads are the ceiling; half the arithmetic
+capacity sits idle. So <code>tile</code> holds each weight vector across
+four token rows, which makes it ten loads for eight FMAs instead of
+sixteen, with two accumulators per row to keep enough dependency chains
+in flight. Four rows is measured: eight rows has a better ratio still
+and falls off a cliff on wider shapes, where it runs out of registers
+and chains together.</p>
+<p>The evidence that it is not bandwidth is in
+<code>bf16_versus_f32_matmul</code>: the weight matrix in
+<code>bf16</code> is half the bytes and takes the same time, and an 8 MB
+weight matrix runs at the same rate as a 256 KB one. Narrowing anything
+to save memory traffic is solving a problem this kernel does not
+have.</p>
+<h2 id="reductions-run-in-a-fixed-order">Reductions run in a fixed
+order</h2>
+<p>A float sum is not associative, so a reduction whose grouping depends
+on which thread stole what gives an answer that depends on it too. Two
+places in the training loop reduce across the parallel split — the
+gradient norm, and the weight gradient of every RMSNorm — and both sum
+partials by index rather than through <code>par_iter().sum()</code> or
+<code>fold</code>/<code>reduce</code>, whose leaves are whatever the
+work-stealing left behind.</p>
+<p>This is not fastidiousness. The gradient norm scales every gradient
+through the clip, so a difference in its last bits is a difference in
+the weights on the next step, and compounding by the one after: the same
+seed used to give a different model on the same machine. The norm
+backward’s groups are a fixed 32 rows for the same reason — a
+thread-count dependent split would make the answer depend on the thread
+count.</p>
+<p>The test that this holds is external: train ten steps and hash the
+written GGUF, at one thread and at sixteen.</p>
+<h2 id="the-mixture-rules">The mixture rules</h2>
+<p><code>Q4_K_M</code> is not a file of <code>Q4_K</code> tensors, and
+<code>plan_tensor</code> in <code>quant.rs</code> is where that mixture
+is decided. Taking <code>Q4_K_M</code> as the example:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">Tensor</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">any 1-D tensor (every norm)</td>
+<td style="text-align: left;"><code>F32</code>, in every file type</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>output.weight</code></td>
+<td style="text-align: left;"><code>Q6_K</code>, in every quantized file
+type</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>token_embd.weight</code></td>
+<td style="text-align: left;">the file’s base type</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>attn_v</code> /
+<code>ffn_down</code> in an outer block, or every third one between</td>
+<td style="text-align: left;"><code>Q6_K</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">everything else</td>
+<td style="text-align: left;"><code>Q4_K</code></td>
+</tr>
+</tbody>
+</table>
+<p>“Outer block, or every third one between” is
+<code>use_more_bits</code>: the first eighth, the last eighth, and every
+third block in the middle. Spending the extra bits there rather than
+spreading them evenly is what the M is; <code>_S</code> spends less and
+<code>_L</code> more, and <code>mixture</code> holds one arm per file
+type saying exactly where.</p>
+<p><code>plan_tensor</code> takes a <code>Model { layers, gqa }</code>
+rather than a layer count alone, because two of the rules key off
+grouped-query attention: when there are four or more query heads per
+key/value head the value projection is small enough that carrying it
+above the base type is nearly free, and the mixtures take that
+trade.</p>
+<p>A block quantization needs its block to divide the row length, and a
+row that does not divide 256 cannot be a K-quant at all.
+<code>fit</code> demotes it — four bits and below to
+<code>IQ4_NL</code>, the one 32-wide type here; five and six to
+<code>F16</code>, because dropping them to four would give up the
+precision they were chosen for — and records what it demoted from, so
+the run <em>reports</em> the fallback rather than silently writing a
+different file than the name promises.</p>
+<h3 id="the-types-that-are-refused">The types that are refused</h3>
+<p><code>Ftype::parse</code> distinguishes three kinds of no. A
+round-number quantization (<code>Q8_0</code> and its family) is refused
+because a K-quant of the same size is better. <code>IQ1_*</code>,
+<code>IQ2_*</code>, <code>IQ3_XXS</code>, <code>IQ3_S</code> and
+<code>Q2_K_S</code> are refused because at that width the codebook
+search needs an importance matrix to land anywhere useful, and nothing
+here measures one — writing them anyway produces a file that loads,
+serves, and answers badly, which is worse than not writing it.
+Everything else is refused as unknown, with the list of what is not.</p>
+<p>Quantizing an already-quantized file is refused rather than
+supported. Rounding twice is worse than rounding once from the original,
+and a tool that quietly does the worse thing is a trap.</p>
+<h2 id="finding-out-where-the-time-goes">Finding out where the time
+goes</h2>
+<p>Two instruments, and they answer different questions. Using the wrong
+one is how a stage that costs a quarter of a training run stays
+invisible.</p>
+<h3
+id="flamegraph-which-code-the-cpus-are-in"><code>--flamegraph</code>:
+which code the CPUs are in</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> manifest.json <span class="at">--flamegraph</span> run.svg</span></code></pre></div>
+<p>Samples this process for the whole build — corpus, tokenizer,
+packing, training and the write — and renders the flamegraph, the folded
+stacks beside it, and a PNG with <code>--flamegraph-png</code>. There is
+no shell pipeline and no external script: <code>perf record</code> is
+the only outside program, and everything after it is
+<code>orangu::profiling</code>, which <code>orangu-bench</code> uses for
+the same job on a running server.</p>
+<p>A manifest with no steps left to run therefore profiles corpus
+preparation, and one with steps profiles training — which is how the two
+are told apart without a flag that could disagree with the manifest.</p>
+<p>The thread pool is warmed before sampling starts, deliberately.
+<code>perf record -p</code> attaches to the threads that exist at that
+instant and never picks up ones created later, and rayon builds its
+workers on first use — so on a run whose corpus is already packed, a
+recorder started any earlier would sample the main thread and nothing
+else, and still produce a perfectly confident-looking flamegraph of a
+program doing one thing at a time.</p>
+<h3
+id="orangu_gguf_stages-where-the-seconds-go"><code>ORANGU_GGUF_STAGES</code>:
+where the seconds go</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_GGUF_STAGES</span><span class="op">=</span>1 <span class="ex">orangu-gguf</span> manifest.json</span></code></pre></div>
+<p>prints a table after the run: seconds in each stage of a training
+step, its share of the run, and how many times it was entered. Each
+stage is timed on the calling thread, around its parallel region rather
+than inside it, so what it reports is elapsed time — and the total comes
+back within a few percent of the run.</p>
+<p><strong>This is the one that finds a narrow stage.</strong> A
+profiler counts where the CPUs are, so a stage running on one thread
+while fifteen sit idle costs a sixteenth of the samples it costs in
+seconds. Both of the largest wins in this tool’s history were invisible
+to the flamegraph and obvious here: a kernel at 9.6% of samples and
+24.7% of the clock, and a serial loop at half a percent of samples and
+5.4% of the clock. Read the two together — the profiler says which code,
+the table says whether it is slow because it is <em>slow</em> or slow
+because it is <em>narrow</em>.</p>
+<h2 id="the-writers-invariant">The writer’s invariant</h2>
+<p>Every tensor’s data offset follows from the types and shapes alone,
+so the whole header can be written before any weight is encoded — which
+is what makes writing a file larger than memory ordinary rather than
+special. The write loop asserts, per tensor, that the bytes written so
+far match the offset the header recorded. A header that disagrees with
+the data by one padding byte produces a file that reads back as
+plausible noise, and that is a bad thing to find out about later.</p>
+<h2 id="the-checkpoint">The checkpoint</h2>
+<p><code>ORANGUCK</code>, a version, the step, the config, then the
+parameters and AdamW’s two moments. It is written to a temporary file
+and renamed into place, so an interrupted write cannot replace a
+complete checkpoint with half of one.</p>
+<p>Loading refuses a checkpoint whose config differs from the run’s in
+any field. Resuming into a mismatched architecture would produce weights
+that are numerically fine and completely meaningless.</p>
+<h2 id="extending-it">Extending it</h2>
+<ul>
+<li><strong>A new size</strong>: add a <code>Size</code> to
+<code>SIZES</code> in <code>model.rs</code>. The hidden width must be
+the head count times the head width, and the head count must divide by
+the key/value head count —
+<code>the_named_sizes_are_the_sizes_they_claim</code> checks both.
+<code>tiny</code> and <code>smoke</code> are not two names for the same
+idea: <code>tiny</code> is the shape the unit tests use, and
+<code>smoke</code> is the shape a change is <em>measured</em> on, which
+is why it has grouped attention and matrices past a last-level
+cache.</li>
+<li><strong>A new weight format</strong>: add an <code>Ftype</code>
+variant, its <code>file_type</code> number, its per-tensor rule in
+<code>plan_tensor</code>, a block encoder, and its fallback in
+<code>fit</code>. The round-trip test’s tolerance should be set just
+above the error the encoder actually achieves, not loosely enough to
+hide a regression.</li>
+<li><strong>A new architecture</strong>: <code>Layout::new</code> and
+<code>layer_forward</code>/<code>layer_backward</code> are the three
+places that would need to agree, plus the metadata keys in
+<code>model_metadata</code>. The gradient test covers whatever
+<code>Layout</code> lists, so a new tensor is checked the moment it
+exists.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

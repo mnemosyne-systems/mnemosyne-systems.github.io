@@ -59,7 +59,9 @@
       <div class="sidebar-section-title">The Stack</div>
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html" class="active">Compression</a></li>
@@ -74,6 +76,7 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
         <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
@@ -219,7 +222,11 @@ It injects a tiny marker into the LLM’s prompt (e.g.,
 <code>[Note: Output truncated. Run expand_context(id="abc1234567")]</code>).
 This grants the LLM the ability to dynamically “reverse” the compression
 and retrieve the exact missing data on demand using the
-<code>expand_context</code> tool. ### Advanced Diff Engine</p>
+<code>expand_context</code> tool. <code>/create_patch</code> uses a
+bounded variant for review overflow: category/path chunks and their
+indexes are each capped at 768 tokens, so the model can follow only
+relevant branches without expanding the complete report into context at
+once. ### Advanced Diff Engine</p>
 <p>When processing <code>git diff</code> outputs, orangu bypasses raw
 text truncation and uses a structured AST diff parser: - <strong>File
 Capping:</strong> Preserves only the top most changed files. The limit

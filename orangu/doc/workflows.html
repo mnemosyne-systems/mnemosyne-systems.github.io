@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Files — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html" class="active">Workflow Files</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#workflow-files" id="toc-workflow-files">Workflow files</a>
+<ul>
+<li><a href="#complete-file" id="toc-complete-file">Complete
+file</a></li>
+<li><a href="#jobs-roles-and-conversations"
+id="toc-jobs-roles-and-conversations">Jobs, roles, and
+conversations</a></li>
+<li><a href="#variables" id="toc-variables">Variables</a></li>
+<li><a href="#functions-and-execution-order"
+id="toc-functions-and-execution-order">Functions and execution
+order</a></li>
+<li><a href="#step-types" id="toc-step-types">Step types</a></li>
+<li><a href="#managing-a-workflow" id="toc-managing-a-workflow">Managing
+a workflow</a></li>
+<li><a href="#operational-behavior"
+id="toc-operational-behavior">Operational behavior</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="workflow-files">Workflow files</h1>
+<p>A workflow file describes a set of jobs and the ordered Orangu
+operations to run in each workspace. It is a thin YAML layer over the
+same slash commands, natural-language prompts, skills, and tools
+available through <code>orangu -p</code>.</p>
+<p>Validate the complete file before starting it:</p>
+<pre class="text"><code>orangu --workflow export-prs.yaml --dry-run
+orangu --workflow export-prs.yaml</code></pre>
+<p><code>--workflow --dry-run</code> loads no model configuration and
+executes nothing. It checks every job, workspace, variable, function
+call, approval, loop definition, control-flow construct, and explicit
+slash command. <code>--workflow</code> performs the same preflight
+before it loads configuration or starts the first job.</p>
+<h2 id="complete-file">Complete file</h2>
+<p>The following workflow runs <code>/export pr</code> in two projects
+and collects both PDFs in one explicitly approved directory:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">orangu</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">role</span><span class="kw">:</span><span class="at"> all</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">variables</span><span class="kw">:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">upstream</span><span class="kw">:</span><span class="at"> /home/me/Upstream</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">job</span><span class="kw">:</span><span class="at"> pgagroal</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">workspace</span><span class="kw">:</span><span class="at"> /home/me/PostgreSQL/pgagroal</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">job</span><span class="kw">:</span><span class="at"> orangu</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">workspace</span><span class="kw">:</span><span class="at"> /home/me/Company/orangu</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">functions</span><span class="kw">:</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">export_pr</span><span class="kw">:</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /export pr</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">move_pdf</span><span class="kw">:</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /shell mv ${job}-pr.pdf ${upstream}/</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main</span><span class="kw">:</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">approved</span><span class="kw">:</span><span class="at"> ${upstream}</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">call</span><span class="kw">:</span><span class="at"> export_pr</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">call</span><span class="kw">:</span><span class="at"> move_pdf</span></span></code></pre></div>
+<p>The root key is <code>orangu</code>. <code>version</code> is required
+and is currently <code>1</code>. <code>jobs</code> and <code>main</code>
+must both be non-empty. Unknown keys are errors rather than ignored
+configuration.</p>
+<h2 id="jobs-roles-and-conversations">Jobs, roles, and
+conversations</h2>
+<p>Each <code>jobs</code> entry requires a unique <code>job</code> name
+and an existing <code>workspace</code> directory. Jobs run sequentially
+in declaration order and stop at the first failure. The complete
+<code>main</code> sequence runs once for every job, with
+<code>${job}</code> set to that job’s name.</p>
+<p><code>role</code> may be declared once under <code>orangu</code> or
+overridden by a job. It defaults to <code>all</code>; the other v1
+values are <code>code</code>, <code>review</code>,
+<code>explorer</code>, and <code>embeddings</code>. When the configured
+endpoint is an Orangu coordinator, the role is sent to it for routing.
+Otherwise Orangu selects a configured server with that role, falling
+back to the default server.</p>
+<p>Command steps that reach the model share one conversation within
+their job. The next job starts a separate conversation in its own
+workspace.</p>
+<h2 id="variables">Variables</h2>
+<p>Top-level <code>variables</code> apply to every job. A job may add
+variables or override a top-level value:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">variables</span><span class="kw">:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">profile</span><span class="kw">:</span><span class="at"> release</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">job</span><span class="kw">:</span><span class="at"> server</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">workspace</span><span class="kw">:</span><span class="at"> server</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">variables</span><span class="kw">:</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">profile</span><span class="kw">:</span><span class="at"> debug</span></span></code></pre></div>
+<p>Values may be strings, integers, floating-point numbers, or booleans
+and are inserted with <code>${name}</code>. Variables may refer to other
+variables. <code>${job}</code> is reserved for the current job name and
+cannot be redefined. Undefined, recursive, malformed, or unterminated
+references fail validation.</p>
+<h2 id="functions-and-execution-order">Functions and execution
+order</h2>
+<p><code>functions</code> contains named, reusable lists of steps. A
+<code>call</code> expands a function at that exact position, so
+<code>main</code> is the single unambiguous execution order:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">functions</span><span class="kw">:</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">build</span><span class="kw">:</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /build release</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">explain</span><span class="kw">:</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> Explain any build warnings and fix actionable ones.</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main</span><span class="kw">:</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">call</span><span class="kw">:</span><span class="at"> build</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">call</span><span class="kw">:</span><span class="at"> explain</span></span></code></pre></div>
+<p>Functions may call other functions. Unknown calls and direct or
+indirect recursion are validation errors. Function and variable names
+start with a letter or underscore and contain only letters, digits, and
+underscores.</p>
+<h2 id="step-types">Step types</h2>
+<p>Version 1 has eleven explicit step types. A step contains exactly one
+of them. <code>command</code>, <code>call</code>, <code>approved</code>,
+and <code>loop</code> are the basic operations; <code>if</code>,
+<code>for</code>, <code>while</code>, <code>break</code>,
+<code>return</code>, <code>label</code>, and <code>goto</code> are the
+workflow’s programming constructs. <code>loop</code> is one of those
+constructs: a bounded code-and-review cycle, not a separate command.</p>
+<h3 id="command"><code>command</code></h3>
+<p>The value is offered to Orangu’s existing dispatcher:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main</span><span class="kw">:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /status</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /code-review authentication</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> Investigate the failing authentication test and fix it.</span></span></code></pre></div>
+<p>A built-in slash command runs locally, a workspace skill expands into
+a model prompt, and other text is a natural-language model prompt.
+Preflight rejects unknown slash commands, missing required arguments,
+and commands that require the interactive terminal or persistent
+terminal session.</p>
+<h3 id="call"><code>call</code></h3>
+<p><code>call</code> inserts a named function’s steps. Expansion happens
+separately for each job, after its variables and <code>${job}</code>
+have been resolved.</p>
+<h3 id="approved"><code>approved</code></h3>
+<p>An external path supplied through a variable requires an earlier
+<code>approved</code> step. One path or a list of paths may be
+approved:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">approved</span><span class="kw">:</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> ${reports}</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="kw">-</span><span class="at"> ${archives}</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /shell mv report.pdf ${reports}/</span></span></code></pre></div>
+<p>Approved paths must already exist. Approval is ordered: placing it
+after the command does not authorize that command. An approval
+authorizes later uses wherever the run reaches them, including inside a
+called function or after it returns. It is an explicit workflow-language
+opt-in for passing a variable-derived external path; it does not widen
+the roots of Orangu’s file tools.</p>
+<p>File and directory tools reject absolute, <code>..</code>, and
+symlinked paths that leave the job workspace, and a tool’s
+<code>cwd</code> must remain inside it. <code>/shell</code> explicitly
+invokes the user’s platform shell and is not an operating-system
+sandbox. Literal shell syntax therefore retains the existing
+<code>/shell</code> semantics.</p>
+<h3 id="loop"><code>loop</code></h3>
+<p>A loop repeats a tool-enabled work phase followed by an independent,
+tool-free review phase:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">functions</span><span class="kw">:</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">improve_parser</span><span class="kw">:</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">loop</span><span class="kw">:</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">objective</span><span class="kw">:</span><span class="at"> Fix ${job}&#39;s parser without changing its public API.</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">stop</span><span class="kw">:</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">type</span><span class="kw">:</span><span class="at"> goal</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">condition</span><span class="kw">:</span><span class="at"> All parser tests pass and review finds no regression.</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">review</span><span class="kw">:</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">checks</span><span class="kw">:</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> cargo test</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">rubric</span><span class="kw">:</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> correctness</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> backward compatibility</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main</span><span class="kw">:</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">call</span><span class="kw">:</span><span class="at"> improve_parser</span></span></code></pre></div>
+<p>Every iteration gives the worker the objective and the previous
+review. After the work phase, Orangu runs the configured checks in the
+job workspace. The reviewer receives the worker report, check results,
+and branch diff, but no tools. Its response becomes feedback for the
+next iteration.</p>
+<p>Each loop has exactly one stopping policy:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th><code>stop.type</code></th>
+<th>Required field</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>turns</code></td>
+<td><code>count</code></td>
+<td>Stop after a positive number of complete iterations.</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td><code>duration</code></td>
+<td>Stop at a safe boundary after active time such as <code>30m</code>
+or <code>2h</code>.</td>
+</tr>
+<tr>
+<td><code>goal</code></td>
+<td><code>condition</code></td>
+<td>Continue until the reviewer verifies the stated condition.</td>
+</tr>
+</tbody>
+</table>
+<p>Durations use <code>s</code>, <code>m</code>, <code>h</code>, or
+<code>d</code>. Orangu never interrupts a tool call or review response
+merely because the duration has elapsed. For a goal loop, the reviewer
+must end with the exact standalone line <code>LOOP_COMPLETE: yes</code>;
+an inline mention or optimistic wording does not complete it.</p>
+<p><code>review.checks</code> and <code>review.rubric</code> are
+optional lists. Variables are expanded in the objective, stop value,
+checks, and rubric. The default rubric covers correctness, regressions,
+tests, and maintainability; listed entries add workflow-specific
+criteria.</p>
+<h3 id="if-for-while-break-return-label-goto"><code>if</code>,
+<code>for</code>, <code>while</code>, <code>break</code>,
+<code>return</code>, <code>label</code>, <code>goto</code></h3>
+<p>Workflows are a small programming language over the steps above.
+Conditions are ordinary workflow commands run in the job session:
+success means true and failure selects the other branch instead of
+failing the job.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">main</span><span class="kw">:</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">if</span><span class="kw">:</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">condition</span><span class="kw">:</span><span class="at"> /shell test -f report.pdf</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">then</span><span class="kw">:</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /shell mv report.pdf ${reports}/</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">else</span><span class="kw">:</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /export pr</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">for</span><span class="kw">:</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">var</span><span class="kw">:</span><span class="at"> target</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">items</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">alpha</span><span class="kw">,</span><span class="at"> beta</span><span class="kw">]</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">do</span><span class="kw">:</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /build ${target}</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">while</span><span class="kw">:</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">condition</span><span class="kw">:</span><span class="at"> /shell test ! -f done.txt</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">max_turns</span><span class="kw">:</span><span class="at"> </span><span class="dv">10</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">do</span><span class="kw">:</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">command</span><span class="kw">:</span><span class="at"> /test</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">break</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">label</span><span class="kw">:</span><span class="at"> finished</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> </span><span class="fu">goto</span><span class="kw">:</span><span class="at"> finished</span></span></code></pre></div>
+<p><code>for</code> repeats its <code>do</code> steps once per item,
+with <code>${var}</code> set to that value. Instead of
+<code>items</code>, a finite <code>range</code> such as
+<code>1..3</code> may be given. At most 100 items (a range span of at
+most 1000) are allowed, and a loop variable cannot shadow an outer one
+or be used in an <code>approved</code> path. <code>while</code>
+re-evaluates its condition before every turn and stops after
+<code>max_turns</code> turns at the latest (between 1 and 1000,
+required). <code>break</code> stops the innermost enclosing
+<code>for</code> or <code>while</code> and is rejected outside one.
+<code>return</code> stops the current function after its
+<code>call</code> and is rejected in <code>main</code>. Labels address
+the step list that declares them: a <code>goto</code> must name a label
+from the same function or <code>main</code> list, so a jump never
+crosses a function boundary or implicitly enters a nested block.</p>
+<p>Every branch, condition, and loop body is validated before execution,
+including the slash-command preflight, so an error in a rarely taken
+branch still fails <code>--dry-run</code> rather than an hours-long
+run.</p>
+<h2 id="managing-a-workflow">Managing a workflow</h2>
+<p>Loop progress is stored in Orangu’s workspace cache rather than in
+the repository. The workflow file supplies the jobs and their
+workspaces; append a lifecycle action after the file to inspect or
+control the saved loop for every job:</p>
+<pre class="text"><code>orangu --workflow /path/to/workflow.yml status
+orangu --workflow /path/to/workflow.yml pause
+orangu --workflow /path/to/workflow.yml resume
+orangu --workflow /path/to/workflow.yml clear</code></pre>
+<p><code>status</code> reports the objective, policy, iteration count,
+active time, and most recent review for each job. <code>pause</code>
+stops an active loop at its next safe phase boundary.
+<code>resume</code> continues a paused or failed loop with its saved
+review feedback. <code>clear</code> cancels saved state so another loop
+may start. A per-workspace lock prevents two loops from running against
+the same checkout simultaneously.</p>
+<h2 id="operational-behavior">Operational behavior</h2>
+<ul>
+<li><code>-q</code> suppresses successful workflow output. Failures
+still write to stderr and return a non-zero exit status.</li>
+<li>A loop can modify its workspace but does not commit, push, or open a
+pull request unless an explicit workflow command does so.</li>
+<li>Review evidence is bounded before it is sent to the model.
+Truncation is marked rather than silently treated as complete
+evidence.</li>
+<li>Saved loop state is control metadata, not a persisted model
+conversation.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

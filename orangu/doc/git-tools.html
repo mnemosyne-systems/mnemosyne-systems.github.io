@@ -59,7 +59,9 @@
       <div class="sidebar-section-title">The Stack</div>
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -74,6 +76,7 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
         <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
@@ -535,6 +538,11 @@ git fetch upstream</code></pre>
 <p>If <code>gh</code> is installed it uses
 <code>gh pr merge --merge</code>; otherwise it uses
 <code>git merge</code>.</p>
+<p>When the merge stops on conflicts, <code>/create_patch</code>
+resolves them: it hands the model every unmerged path, has it
+reconstruct the intended combined behavior, and stages the result. It
+leaves the merge itself for you to commit or abort. See the Core tools
+chapter.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/merge feature/login</code></pre>
 <p>Natural-language forms:</p>
@@ -561,6 +569,10 @@ default branch (from <code>refs/remotes/&lt;remote&gt;/HEAD</code>,
 falling back to <code>main</code> then <code>master</code>) and rebases
 onto it, refreshing it first.</li>
 </ul>
+<p>A rebase that stops on conflicts is handled by
+<code>/create_patch</code>, which resolves and stages the unmerged paths
+and leaves <code>git rebase --continue</code> (or <code>--abort</code>)
+to you. See the Core tools chapter.</p>
 <p>Tab completion after <code>/rebase</code> (or the natural-language
 forms <code>rebase</code> / <code>git rebase</code>) offers, in order,
 local branch names (from <code>git branch</code>), then the configured
@@ -585,6 +597,9 @@ git rebase origin/main</code></pre>
 completion offers abbreviated commit hashes from the default branch
 (<code>origin/main</code>, <code>origin/master</code>,
 <code>main</code>, or <code>master</code>, tried in that order).</p>
+<p>As with <code>/merge</code> and <code>/rebase</code>,
+<code>/create_patch</code> resolves and stages the conflicts a stopped
+cherry-pick leaves behind. See the Core tools chapter.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/cherry_pick abc1234</code></pre>
 <p>Natural-language forms:</p>

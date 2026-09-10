@@ -59,7 +59,9 @@
       <div class="sidebar-section-title">The Stack</div>
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -74,6 +76,7 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
         <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
@@ -204,11 +207,21 @@ and paths to <code>.theme</code> files are accepted.</td>
 session on disk. See One-shot mode below.</td>
 </tr>
 <tr>
+<td></td>
+<td><code>--workflow FILE</code></td>
+<td>Validate and execute every job in a YAML workflow.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--dry-run FILE</code></td>
+<td>Validate a YAML workflow completely without executing it or loading
+configuration.</td>
+</tr>
+<tr>
 <td><code>-q</code></td>
 <td><code>--quiet</code></td>
 <td>Print nothing on success — the exit code is the result. Applies to
-the modes that print and exit (<code>-p</code>, <code>-l</code>,
-<code>-s</code>).</td>
+the modes that print and exit, including workflows.</td>
 </tr>
 <tr>
 <td><code>-l</code></td>
@@ -268,6 +281,11 @@ tab or session. The reporting forms still work: a bare
 <code>/workspace</code> prints the active workspace, and a bare
 <code>/session</code> lists the stored sessions.</li>
 </ul>
+<p><code>/create_patch</code> is not in either group: a one-shot has no
+stored review report, but it still resolves the conflicts of an
+in-progress merge, rebase, or cherry-pick, which is what makes
+<code>orangu -p "/create_patch"</code> usable from a script that hits
+one.</p>
 <p><code>/export</code> covers the targets that are computed at export
 time: <code>pr</code>, <code>statistics</code>, and
 <code>duplicates</code>. <code>console</code>, <code>review</code>, and
@@ -283,9 +301,10 @@ echo $?                      # 0, or 1 with the reason on stderr</code></pre>
 <p>That is what makes it suit a crontab or a
 <code>~/.orangu/schedule</code> job: silent until the day it fails. It
 applies to the modes that print and exit — <code>-p</code>,
-<code>-l</code>, and <code>-s</code>. Combining it with <code>-i</code>
-or with the terminal interface is an error rather than a no-op, since
-neither has diagnostics to separate from its output.</p>
+<code>-l</code>, <code>-s</code>, and <code>--workflow</code> (including
+<code>--dry-run</code>). Combining it with <code>-i</code> or with the
+terminal interface is an error rather than a no-op, since neither has
+diagnostics to separate from its output.</p>
 <p><code>-t</code>/<code>--theme</code> is the other way round: a theme
 paints the interface — including the terminal’s own background and
 foreground — so it takes effect only when there is an interface. A

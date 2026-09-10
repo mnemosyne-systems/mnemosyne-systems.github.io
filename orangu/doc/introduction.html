@@ -59,7 +59,9 @@
       <div class="sidebar-section-title">The Stack</div>
       <ul>
         <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -74,6 +76,7 @@
         <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
         <li><a href="server-internals.html">Server Internals</a></li>
         <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
         <li><a href="contributing.html">Contributing</a></li>
       </ul>
     </div>
@@ -140,7 +143,8 @@ inference library and no Python dependency</li>
 required after setup</li>
 <li>Interactive code review (<code>/review</code>) and LLM-driven auto
 review (<code>/auto_review</code>) of the changes on your branch, with a
-category-grouped report you can export or post to an issue</li>
+category-grouped report you can export, post to an issue, or turn
+directly into fixes with <code>/create_patch</code></li>
 <li>Workspace-scoped file tools — show, create, modify, move, and delete
 files and directories, staged through Git as the change is made</li>
 <li>Workspace-aware Git and forge tools (commit, rebase, push, pull
@@ -213,6 +217,10 @@ they have to run on. See the <em>Inference server</em> chapter.</li>
 rather than part of the stack: it measures decode and prefill throughput
 of any OpenAI-compatible server over HTTP and charts it over time. See
 the <em>Benchmarking</em> chapter.</p>
+<p>A fifth, <code>orangu-gguf</code>, builds the model files the rest of
+the stack runs on: it pretrains one from scratch out of a manifest of
+permissively-licensed repositories, and rewrites an existing model at a
+smaller weight format. See the <em>Building a model</em> chapter.</p>
 <p>Because every layer talks to the next over the OpenAI-compatible API,
 the pieces stay cleanly separated, yet they ship and run as one. The
 result is a fully local, fully private, single-language AI coding stack

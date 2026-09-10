@@ -100,6 +100,7 @@
 
       <!-- Index -->
       <div class="rel-index reveal">
+        <a href="#v1-3-0"><span class="ri-date">September 9, 2026</span><span class="ri-ver">orangu 1.3.0</span></a>
         <a href="#v1-2-0"><span class="ri-date">August 24, 2026</span><span class="ri-ver">orangu 1.2.0</span></a>
         <a href="#v1-1-0"><span class="ri-date">August 3, 2026</span><span class="ri-ver">orangu 1.1.0</span></a>
         <a href="#v1-0-0"><span class="ri-date">July 27, 2026</span><span class="ri-ver">orangu 1.0.0</span></a>
@@ -116,11 +117,32 @@
         <a href="#v0-1-0"><span class="ri-date">May 15, 2026</span><span class="ri-ver">orangu 0.1.0</span></a>
       </div>
 
+      <!-- 1.3.0 -->
+      <article class="rel-entry reveal" id="v1-3-0">
+        <div class="rel-head">
+          <span class="rel-ver">orangu 1.3.0</span>
+          <span class="rel-badge">Latest</span>
+          <span class="rel-date">September 9, 2026</span>
+        </div>
+        <ul class="rel-list">
+          <li><strong>GGUF: train your own model</strong> &mdash; A fifth binary, <code>orangu-gguf</code>, builds the model files the rest of the stack runs on. Given a manifest of permissively-licensed repositories it clones them, trains a tokenizer, packs the text into tokens, pretrains a transformer from random weights, and writes a GGUF file <code>orangu-server</code> loads directly &mdash; no conversion step in between. Five sizes share one vocabulary, from a <code>tiny</code> run that finishes in minutes to a <code>2b</code> that does not.</li>
+          <li><strong>Quantize what you already have</strong> &mdash; The same tool rewrites an existing full-precision model at a smaller weight format: <code>q6_k</code> through <code>q2_k</code>, plus the <code>iq4</code> formats for rows a K-quant&rsquo;s 256-wide block will not divide. <code>orangu-gguf --list-quantizations</code> prints the table with a line on each.</li>
+          <li><strong>Workflows &mdash; jobs as a file</strong> &mdash; A YAML workflow describes jobs, their workspaces, variables, functions, explicit approvals, loops, and control flow (<code>if</code>, <code>for</code>, <code>while</code>, <code>break</code>, <code>return</code>, <code>goto</code>), over the same slash commands and prompts you type by hand. <code>--dry-run</code> validates every job, variable, approval, and command before anything runs, and <code>status</code>, <code>pause</code>, <code>resume</code>, and <code>clear</code> manage a run in progress.</li>
+          <li><strong>NPU support</strong> &mdash; A seventh backend alongside CPU, Vulkan, Metal, CUDA, ROCm, and OpenCL. Rockchip&rsquo;s RKNPU is a real matmul backend on boards like the RK3588 rather than an inventory line, with the width and weight-budget rules that keep it ahead of the CPU it shares the chip with.</li>
+          <li><strong><code>/create_patch</code></strong> &mdash; Turns a review report into the fixes it asked for. It also resolves the conflicts a stopped <code>/merge</code>, <code>/rebase</code>, or <code>/cherry_pick</code> leaves behind: the model gets every unmerged path, reconstructs the intended combined behavior, and stages the result, leaving the commit or the abort to you.</li>
+          <li><strong>New models</strong> &mdash; Qwen 3.8-Flash-Next, including its multi-token-prediction head for drafted tokens, plus GLM 5.3 and Ornith 1.5.</li>
+          <li><strong>Server model list</strong> &mdash; The model list sorts, and gained a refresh-all option; <code>LAST_USED</code> is now tracked in plain <code>orangu-server</code> and not only under the coordinator. Both community contributions.</li>
+          <li><strong>Also in this release</strong> &mdash; Performance and reasoning work across the engine, Windows fixes, and updated dependencies.</li>
+        </ul>
+        <p class="rel-note">
+          The complete manual ships with the release as <a href="https://github.com/mnemosyne-systems/orangu/releases/download/1.3.0/orangu-en.pdf">PDF</a> and HTML, alongside the four-page <a href="https://github.com/mnemosyne-systems/orangu/releases/download/1.3.0/orangu-cheatsheet-en.pdf">cheat sheet</a>, and is embedded in the binary for offline reading with <code>/manual</code>. 27 commits went into this release &mdash; our thanks to everyone who filed an issue, opened a discussion, or sent a patch.
+        </p>
+      </article>
+
       <!-- 1.2.0 -->
       <article class="rel-entry reveal" id="v1-2-0">
         <div class="rel-head">
           <span class="rel-ver">orangu 1.2.0</span>
-          <span class="rel-badge">Latest</span>
           <span class="rel-date">August 24, 2026</span>
         </div>
         <ul class="rel-list">
