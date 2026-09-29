@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -152,7 +153,7 @@ class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-
 <p>The script installs to <code>~/.local/bin</code> (Linux/macOS) or
 <code>%USERPROFILE%\.local\bin</code> (Windows) and warns if the
 directory is not in your <code>PATH</code>. See <a
-href="https://github.com/mnemosyne-systems/orangu/blob/1.3.0/BUILDING.md">BUILDING.md</a>
+href="https://github.com/mnemosyne-systems/orangu/blob/main/BUILDING.md">BUILDING.md</a>
 for instructions on building from source.</p>
 <h2 id="configure-orangu-server">Configure orangu-server</h2>
 <p><code>orangu-server -i</code> (long form <code>--init</code>) writes
@@ -161,7 +162,12 @@ downloading and serving both read the models directory from that file,
 and with no configuration present they stop with
 <code>Missing config file; pass --config or add ./orangu-server.conf or ~/.orangu/orangu-server.conf (see --init)</code>.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-i</span></span></code></pre></div>
-<p>Each prompt shows its default in brackets; Enter accepts it.</p>
+<p>The wizard asks for every <code>[orangu-server]</code> key. Each
+prompt shows its default in brackets; Enter accepts it. The
+language-model keys (<code>context</code> to
+<code>reasoning_effort</code>, <code>prefill_backend</code>,
+<code>mlp_unroll</code>) are not asked for a picture model, which is
+asked its own keys instead.</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -209,6 +215,107 @@ altogether when exactly one model is already present.</td>
 <td>The HTTP API port.</td>
 </tr>
 <tr>
+<td><code>api_key</code></td>
+<td><em>(none)</em></td>
+<td>Bearer token every request must carry; blank leaves the server open.
+On an address other than loopback the prompt says the server is then
+reachable off the machine.</td>
+</tr>
+<tr>
+<td><code>tls_cert</code></td>
+<td><em>(none)</em></td>
+<td>PEM certificate for HTTPS; blank serves plain HTTP. A certificate
+asks for its <code>tls_key</code>.</td>
+</tr>
+<tr>
+<td><code>slots</code></td>
+<td><code>1</code> (<code>8</code> for <code>embedding</code>)</td>
+<td>Concurrent requests, each with its own KV cache.</td>
+</tr>
+<tr>
+<td><code>queue_limit</code></td>
+<td><code>0</code></td>
+<td>Requests allowed to wait for a slot before <code>503</code>;
+<code>0</code> is unbounded.</td>
+</tr>
+<tr>
+<td><code>context</code></td>
+<td><em>(none)</em></td>
+<td>Tokens one request must be able to hold on the card; blank takes
+whatever the card has left.</td>
+</tr>
+<tr>
+<td><code>kv_cache</code></td>
+<td><code>f16</code></td>
+<td><code>f16</code>, <code>q8_0</code>, or <code>f32</code>.</td>
+</tr>
+<tr>
+<td><code>draft_model</code></td>
+<td><em>(none)</em></td>
+<td>A smaller model for speculative decoding. Naming one asks
+<code>draft_tokens</code> (<code>4</code>).</td>
+</tr>
+<tr>
+<td><code>reasoning_effort</code></td>
+<td><em>(none)</em></td>
+<td>Passed to the chat template; blank leaves the template’s own
+default.</td>
+</tr>
+<tr>
+<td><code>backend</code></td>
+<td><code>auto</code></td>
+<td><code>auto</code>, <code>cpu</code>, <code>vulkan</code>,
+<code>metal</code>, <code>dx12</code>, <code>cuda</code>,
+<code>opencl</code>, <code>rocm</code>, or <code>npu</code>.</td>
+</tr>
+<tr>
+<td><code>device</code></td>
+<td><code>auto</code></td>
+<td>An index, part of a device name, or <code>auto</code>.</td>
+</tr>
+<tr>
+<td><code>device_split</code></td>
+<td><code>off</code></td>
+<td><code>off</code>, <code>auto</code>, <code>all</code>, or ratios
+such as <code>3,1</code>.</td>
+</tr>
+<tr>
+<td><code>threads</code></td>
+<td><em>(none)</em></td>
+<td>CPU worker threads; blank is one per logical core.</td>
+</tr>
+<tr>
+<td><code>prefill_backend</code></td>
+<td><code>device</code></td>
+<td><code>device</code>, <code>cpu</code>, or <code>auto</code>.</td>
+</tr>
+<tr>
+<td><code>mlp_unroll</code></td>
+<td><code>auto</code></td>
+<td><code>auto</code>, <code>yes</code>, or <code>no</code>.</td>
+</tr>
+<tr>
+<td><code>npu_cache_gb</code></td>
+<td>a quarter of RAM, 1–16</td>
+<td>GiB compiled NPU blocks may occupy.</td>
+</tr>
+<tr>
+<td><code>npu_precompile</code></td>
+<td><code>Y</code></td>
+<td>Whether this model may use the NPU.</td>
+</tr>
+<tr>
+<td><code>read_size</code></td>
+<td><code>8192</code></td>
+<td>KiB per model-file read.</td>
+</tr>
+<tr>
+<td><code>log_type</code></td>
+<td><code>console</code></td>
+<td><code>console</code> or <code>file</code>; <code>file</code> asks
+for <code>log_path</code>.</td>
+</tr>
+<tr>
 <td><code>Add web console</code></td>
 <td><code>Y</code></td>
 <td><code>n</code> writes no <code>[web]</code> section and serves no
@@ -216,6 +323,12 @@ console. Accepting asks four more: the console’s <code>host</code>
 (defaulting to the API’s), <code>port</code> (<code>8101</code>),
 <code>reexec</code> (may it load a different model), and
 <code>delete</code> (may it delete models).</td>
+</tr>
+<tr>
+<td><code>Add Prometheus metrics</code></td>
+<td><code>N</code></td>
+<td>Accepting asks for its <code>host</code> and <code>port</code>
+(<code>8300</code>).</td>
 </tr>
 </tbody>
 </table>
@@ -274,16 +387,22 @@ is the general-purpose one, and the default. The alternatives are
 <code>--code</code>, <code>--review</code> (suppresses reasoning),
 <code>--explorer</code> (broader, more varied output), and
 <code>--embedding</code> (embeddings only, with the chat and completion
-endpoints disabled). They are mutually exclusive.</p>
+endpoints disabled). They are mutually exclusive. A sixth,
+<code>--image</code>, is not picked: a Qwen-Image
+(<code>qwen_image</code> or <code>qwen_image_2_1</code>) picture
+generator always comes up in it, and no other model can.</p>
 <p>The server binds the host and port from step 1 and serves an
 OpenAI-compatible endpoint, which is what <strong>orangu</strong>
 connects to and what step 4 asks for:</p>
 <pre class="text"><code>http://localhost:8100/v1</code></pre>
 <p><code>-d</code>/<code>--daemon</code> detaches it from the terminal;
 that needs <code>[orangu-server].model</code> set in the configuration,
-because there is no terminal left to prompt on. See the <em>Inference
-server</em> chapter for GPU backend selection and the rest of the
-operational detail.</p>
+because there is no terminal left to prompt on — and
+<code>log_type = file</code> to keep its output, since detached it has
+no console to log to either (the file defaults to
+<code>orangu-server.log</code> in the directory it was started from).
+See the <em>Inference server</em> chapter for GPU backend selection and
+the rest of the operational detail.</p>
 <p>To move a working server to another machine without repeating steps
 1–3, bundle it and its model into one executable:</p>
 <div class="sourceCode" id="cb11"><pre
@@ -298,13 +417,13 @@ server</em> chapter.</p>
 <p>With the server from step 3 running:</p>
 <div class="sourceCode" id="cb12"><pre
 class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-i</span></span></code></pre></div>
-<p>The first prompt is <code>LLM URL</code>: enter
-<code>http://localhost:8100/v1</code> (a bare
-<code>http://localhost:8100</code> is accepted too). The wizard queries
-that server’s <code>/v1/models</code> and offers the first model it
-advertises as the default for the <code>Model</code> prompt — if the
-server cannot be reached it says so and asks for the name manually,
-which is why it is worth starting the server first.</p>
+<p>The first prompt is <code>Endpoint</code>: press Enter to accept the
+default <code>http://localhost:8100</code>
+(<code>http://localhost:8100/v1</code> is accepted too). The wizard
+queries that server’s <code>/v1/models</code> and offers the first model
+it advertises as the default for the <code>Model</code> prompt — if the
+server cannot be reached the prompt has no default and you type the name
+yourself, which is why it is worth starting the server first.</p>
 <p>It then walks every remaining option showing its default, so a full
 run is a row of Enters, and omits from the file anything left at its
 default. It finishes by reporting which optional tools it detected
@@ -364,6 +483,7 @@ class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#
 /branch -m new-name
 /branch -d feature/old
 /cherry_pick abc1234
+/revert abc1234
 /comment 51 &quot;My comment&quot;
 /close -i 51
 /issue reviewer 114 jesperpedersen
@@ -371,6 +491,7 @@ class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#
 /commit &quot;[#42] My feature&quot;
 /restore README.md
 /diff
+/add_repository Jubilee101 muse
 /init_repo
 /log
 /log 5
@@ -401,9 +522,11 @@ file, or reject it with your own categorized comments), and copies the
 resulting report to the clipboard on exit.
 <code>/auto_review &lt;file&gt;</code> (Tab-completes on the file name)
 reviews a single file — the whole file on main/master, or just its
-changes on a branch — and <code>/auto_review all</code> reviews every
-Git-tracked file in the project. Both are described in detail in the
-Core tools chapter.</p>
+changes on a branch — <code>/auto_review src/main/java/**</code> reviews
+every file matching a glob pattern the same way, and
+<code>/auto_review all</code> reviews every Git-tracked file in the
+project. All three are described in detail in the Core tools
+chapter.</p>
 <p>orangu also supports Agent Skills: reusable directories containing a
 <code>SKILL.md</code>. Skills are discovered from
 <code>~/.orangu/skills/</code>, <code>~/.agents/skills/</code>,
@@ -424,7 +547,9 @@ changed files on the right and the selected file’s diff on the left. Use
 <code>Alt+c</code> to leave a categorized comment on a line. Type a
 question such as <code>is this thread-safe?</code> and press
 <code>Enter</code> to ask the model about the selected file. Press
-<code>Alt+x</code> to leave; the report is copied to your clipboard.</p>
+<code>Alt+x</code> to leave; the report is copied to your clipboard. (On
+a Mac these are Option-key chords, and the terminal must send Option as
+Meta — see “Alt on macOS” in the Terminal section.)</p>
 <p>To have the model do the work, run:</p>
 <pre class="text"><code>auto review</code></pre>
 <p>orangu reviews the whole change and each file across the Overall,
@@ -454,17 +579,21 @@ comment on 42 with auto review  # post it on GitHub/GitLab issue/PR #42</code></
 <p>By default the tools operate on the current directory. Use
 <code>--workspace /path/to/project</code> to point
 <strong>orangu</strong> at another tree.</p>
-<p>Every startup flag has a short form: <code>-c</code> for
+<p>Most startup flags have a short form: <code>-c</code> for
 <code>--config</code>, <code>-t</code> for <code>--theme</code>,
 <code>-w</code> for <code>--workspace</code>, <code>-r</code> for
-<code>--resume</code>, <code>-a</code> for <code>--all</code> (reopen
-the tabs from the previous run), <code>-l</code> for <code>--list</code>
-(print every stored session as a table and exit), <code>-i</code> for
+<code>--resume</code> (a UUID, or with none a list of stored sessions to
+pick from), <code>-a</code> for <code>--all</code> (reopen the tabs from
+the previous run), <code>-l</code> for <code>--list</code> (print every
+stored session as a table and exit), <code>-i</code> for
 <code>--init</code>, <code>-p</code> for <code>--prompt</code> (run one
 prompt or command and exit), <code>-q</code> for <code>--quiet</code>
 (print nothing on success), and <code>-s</code> for
-<code>--shell-completions</code>. <code>-h</code>/<code>--help</code>
-and <code>-V</code>/<code>--version</code> are available on all four
+<code>--shell-completions</code>. <code>--developer</code> (the default)
+and <code>--committer</code> pick the prompt mode the interface opens
+in, as <code>/developer</code> and <code>/committer</code> do.
+<code>-h</code>/<code>--help</code> and
+<code>-V</code>/<code>--version</code> are available on all four
 binaries. <code>orangu --help</code> lists them all.</p>
 <p><strong>orangu</strong> automatically resumes an existing session
 when you return to the same workspace and Git branch. When a previous

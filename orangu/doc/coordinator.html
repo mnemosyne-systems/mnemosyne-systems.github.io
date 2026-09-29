@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -205,12 +206,10 @@ class="sourceCode ini"><code class="sourceCode ini"><span id="cb2-1"><a href="#c
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">startup_timeout </span><span class="ot">=</span><span class="st"> </span><span class="dv">180</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">[main]</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> all</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">[explorer]</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> explorer</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF</span></span></code></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> ggml-org/gemma-4-E4B-it-GGUF</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[explorer]</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF</span></span></code></pre></div>
 <p>Neither profile sets <code>host</code>/<code>port</code> here — both
 default to <code>all:8100</code> (the same default
 <code>orangu-server</code> itself uses: <code>all</code> means every
@@ -295,14 +294,38 @@ by default.</td>
 by default when absent.</td>
 </tr>
 <tr>
+<td style="text-align: left;"><code>log_type</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Where the coordinator’s output goes:
+<code>console</code> (the default — exactly what it printed before the
+key existed) or <code>file</code>, which appends every line to
+<code>log_path</code> instead, stamped with a time and a level.
+Forwarded to every profile’s <code>orangu-server</code>, which then logs
+into the same file — without the once-a-second progress line a request
+rewrites on a terminal, which a file has no use for</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>log_path</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">The file <code>log_type = file</code>
+writes to. Defaults to <code>orangu-coordinator.log</code> in the
+directory the coordinator was started from; a leading <code>~</code> is
+expanded. Ignored under <code>log_type = console</code></td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>role</code></td>
 <td style="text-align: left;">profile</td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Same roles as <code>orangu.conf</code>:
 <code>all</code> (default), <code>code</code>, <code>review</code>,
-<code>explorer</code>, <code>embeddings</code>. At least one profile
-must resolve to <code>all</code> — it’s the fallback profile. Maps to
-<code>orangu-server</code>’s own
+<code>explorer</code>, <code>embeddings</code>. A section named after a
+role (<code>[code]</code>) is that role and needs no <code>role</code>
+key; set it only on a section with another name (<code>[qwen]</code>),
+and a value contradicting a role-named section is rejected. At least one
+profile must resolve to <code>all</code> — it’s the fallback profile.
+Maps to <code>orangu-server</code>’s own
 <code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>
 flag</td>
 </tr>
@@ -369,22 +392,40 @@ that profile’s own web console while it’s active</td>
 can usually be omitted once it’s in place.</p>
 <h2 id="flags">Flags</h2>
 <ul>
-<li><code>-q</code>/<code>--quiet</code> suppresses the startup banner,
-profile list, and shutdown message — useful when running it under a
-supervisor that captures stdout. Errors (a bad config, a port already in
-use, …) still go to stderr regardless.</li>
-<li><code>-d</code>/<code>--daemon</code> detaches from the terminal and
-runs in the background (Unix-only). It always implies
-<code>--quiet</code>. The config is loaded and the listen address is
-bound <em>before</em> detaching, so a bad config or a port already in
-use is still reported to your terminal rather than failing silently.
-There is no PID file: find the process with
-<code>pgrep -f orangu-coordinator</code> and stop it with
-<code>kill -INT &lt;pid&gt;</code> for the same graceful shutdown
-<code>Ctrl+C</code> triggers in the foreground.</li>
-<li><code>-h</code>/<code>--help</code> and
+<li><p><code>-q</code>/<code>--quiet</code> suppresses the startup
+banner, profile list, and shutdown message — useful when running it
+under a supervisor that captures stdout. Errors (a bad config, a port
+already in use, …) still go to stderr regardless. It is about the
+console: a log file (<code>log_type = file</code>) is written in full
+whatever the flag says.</p></li>
+<li><p><code>-d</code>/<code>--daemon</code> detaches from the terminal
+and runs in the background (Unix-only). With the console as its log
+there is nothing left to print to, so a daemon logs nothing at all — set
+<code>log_type = file</code> to have it log to a file, which is what
+that key is for. The config is loaded, the log file opened and the
+listen address bound <em>before</em> detaching, so a bad config, an
+unwritable <code>log_path</code> or a port already in use is still
+reported to your terminal rather than failing silently. There is no PID
+file: find the process with <code>pgrep -f orangu-coordinator</code> and
+stop it with <code>kill -INT &lt;pid&gt;</code> for the same graceful
+shutdown <code>Ctrl+C</code> triggers in the foreground.</p></li>
+<li><p><code>-s</code>/<code>--shell-completions</code> prints a
+bash/zsh/fish/PowerShell completion script for the shell detected from
+<code>$SHELL</code> and exits — the same switch every orangu binary has
+(see the Shell completions chapter). It covers every flag here, with
+<code>-c</code>/<code>--config</code> completing files:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bash — add to ~/.bashrc:</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">orangu-coordinator</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># zsh — write once to your fpath directory:</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-coordinator</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.zsh/completions/_orangu-coordinator</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># fish — add to ~/.config/fish/config.fish:</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-coordinator</span> <span class="at">-s</span> <span class="kw">|</span> <span class="bu">source</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># PowerShell — add to $PROFILE:</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-coordinator</span> <span class="at">-s</span> <span class="kw">|</span> <span class="ex">Out-String</span> <span class="kw">|</span> <span class="ex">Invoke-Expression</span></span></code></pre></div></li>
+<li><p><code>-h</code>/<code>--help</code> and
 <code>-V</code>/<code>--version</code> are also available, as on every
-orangu binary.</li>
+orangu binary.</p></li>
 </ul>
 <p>Running in the foreground (not <code>--daemon</code>) sets the
 terminal window/tab title to <code>orangu-coordinator</code> for the
@@ -399,12 +440,12 @@ falling back to <code>orangu-server</code> resolved via
 <p>Once orangu confirms an endpoint is a coordinator, it alone decides
 which model backs every role — a single, ordinary server section is
 enough:</p>
-<div class="sourceCode" id="cb4"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">server </span><span class="ot">=</span><span class="st"> main-server</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:9000/</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">server </span><span class="ot">=</span><span class="st"> main-server</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="kw">[main-server]</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">endpoint </span><span class="ot">=</span><span class="st"> http://localhost:9000/</span></span></code></pre></div>
 <p>No
 <code>role = explorer</code>/<code>review</code>/<code>embeddings</code>
 sections are needed: <code>/review</code>, <code>/auto_review</code>,

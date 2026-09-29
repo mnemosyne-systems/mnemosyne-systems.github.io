@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -114,9 +115,12 @@ id="toc-create_file-create_directory-move_directory-delete_directory">/create_fi
 <li><a href="#bisect" id="toc-bisect">/bisect</a></li>
 <li><a href="#branch" id="toc-branch">/branch</a></li>
 <li><a href="#fetch" id="toc-fetch">/fetch</a></li>
+<li><a href="#add_repository"
+id="toc-add_repository">/add_repository</a></li>
 <li><a href="#merge" id="toc-merge">/merge</a></li>
 <li><a href="#rebase" id="toc-rebase">/rebase</a></li>
 <li><a href="#cherry_pick" id="toc-cherry_pick">/cherry_pick</a></li>
+<li><a href="#revert" id="toc-revert">/revert</a></li>
 <li><a href="#init_repo" id="toc-init_repo">/init_repo</a></li>
 <li><a href="#push" id="toc-push">/push</a></li>
 <li><a href="#pull" id="toc-pull">/pull</a></li>
@@ -533,6 +537,65 @@ remotes or the named remote is unknown.</p>
 fetch upstream
 git fetch
 git fetch upstream</code></pre>
+<h2 id="add_repository">/add_repository</h2>
+<p>Adds another user’s copy of this project as a local tracking
+branch.</p>
+<p><code>/add_repository &lt;user&gt; [&lt;branch&gt;]</code> looks the
+copy up from the <code>origin</code> remote: the host and the project
+name are read from its URL, and the owner is replaced with
+<code>&lt;user&gt;</code>. So in a repository whose <code>origin</code>
+is <code>https://github.com/alice/pgmoneta.git</code>,
+<code>/add_repository Jubilee101</code> finds
+<code>https://github.com/Jubilee101/pgmoneta.git</code>. The host is
+recognised as one of:</p>
+<ul>
+<li><strong>GitHub</strong> (<code>github.com</code>, or a
+<code>github.*</code> instance) and <strong>GitLab</strong>
+(<code>gitlab.com</code>, or a <code>gitlab.*</code> instance): the copy
+lives directly under the user, whatever group the original sits in, so
+<code>git@gitlab.com:group/sub/pgmoneta.git</code> becomes
+<code>git@gitlab.com:Jubilee101/pgmoneta.git</code>.</li>
+<li><strong>Network</strong>: any other host reached over the network,
+where only the directory the project sits in is renamed —
+<code>ssh://git.example.com/srv/git/alice/pgmoneta.git</code> becomes
+<code>ssh://git.example.com/srv/git/Jubilee101/pgmoneta.git</code>.</li>
+<li><strong>Local</strong>: a filesystem path or <code>file://</code>
+URL, treated the same way — <code>/srv/git/alice/pgmoneta</code> becomes
+<code>/srv/git/Jubilee101/pgmoneta</code>.</li>
+</ul>
+<p>The URL keeps <code>origin</code>’s scheme (HTTPS, SSH, or a path),
+so it is reached the same way <code>origin</code> is. It is added as the
+remote <code>&lt;user&gt;</code> — reused when the remote already exists
+and points there, refused when it points somewhere else — and
+<code>&lt;branch&gt;</code> is fetched from it. Without a branch the
+copy’s default branch is used, asked of the remote itself and falling
+back to <code>main</code> then <code>master</code>. Only that branch is
+fetched, and the local branch <code>&lt;user&gt;/&lt;branch&gt;</code>
+is created tracking <code>&lt;user&gt;/&lt;branch&gt;</code>; the
+working tree stays on the branch it was on. An existing local branch of
+that name is an error rather than being reset. Run it again with another
+branch name to add a second branch of the same copy.</p>
+<p>Because the local branch and the remote-tracking branch share a name,
+Git itself may note that <code>Jubilee101/main</code> is ambiguous when
+it is used on the command line; the local branch is what it picks, and
+orangu’s own branch listing and completion always show the local
+name.</p>
+<p>Tab completion after <code>/add_repository</code> offers the users
+already added (every configured remote but <code>origin</code>), and
+after the user the branches already fetched from that copy, then
+<code>main</code> and <code>master</code>.</p>
+<p><strong>Examples</strong></p>
+<p>Add <code>Jubilee101</code>’s default branch as
+<code>Jubilee101/main</code>:</p>
+<pre class="text"><code>/add_repository Jubilee101</code></pre>
+<p>Add their <code>muse</code> branch as
+<code>Jubilee101/muse</code>:</p>
+<pre class="text"><code>/add_repository Jubilee101 muse</code></pre>
+<p>Then switch to it with <code>/branch Jubilee101/muse</code>, or
+review it with <code>/diff Jubilee101/muse</code>.</p>
+<p>Natural-language forms:</p>
+<pre class="text"><code>add repository Jubilee101
+add repository Jubilee101 muse</code></pre>
 <h2 id="merge">/merge</h2>
 <p>Merges a branch into the current branch.</p>
 <p>If <code>gh</code> is installed it uses
@@ -543,11 +606,19 @@ resolves them: it hands the model every unmerged path, has it
 reconstruct the intended combined behavior, and stages the result. It
 leaves the merge itself for you to commit or abort. See the Core tools
 chapter.</p>
+<p><code>/merge abort</code> abandons a merge that stopped on conflicts
+with <code>git merge --abort</code>, returning the branch to where it
+was before the merge. Tab completion after <code>/merge</code> offers
+<code>abort</code> alongside the branch names — first, as the grey
+inline ghost, while a merge is in progress.</p>
 <p><strong>Examples</strong></p>
-<pre class="text"><code>/merge feature/login</code></pre>
+<pre class="text"><code>/merge feature/login
+/merge abort</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>merge feature/login
-git merge feature/login</code></pre>
+git merge feature/login
+merge abort
+git merge --abort</code></pre>
 <h2 id="rebase">/rebase</h2>
 <p>Rebases the current branch onto another branch.</p>
 <p>With no argument it rebases against the repository default branch: if
@@ -571,25 +642,33 @@ onto it, refreshing it first.</li>
 </ul>
 <p>A rebase that stops on conflicts is handled by
 <code>/create_patch</code>, which resolves and stages the unmerged paths
-and leaves <code>git rebase --continue</code> (or <code>--abort</code>)
-to you. See the Core tools chapter.</p>
+and leaves <code>git rebase --continue</code> to you. See the Core tools
+chapter.</p>
+<p><code>/rebase abort</code> abandons the rebase in progress with
+<code>git rebase --abort</code>, returning the branch to where it was
+before the rebase started.</p>
 <p>Tab completion after <code>/rebase</code> (or the natural-language
 forms <code>rebase</code> / <code>git rebase</code>) offers, in order,
 local branch names (from <code>git branch</code>), then the configured
 remotes (from <code>git remote</code>, with <code>origin</code> floated
 to the front), then the remote-tracking branches (from
-<code>git branch --all</code>, e.g. <code>origin/main</code>). The first
-local branch is previewed as the grey inline ghost.</p>
+<code>git branch --all</code>, e.g. <code>origin/main</code>), then
+<code>abort</code>. The first local branch is previewed as the grey
+inline ghost — or <code>abort</code>, which moves to the front while a
+rebase is in progress.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/rebase
 /rebase develop
 /rebase origin/main
-/rebase upstream</code></pre>
+/rebase upstream
+/rebase abort</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>rebase
 git rebase
 rebase develop
-git rebase origin/main</code></pre>
+git rebase origin/main
+rebase abort
+git rebase --abort</code></pre>
 <h2 id="cherry_pick">/cherry_pick</h2>
 <p>Cherry-picks a commit onto the current branch with
 <code>git cherry-pick</code>.</p>
@@ -600,12 +679,44 @@ completion offers abbreviated commit hashes from the default branch
 <p>As with <code>/merge</code> and <code>/rebase</code>,
 <code>/create_patch</code> resolves and stages the conflicts a stopped
 cherry-pick leaves behind. See the Core tools chapter.</p>
+<p><code>/cherry_pick abort</code> abandons the cherry-pick in progress
+with <code>git cherry-pick --abort</code>. Tab completion offers
+<code>abort</code> after the commit hashes — first while a cherry-pick
+is in progress.</p>
 <p><strong>Examples</strong></p>
-<pre class="text"><code>/cherry_pick abc1234</code></pre>
+<pre class="text"><code>/cherry_pick abc1234
+/cherry_pick abort</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>cherry pick abc1234
 cherry-pick abc1234
-git cherry-pick abc1234</code></pre>
+git cherry-pick abc1234
+cherry pick abort
+git cherry-pick --abort</code></pre>
+<h2 id="revert">/revert</h2>
+<p>Reverts a commit: <code>git revert --no-edit &lt;commit&gt;</code>
+records a new commit that undoes it, with Git’s default
+<code>Revert "&lt;subject&gt;"</code> message, so no editor is opened.
+The reverted commit stays in history, which makes this the safe way to
+back out a change that has already been pushed.</p>
+<p><code>gh</code> has no equivalent, so it always uses plain Git. Tab
+completion offers the abbreviated hashes of the latest 25 commits on the
+current branch, newest first, so the commit you just made is previewed
+as the grey inline ghost; <code>abort</code> follows them.</p>
+<p>A revert that stops on conflicts is resolved by
+<code>/create_patch</code>, as with <code>/merge</code>,
+<code>/rebase</code>, and <code>/cherry_pick</code>, which then finishes
+it with <code>git revert --continue</code>. <code>/revert abort</code>
+abandons it instead with <code>git revert --abort</code>; while a revert
+is in progress, <code>abort</code> is the first completion.</p>
+<p><strong>Examples</strong></p>
+<pre class="text"><code>/revert abc1234
+/revert abort</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>revert abc1234
+revert commit abc1234
+git revert abc1234
+revert abort
+git revert --abort</code></pre>
 <h2 id="init_repo">/init_repo</h2>
 <p>Initializes a Git repository in the workspace with
 <code>git init</code>.</p>

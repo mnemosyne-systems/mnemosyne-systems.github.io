@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html" class="active">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -799,6 +800,10 @@ what it needs as arguments:</p>
 <div class="sourceCode" id="cb11"><pre
 class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> <span class="at">-m</span> ./my-model-BF16.gguf <span class="at">-q</span> q4_k_m</span></code></pre></div>
 <table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
 <thead>
 <tr>
 <th style="text-align: left;">Option</th>
@@ -835,6 +840,12 @@ run</td>
 <td style="text-align: left;"><code>--list-quantizations</code></td>
 <td style="text-align: left;">Print the weight formats and exit</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>-s</code>,
+<code>--shell-completions</code></td>
+<td style="text-align: left;">Print the shell completion script and
+exit</td>
+</tr>
 </tbody>
 </table>
 <p>The four overrides exist for the one-off — trying <code>0.5b</code>
@@ -845,6 +856,24 @@ manifest, where the next run will still find it. <code>-ts</code> and
 read as two separate short flags; they are accepted here anyway, in both
 the <code>-ts 1b</code> and <code>-ts=1b</code> spellings, alongside the
 long forms.</p>
+<p><code>-s</code>/<code>--shell-completions</code> prints a
+bash/zsh/fish/PowerShell completion script for the shell detected from
+<code>$SHELL</code> — the same switch every orangu binary has (see the
+Shell completions chapter). It completes the manifest with
+<code>.json</code> files, <code>-m</code> with <code>.gguf</code> files,
+<code>-q</code> with the weight formats (by shelling back out to
+<code>orangu-gguf --list-quantizations</code>), <code>-o</code> and
+<code>--flamegraph</code> with files, and offers
+<code>-ts</code>/<code>-cs</code> alongside their long forms:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bash — add to ~/.bashrc:</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">orangu-gguf</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># zsh — write once to your fpath directory:</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.zsh/completions/_orangu-gguf</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># fish — add to ~/.config/fish/config.fish:</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> <span class="at">-s</span> <span class="kw">|</span> <span class="bu">source</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co"># PowerShell — add to $PROFILE:</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-gguf</span> <span class="at">-s</span> <span class="kw">|</span> <span class="ex">Out-String</span> <span class="kw">|</span> <span class="ex">Invoke-Expression</span></span></code></pre></div>
 <h2 id="sizes">Sizes</h2>
 <p>Five sizes, sharing one vocabulary, so a tokenizer trained once
 carries across all of them. The parameter counts are for the default

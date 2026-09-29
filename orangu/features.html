@@ -80,6 +80,10 @@
           <p><code>/create_patch</code> turns a review report into the fixes it asked for, and resolves the conflicts a stopped merge, rebase, or cherry-pick leaves behind &mdash; staging the result and leaving the commit to you.</p>
         </div>
         <div class="g-cell">
+          <h3>Image generation</h3>
+          <p>Serve Qwen-Image 2.1 and a chat turn, or a <code>/v1/images/generations</code> request, is answered with a picture &mdash; with transparency, and edits of a picture you attach.</p>
+        </div>
+        <div class="g-cell">
           <h3>Model Context Protocol</h3>
           <p>Connect to external tools over MCP. Local server management, refresh, and reconnect are handled inside orangu &mdash; no separate supervisor, and no config file to edit to bring a server back after it drops.</p>
         </div>
@@ -165,7 +169,7 @@
       <div class="grid-3">
         <div class="g-cell">
           <h3>Branch management</h3>
-          <p>List, create, rename, switch, and delete branches. <code>/branch</code>, <code>/checkout</code>, <code>/merge</code>, all with Tab completion.</p>
+          <p>List, create, rename, switch, and delete branches. <code>/branch</code>, <code>/checkout</code>, <code>/merge</code>, all with Tab completion &mdash; and <code>/add_repository</code> fetches a contributor&rsquo;s copy.</p>
         </div>
         <div class="g-cell">
           <h3>Commit workflow</h3>
@@ -184,8 +188,8 @@
           <p>orangu fast-forwards your default branch against origin in the background on every start, keeping your repo in sync silently.</p>
         </div>
         <div class="g-cell">
-          <h3>Cherry-pick and stash</h3>
-          <p>Pick commits from other branches, or stash and restore uncommitted changes, all with Tab completion over commit hashes and stash entries.</p>
+          <h3>Cherry-pick, revert, and stash</h3>
+          <p>Pick commits from other branches, <code>/revert</code> a pushed one, or stash and restore uncommitted changes, all with Tab completion over commit hashes and stash entries.</p>
         </div>
       </div>
     </div>

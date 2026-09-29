@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html" class="active">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -107,6 +108,8 @@ id="toc-configuration">Configuration</a></li>
 <li><a href="#roles" id="toc-roles">Roles</a></li>
 <li><a href="#gpu-backend" id="toc-gpu-backend">GPU backend</a></li>
 <li><a href="#web-ui" id="toc-web-ui">Web UI</a></li>
+<li><a href="#image-generation" id="toc-image-generation">Image
+generation</a></li>
 <li><a href="#model-management" id="toc-model-management">Model
 management</a></li>
 <li><a href="#session-management" id="toc-session-management">Session
@@ -182,17 +185,19 @@ No separate download step is needed.</p>
 <p>Leave it off entirely and <code>orangu-server</code> lists every
 <code>.gguf</code> model under the configured <code>models</code>
 directory and prompts for one by <code>NR</code>, then — unless
-<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>
-was passed — prompts for a role too (see below), TAB-completing over the
-five valid names (dropdown-style: an empty <code>TAB</code> press lists
-all five) and defaulting to <code>all</code> on an empty entry:</p>
+<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>/<code>--image</code>
+was passed, and unless the model is a picture generator, whose role is
+<code>image</code> without asking — prompts for a role too (see below),
+TAB-completing over the five names a language model can take
+(dropdown-style: an empty <code>TAB</code> press lists all five) and
+defaulting to <code>all</code> on an empty entry:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span></span></code></pre></div>
 <pre><code>NR  MODEL                            QUANT   SIZE        SUPPORTED
  1  Qwen/Qwen2.5-0.5B-Instruct-GGUF  Q4_K_M  468.64 MiB  Yes (qwen2)
  2  unsloth/gemma-4-E2B-it-GGUF      Q4_K_M  2.89 GiB    Yes (gemma4)
 
 Select a model (NR): 2
-role [all]: </code></pre>
+role [all]:</code></pre>
 <p>When the directory holds exactly one model there is nothing to choose
 between, so the <code>NR</code> prompt is skipped — the table is still
 printed (it names the model and whether this build supports it), and the
@@ -201,7 +206,7 @@ run goes straight on to the role prompt:</p>
  1  Qwen/Qwen2.5-0.5B-Instruct-GGUF  Q4_K_M  468.64 MiB  Yes (qwen2)
 
 model: Qwen/Qwen2.5-0.5B-Instruct-GGUF:Q4_K_M
-role [all]: </code></pre>
+role [all]:</code></pre>
 <p>On startup, <code>orangu-server</code> prints the same OS/CPU/GPU
 report <code>system</code> does, followed by the model/UI/API/workspace
 summary:</p>
@@ -726,6 +731,11 @@ on an Orange Pi 5 (RK3588, 16 GiB) serving <code>gemma-4-E2B-it</code>
 at <code>Q4_K_M</code>, every configuration producing identical
 text:</p>
 <table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 15%" />
+<col style="width: 52%" />
+</colgroup>
 <thead>
 <tr>
 <th>backend</th>
@@ -876,10 +886,10 @@ GGUF weights rather than synthetic ones —
 <code>Q8_0</code> straight out of the file:</p>
 <table>
 <colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
+<col style="width: 46%" />
+<col style="width: 27%" />
+<col style="width: 7%" />
+<col style="width: 18%" />
 </colgroup>
 <thead>
 <tr>
@@ -1122,9 +1132,14 @@ what’s on disk, so <code>unsloth/gemma-4-E2B-it-GGUF</code> and
 <code>unsloth/gemma-4-E2B-it-GGUF:Q4_K_M</code> name the same local
 model; use the tagged form (or the row’s <code>NR</code>) to pick one
 particular quantization of a repo that has several, and to ask for one
-that isn’t downloaded yet. A multimodal projector (“mmproj”) sidecar
-file doesn’t count as its own model — it’s meant to be loaded
-<em>alongside</em> a base model, not to stand in as one.</p>
+that isn’t downloaded yet. The companion files <code>download</code>
+fetches beside a model — a multimodal projector
+(<code>mmproj-*.gguf</code>) and a multi-token-prediction head
+(<code>MTP/mtp-*.gguf</code>, see <strong>Multi-token-prediction
+heads</strong> below) — don’t count as models of their own: each is
+meant to be loaded <em>alongside</em> a base model, not to stand in as
+one, so neither gets a row, and both go with the repo once its last
+model is deleted.</p>
 <p><code>SUPPORTED</code> says whether this build can actually load the
 model’s architecture — <code>Yes (&lt;arch&gt;)</code> or
 <code>No (&lt;arch&gt;)</code>, where <code>&lt;arch&gt;</code> is the
@@ -1389,11 +1404,15 @@ holding one can’t overwrite it. <code>--binary</code> names a
 <em>different</em> executable to bundle into — a build for another
 platform, which can’t be run here to bundle itself.</p>
 <h3 id="baking-in-the-address">Baking in the address</h3>
-<p><code>bundle</code> takes <code>--host</code>, <code>--port</code>
-and <code>--web</code> too, and records them <em>in</em> the bundle —
-exactly as it records the role. A bundle is started without a config
-file, so where it listens has to be decidable when it is built, not only
-when it is run:</p>
+<p><code>bundle</code> takes <code>--host</code>, <code>--port</code>,
+<code>--web</code> and <code>--metrics</code> too, and records them
+<em>in</em> the bundle — exactly as it records the role. A bundle is
+started without a config file, so where it listens has to be decidable
+when it is built, not only when it is run. (The <code>Listen</code>
+summary line below reports only the API and console addresses; a
+baked-in <code>--metrics</code> still takes effect at startup, same as
+every other resolved setting — see its own <code>Metrics</code> banner
+line.)</p>
 <div class="sourceCode" id="cb45"><pre
 class="sourceCode sh"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> bundle <span class="op">&lt;</span>model<span class="op">&gt;</span> --all <span class="at">--host</span> all <span class="at">-y</span>   <span class="co"># LAN-reachable wherever it lands</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--host</span> all bundle <span class="op">&lt;</span>model<span class="op">&gt;</span> --all <span class="at">-y</span>   <span class="co"># the same, before the subcommand</span></span>
@@ -1410,8 +1429,8 @@ machine’s <code>bind</code> to reject: <code>--host</code> accepts
 <code>all</code>, <code>*</code>, or a literal IP address, and a
 hostname or a typo is an error while there is still somebody to tell.
 Whatever is baked in is a <em>default</em>, not a lock — the same
-<code>--host</code>/<code>--port</code>/<code>--web</code> flags at run
-time still override it, and so does a config file.</p>
+<code>--host</code>/<code>--port</code>/<code>--web</code>/<code>--metrics</code>
+flags at run time still override it, and so does a config file.</p>
 <h3 id="the-architecture-is-in-the-name">The architecture is in the
 name</h3>
 <p>The default output is <code>orangu-server-bundle-x86_64</code>,
@@ -1473,14 +1492,15 @@ sessions — is the same server, because it <em>is</em> the same binary
 with bytes after it.</p>
 <h3 id="overriding-the-address-and-ports">Overriding the address and
 ports</h3>
-<p><code>--host</code>, <code>--port</code> and <code>--web</code>
-override whatever the config file (or, for a bundle, the built-in
-defaults) resolved to:</p>
+<p><code>--host</code>, <code>--port</code>, <code>--web</code> and
+<code>--metrics</code> override whatever the config file (or, for a
+bundle, the built-in defaults) resolved to:</p>
 <div class="sourceCode" id="cb47"><pre
 class="sourceCode sh"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="ex">./orangu-server-bundle-x86_64</span> <span class="at">--host</span> all              <span class="co"># every interface, not just loopback</span></span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./orangu-server-bundle-x86_64</span> <span class="at">--host</span> 0.0.0.0          <span class="co"># the same thing, spelled out</span></span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./orangu-server-bundle-x86_64</span> <span class="at">--port</span> 9100 <span class="at">--web</span> 9300  <span class="co"># both listeners moved</span></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./orangu-server-bundle-x86_64</span> <span class="at">--web</span> 0                 <span class="co"># web console off</span></span></code></pre></div>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="ex">./orangu-server-bundle-x86_64</span> <span class="at">--web</span> 0                 <span class="co"># web console off</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./orangu-server-bundle-x86_64</span> <span class="at">--metrics</span> 9400     <span class="co"># dedicated, unauthenticated /metrics</span></span></code></pre></div>
 <p><code>--host</code> takes <code>all</code> (or <code>*</code>) for
 every network interface, or a literal address — the same values
 <code>[orangu-server].host</code> accepts. It is how a bundle that was
@@ -1495,11 +1515,17 @@ stands, so an API deliberately separated from the console cannot be
 exposed in a way that quietly exposes the console too. Use
 <code>--web 0</code> to turn the console off entirely when only the API
 should be reachable.</p>
+<p><code>--metrics</code> moves with <code>--host</code> the same way
+the API does — there is no separate metrics host to keep it on. It is
+<code>0</code> (disabled) unless a config file or this flag names a
+port, since that listener carries no <code>api_key</code> check at all —
+see <strong>Monitoring: <code>/metrics</code> and
+<code>/ready</code></strong> above.</p>
 <p>Where to listen is the setting that is routinely per-<em>run</em>
 rather than per-machine — a second server alongside one already on 8100,
 a port a firewall happens to allow, a bundle that should be reachable
 from the LAN for one afternoon — and a bundle may have no config file to
-edit. All three flags apply to an ordinary <code>orangu-server</code>
+edit. All four flags apply to an ordinary <code>orangu-server</code>
 too.</p>
 <h3 id="how-it-works">How it works</h3>
 <p>The bundle is the server’s program image, byte for byte, with the
@@ -1552,10 +1578,14 @@ class="sourceCode ini"><code class="sourceCode ini"><span id="cb49-1"><a href="#
 <span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a><span class="dt">kv_cache </span><span class="ot">=</span><span class="st"> f16</span></span>
 <span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a><span class="dt">read_size </span><span class="ot">=</span><span class="st"> </span><span class="dv">8192</span></span>
 <span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a><span class="dt">role </span><span class="ot">=</span><span class="st"> all</span></span>
-<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
-<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
-<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a><span class="dt">reexec </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span></code></pre></div>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a><span class="dt">log_type </span><span class="ot">=</span><span class="st"> console</span></span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a><span class="dt">reexec </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a><span class="kw">[prometheus]</span></span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8300</span></span></code></pre></div>
 <ul>
 <li><p><code>models</code> — the base directory a model spec resolves
 into: what <code>list</code>/ <code>show</code> scan (recursively) for
@@ -1610,8 +1640,9 @@ have, each shown with the interface it belongs to. <code>--host</code>
 on the command line overrides this for one run (<code>--host all</code>
 exposes a server a config keeps on loopback, and moves
 <code>[web].host</code> with it unless that key was set explicitly),
-<code>-p</code>/<code>--port</code> overrides <code>port</code>, and
-<code>--web</code> overrides <code>[web].port</code> — see
+<code>-p</code>/<code>--port</code> overrides <code>port</code>,
+<code>--web</code> overrides <code>[web].port</code>, and
+<code>--metrics</code> overrides <code>[prometheus].port</code> — see
 <strong>Overriding the address and ports</strong> above.</p></li>
 <li><p><code>slots</code> — how many requests generate concurrently,
 each with its own KV cache (default <code>1</code>). Raise it to serve
@@ -1629,10 +1660,11 @@ not something you choose. Terminating TLS in a reverse proxy in front of
 the server remains perfectly valid and is what most fleets do; this
 exists so that a single binary on one machine, with no package manager,
 is not forced into one.</p>
-<div class="sourceCode" id="cb50"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="ex">openssl</span> req <span class="at">-x509</span> <span class="at">-newkey</span> rsa:2048 <span class="at">-nodes</span> <span class="at">-days</span> 365 <span class="dt">\</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-subj</span> <span class="st">&quot;/CN=your-host&quot;</span> <span class="at">-addext</span> <span class="st">&quot;subjectAltName=DNS:your-host&quot;</span> <span class="dt">\</span></span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-keyout</span> key.pem <span class="at">-out</span> cert.pem</span></code></pre></div></li>
+<pre><code>              ```sh
+              openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
+                -subj &quot;/CN=your-host&quot; -addext &quot;subjectAltName=DNS:your-host&quot; \
+                -keyout key.pem -out cert.pem
+              ```</code></pre></li>
 <li><p><code>api_key</code> — the bearer token every request must carry.
 Unset by default, which leaves the server open; that is right for the
 loopback address it also defaults to, and becomes wrong the moment
@@ -1739,7 +1771,29 @@ still tried behind it, for a Mac running MoltenVK. <strong>On Windows
 DX12 is tried behind Vulkan</strong>, ahead of CUDA and OpenCL. Naming a
 backend explicitly fails to start instead of falling back, for when GPU
 inference was asked for specifically. See <strong>GPU backend</strong>
-below.</p></li>
+below. Under <code>auto</code>, when that is one GPU, <strong>where a
+token is decoded is then measured</strong>: the model is also built on
+the CPU backend (a view of the same mapped weights) and a few one-token
+decode steps are timed on each; decode moves to the cores only when they
+are at least 1.1× faster, and the device’s copy is released. The
+<code>[adapt] decode:</code> line says what was measured, with the cores
+timed in their best worker pool. On the CIX P1 the eight big cores now
+out-decode the Mali (<code>gemma-4-E2B</code>: ~46 against ~64 ms a
+step, and faster at every depth to 4096 — see
+<code>doc/PERF-ALL.md</code>, tasks 7, 9 and 15), so decode moves to
+them; <code>backend = vulkan</code> keeps the GPU.
+<code>ORANGU_DECODE_PROBE=0</code> skips it and keeps the device. When
+decode leaves a GPU idle, <strong>the output head may be shared with
+it</strong> (gemma): a fresh backend on the GPU takes a share of the
+head’s rows, and each token’s head runs on the cores and on the GPU at
+once, where the two together read memory faster than the cores alone.
+The share is measured on the head. The split is kept only if whole
+decode steps get ≥ 1.05× faster, and the
+<code>[adapt] output head:</code> line says which. On the CIX P1 it is
+not kept: the Mali’s clock governor holds it at 72 MHz at decode’s duty
+cycle, and the split made a step twice as slow. The check costs ~1.1 s
+at start-up (<code>doc/PERF-ALL.md</code>, task 14).
+<code>ORANGU_HEAD_SPLIT=0</code> skips it.</p></li>
 <li><p><code>device</code> — <em>which card</em>, when
 <code>backend</code> finds more than one: <code>auto</code> (the default
 — every device on the machine, best first, one of which runs the model),
@@ -1755,23 +1809,130 @@ across those devices: <code>off</code> (the default), <code>auto</code>,
 <strong>Splitting a model across devices</strong> below.
 <code>--device-split</code> and <code>ORANGU_DEVICE_SPLIT</code>
 override it for one run.</p></li>
+<li><p><code>prefill_backend</code> — <code>auto</code> (the default:
+when the model loads, a 64-token prompt through its first two layers —
+one 64-token GEMM at the FFN gate’s shape for the architectures other
+than Gemma’s — is timed on each backend, the faster one takes the
+prompts, and the log says which and by how much — every machine decides
+for itself), <code>device</code> (a prompt runs where decode runs) or
+<code>cpu</code> (multi-token passes run on the CPU backend while
+single-token decode stays on the selected device). It matters on a board
+whose device does a prompt’s GEMMs slower than its cores do and whose
+memory the two share: on the CIX P1’s Mali <code>gemma-4-E2B</code>
+prefills at 19–26 tok/s on the device and 110–145 on the cores, and the
+27B ternary model at 1.6 against 10, with decode unchanged on the
+device; on a discrete card the probe keeps the prompts on the card.
+Honoured by the dense Gemma family (not its MoE or embedding models) and
+the Qwen 3.5-family trunk (<code>qwen35</code>, <code>qwen35moe</code>,
+<code>qwen3next</code>, <code>qwen4exp</code>); other architectures
+prefill where they decode. <code>ORANGU_HYBRID_PREFILL_CPU=1</code> is
+<code>cpu</code> from the environment. When the prompts land on the CPU,
+an NPU’s feed-forward blocks are timed against the CPU’s own GEMMs too,
+per token at the width each side really runs, and left out unless the
+NPU wins by a quarter (see <code>ORANGU_NPU_FFN</code>).</p></li>
+<li><p><code>prompt_weights</code> — <code>auto</code> (the default),
+<code>copy</code> or <code>file</code>: how the weights a prompt
+multiplies on the CPU are held. <code>auto</code> builds copies laid out
+for the cores’ matrix instructions, each kind on its own measurement:
+per-row <code>int8</code> copies of the K-quant projections (a byte a
+weight, one scale per row, for the 8 × 8 <code>smmla</code> tile), and
+<code>bf16</code> copies of the matrices the file stores unquantized
+(<code>F32</code>/<code>F16</code>/<code>BF16</code>, for the 8 × 8
+<code>bfmmla</code> tile — not <code>int8</code>, which would quantize
+weights the file keeps exact). A kind is built when prompts run on the
+CPU, the CPU has its instruction, all copies take at most half the
+memory available after load, and the kind’s widest matrix measures at
+least 10% faster through a copy at load; decode keeps the file’s
+weights. On the CIX P1 with <code>gemma-4-E2B</code>: 1.86 GB of
+<code>int8</code> copies, the projections 1.6–1.9× faster within about
+1% (relative RMS) of the file’s product, and 0.08 GB of
+<code>bf16</code> copies of the per-layer-embedding matrices, 2.4–3.7×
+faster within 0.15%; all built in 0.9 s. <code>copy</code> builds them
+wherever the CPU has the instruction, unmeasured; <code>file</code>
+never does. <code>ORANGU_PROMPT_WEIGHTS</code> overrides it for one
+run.</p></li>
+<li><p><code>prefix_warmup</code> — <code>on</code> (the default) or
+<code>off</code>: remember, per model, the prompt prefixes requests
+reuse from the cache (at least 256 tokens, the four most reused, as
+token ids in
+<code>~/.orangu/server/&lt;fingerprint&gt;/warm-prefixes.json</code>),
+and after a restart prefill them again in the background while the
+listener already takes requests — so a client’s fixed opening (the
+<code>orangu</code> system prompt and tools, ~1900 tokens) is cached
+before its first request. A request that arrives during the warm-up
+waits for it, never longer than its own cold prefill would have taken.
+<code>ORANGU_PREFIX_WARMUP</code> overrides it.</p></li>
+</ul>
+<p>Every choice the server makes about the machine it is on — where
+prompts run, the core classes, the attention kernel, the prompt weights,
+the NPU — is logged as one <code>[adapt]</code> line with what it
+measured, and listed under <code>adapt</code> in
+<code>GET /props</code>:</p>
+<pre class="text"><code>orangu-server: [adapt] prompts: on the cpu — a 64-token 1536x6144 GEMM takes 14.2 ms on the device, 3.2 ms on the cpu
+orangu-server: [adapt] cores: 12 worker threads — 8 × Cortex-A720 (2.2–2.6 GHz, capacity 866–1024) + 4 × Cortex-A520 (1.8 GHz, capacity 279)
+orangu-server: [adapt] prompt attention: int8 scores, bf16 values (smmla + bfmmla) — the cores have i8mm and bf16
+orangu-server: [adapt] prompt weights (K-quant): int8 copies of 245 matrices (1.86 GB; all copies built in 0.9 s) — a 256-token 12288x1536 GEMM takes 7.2 ms through an int8 copy, 12.5 ms on the file&#39;s weights; 1.85 GB of 21.5 available
+orangu-server: [adapt] prompt weights (float): bf16 copies of 71 matrices (0.08 GB; all copies built in 0.9 s) — a 256-token 1536x8960 GEMM takes 9.6 ms through a bf16 copy, 37.0 ms on the file&#39;s weights; 0.08 GB of 21.5 available
+orangu-server: [adapt] npu: not used (ORANGU_NPU_FFN=1 uses it anyway) — a feed-forward block takes 13.8 ms for 128 tokens on the NPU (0.108 ms a token), 24.3 ms for 384 on the cpu (0.063 ms a token); it must be 1.25× faster a token</code></pre>
+<ul>
 <li><p><code>threads</code> — how many worker threads every CPU path
 shares: the CPU matmul, the MoE expert loop, and the per-expert fan-out.
-Unset (the default) means one per logical core. <code>--threads</code>
-and <code>ORANGU_THREADS</code> override it for one run.</p></li>
+Unset (the default) means one per logical core for loading, and requests
+run inside worker pools chosen per phase by measurement — every core, or
+on a machine with big and little cores the big ones — reported as
+<code>[adapt] cpu pool (prompts)</code> and <code>(decode)</code> lines
+(<code>ORANGU_CPU_POOLS=0</code> runs them on the one pool). Setting it
+pins that one pool size. <code>--threads</code> and
+<code>ORANGU_THREADS</code> override it for one run.</p></li>
 <li><p><code>role</code> — <code>all</code> (the default),
-<code>code</code>, <code>review</code>, <code>explorer</code>, or
-<code>embedding</code>. See <strong>Roles</strong> below. Resolved in
-this order: an explicit CLI flag
-(<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>)
-wins everywhere and skips the prompt entirely; failing that,
-<code>--daemon</code> takes this key directly, having no terminal to
-prompt on; and an attached run with no flag uses it to
+<code>code</code>, <code>review</code>, <code>explorer</code>,
+<code>embedding</code>, or <code>image</code>. See
+<strong>Roles</strong> below. Resolved in this order: an explicit CLI
+flag
+(<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>/
+<code>--image</code>) wins everywhere and skips the prompt entirely;
+failing that, <code>--daemon</code> takes this key directly, having no
+terminal to prompt on; and an attached run with no flag uses it to
 <strong>pre-select the interactive <code>role</code> prompt</strong> —
-ghosted on the empty line, TAB-completing over the five names, and
-overridable by typing another. That prompt only appears when no model
-was given on the CLI either; an attached run that names a model and no
-role flag is <code>all</code>, as before.</p></li>
+ghosted on the empty line, TAB-completing over the five names a language
+model can take, and overridable by typing another. That prompt only
+appears when no model was given on the CLI either; an attached run that
+names a model and no role flag is <code>all</code>, as before.
+<code>image</code> is the exception to all of that: it is the role of a
+<code>qwen_image</code> model, which comes up in it whatever this key
+says is missing, and which refuses any <em>other</em> value here (under
+<code>--daemon</code>) or on the CLI — see <strong>Image
+generation</strong> below.</p></li>
+<li><p><code>log_type</code> / <code>log_path</code> — where the
+server’s output goes. <code>console</code> (the default) is exactly what
+it has always printed: the startup banner, a progress line rewritten
+once a second while a request runs, each request’s completion line
+(<code>orangu-server: [slot 0] prompt 41 tokens in 0.31s ...</code>),
+and every note or warning along the way. <code>file</code> appends all
+of that to <code>log_path</code> instead — each line stamped with a time
+and a level, <code>INFO</code> for what the console puts on stdout and
+<code>WARN</code>/<code>ERROR</code> for what it puts on stderr — except
+the once-a-second progress, which a file has no use for: a file gets
+each request’s completed line and nothing in between.
+<code>log_path</code> defaults to <code>orangu-server.log</code> in the
+directory the server was started from, so <code>log_type = file</code>
+alone is enough; a leading <code>~</code> is expanded, a directory that
+isn’t there yet is created, and a file that already exists is appended
+to. It is opened before <code>--daemon</code> detaches, so an unwritable
+path is a startup error on the terminal. This is the setting a
+<strong><code>--daemon</code></strong> run wants: detached, its stdout
+is <code>/dev/null</code>, so with the console as its log a daemon logs
+nothing at all. Fatal <code>error:</code> lines the process exits on
+stay on stderr — they are for the terminal that started it — and a
+subcommand’s own output (<code>list</code>, <code>show</code>, …) is not
+logging and is unaffected. A coordinator logging to a file hands the
+same file to every <code>orangu-server</code> it starts (see the
+Coordinator chapter), and the two append to it line by line.</p>
+<pre class="text"><code>2026-09-16 23:36:41 INFO  Model      unsloth/gemma-4-E2B-it-GGUF:Q4_K_M (gemma4 arch, Vulkan, 30 layers, 32768 ctx)
+2026-09-16 23:36:41 INFO  Mode       all
+2026-09-16 23:36:41 INFO  API        http://0.0.0.0:8100
+2026-09-16 23:37:02 INFO  orangu-server: [slot 0] prompt 41 tokens in 0.31s (132.26 tok/s), generated 64 tokens in 3.10s (20.65 tok/s)
+2026-09-16 23:52:00 INFO  shutting down</code></pre></li>
 </ul>
 <h3 id="every-key-in-one-place">Every key, in one place</h3>
 <p>The prose above explains the ones with real trade-offs; this is the
@@ -1779,9 +1940,9 @@ reference. Every key is optional except <code>models</code>, and an
 unset key takes the default shown.</p>
 <table>
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 8%" />
+<col style="width: 14%" />
+<col style="width: 76%" />
 </colgroup>
 <thead>
 <tr>
@@ -1791,6 +1952,261 @@ unset key takes the default shown.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align: left;"><code>models</code></td>
+<td style="text-align: left;"><em>required</em></td>
+<td style="text-align: left;">base directory model specs resolve
+against</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>model</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">model to serve when none is given on the
+command line (required for <code>--daemon</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>host</code></td>
+<td style="text-align: left;"><code>127.0.0.1</code></td>
+<td style="text-align: left;">bind address; <code>all</code> means every
+interface</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>port</code></td>
+<td style="text-align: left;"><code>8100</code></td>
+<td style="text-align: left;">HTTP API port</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>slots</code></td>
+<td style="text-align: left;">per role</td>
+<td style="text-align: left;">concurrent requests, each with its own KV
+cache</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>queue_limit</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;">requests allowed to wait for a slot before
+<code>503</code>; <code>0</code> is unbounded</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>api_key</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">bearer token every request must carry;
+unset leaves the server open</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tls_cert</code> /
+<code>tls_key</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">PEM paths for serving HTTPS; both or
+neither</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>kv_cache</code></td>
+<td style="text-align: left;"><code>f16</code></td>
+<td style="text-align: left;">GPU KV mirror storage: <code>f16</code>,
+<code>q8_0</code>, or <code>f32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>read_size</code></td>
+<td style="text-align: left;"><code>8192</code></td>
+<td style="text-align: left;">widen an explicit read of a model file to
+this many <strong>KiB</strong> (8 MiB); <code>4</code> disables
+widening</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>draft_model</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">a second, smaller model whose guesses the
+served model verifies</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>draft_tokens</code></td>
+<td style="text-align: left;"><code>4</code></td>
+<td style="text-align: left;">tokens the draft proposes per
+verification</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>text_encoder</code></td>
+<td style="text-align: left;">largest found</td>
+<td style="text-align: left;">the text encoder GGUF:
+<code>qwen2vl</code> for <code>qwen_image</code>, <code>qwen3vl</code>
+for <code>qwen_image_2_1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vae</code></td>
+<td style="text-align: left;">first found</td>
+<td style="text-align: left;">the model’s VAE
+(<code>.safetensors</code>): Qwen-Image’s, or Qwen-Image 2.1’s own</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_weights</code></td>
+<td style="text-align: left;"><code>auto</code></td>
+<td style="text-align: left;">how a <code>qwen_image_2_1</code>
+transformer’s linears are held: <code>auto</code> per-row
+<code>int8</code> on the 8 × 8 <code>smmla</code> tile when total memory
+is at least three times the 7 GB copy, <code>int8</code> always,
+<code>file</code> the file’s K-quants (no copy); ~1.4–1.9× a step</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_cache</code></td>
+<td style="text-align: left;"><code>easy</code></td>
+<td style="text-align: left;">whether a step may reuse the last
+transformer pass rather than run one (EasyCache): <code>easy</code> (the
+default, threshold 0.08) or <code>easy:&lt;threshold&gt;</code> a step
+whose predicted change since the last pass stays under the threshold
+takes the last two passes’ residual extrapolated to it, and
+<code>off</code> runs every step; at 0.08 about 2.4× a 40-step 1024²
+picture and 3.6× a 512² edit, the picture close to the uncached one but
+not identical; 0.05 is closer at 2×, 0.1 and above start to ghost
+lettering</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_reference_size</code></td>
+<td style="text-align: left;"><code>source</code></td>
+<td style="text-align: left;">the area an edit reads its reference at:
+<code>source</code> the picture’s area but never more than the attached
+picture’s own (upsampling adds nothing but tokens), <code>output</code>
+the picture’s area (diffusers reads 1024²), or <code>WIDTHxHEIGHT</code>
+a cap; a 256² picture edited at 1024² encodes in 6 s rather than 84 and
+steps in 50 s rather than 79</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vision</code></td>
+<td style="text-align: left;">found beside the text encoder</td>
+<td style="text-align: left;">the vision projector
+(<code>mmproj-*.gguf</code>) a <code>qwen_image_2_1</code> model edits
+attached pictures with; <code>none</code> draws over them instead</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_lora</code></td>
+<td style="text-align: left;"><code>auto</code></td>
+<td style="text-align: left;">the adapter applied to the picture
+transformer: <code>auto</code> the Lightning file under
+<code>models</code> (fetched with the model; a picture in 8 unguided
+steps), <code>none</code> the base model, or a <code>.safetensors</code>
+(or 4-step variant, rougher)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vae_precision</code></td>
+<td style="text-align: left;"><code>int8</code></td>
+<td style="text-align: left;">the VAE’s convolutions as
+<code>Q6_K</code> on the <code>int8</code> kernel (3–4× faster decode),
+or <code>f32</code> as stored (exact)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_lora_merge</code></td>
+<td style="text-align: left;"><code>yes</code></td>
+<td style="text-align: left;">fold the adapter into the weights at
+startup (a few minutes once, then no cost per pass); <code>no</code>
+applies it in <code>f32</code> every pass</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_size</code></td>
+<td style="text-align: left;"><code>1024x1024</code></td>
+<td style="text-align: left;">a picture’s size when the request does not
+say; multiples of 16</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_steps</code></td>
+<td style="text-align: left;"><code>50</code>; the adapter’s under
+one</td>
+<td style="text-align: left;">denoising steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_cfg_scale</code></td>
+<td style="text-align: left;"><code>4</code>; <code>1</code> under an
+adapter</td>
+<td style="text-align: left;">classifier-free guidance; <code>1</code>
+turns it off</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_negative_prompt</code></td>
+<td style="text-align: left;">a space</td>
+<td style="text-align: left;">what a picture is pushed away from</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_strength</code></td>
+<td style="text-align: left;"><code>0.6</code></td>
+<td style="text-align: left;">how much of the schedule an attached
+picture goes through</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_format</code></td>
+<td style="text-align: left;"><code>png</code></td>
+<td style="text-align: left;">the format a picture comes back in:
+<code>png</code>, <code>jpeg</code>, <code>gif</code>, <code>webp</code>
+or <code>svg</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>backend</code></td>
+<td style="text-align: left;"><code>auto</code></td>
+<td style="text-align: left;"><code>cpu</code>, <code>vulkan</code>,
+<code>metal</code>, <code>dx12</code>, <code>cuda</code>,
+<code>opencl</code>, <code>rocm</code>, <code>npu</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>device</code></td>
+<td style="text-align: left;"><code>auto</code></td>
+<td style="text-align: left;">which card: an index, part of a name, or
+<code>auto</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>device_split</code></td>
+<td style="text-align: left;"><code>off</code></td>
+<td style="text-align: left;">spread one model across several
+devices</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>threads</code></td>
+<td style="text-align: left;">rayon’s choice</td>
+<td style="text-align: left;">CPU worker threads</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>role</code></td>
+<td style="text-align: left;"><code>all</code></td>
+<td style="text-align: left;"><code>all</code>, <code>code</code>,
+<code>review</code>, <code>explorer</code>, <code>embedding</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reasoning_effort</code></td>
+<td style="text-align: left;"><code>medium</code></td>
+<td style="text-align: left;">how hard a reasoning model is asked to
+think, in its own template’s words</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>log_type</code></td>
+<td style="text-align: left;"><code>console</code></td>
+<td style="text-align: left;">where the server’s output goes:
+<code>console</code>, or <code>file</code> to append it — stamped, and
+without the once-a-second progress line — to <code>log_path</code>; what
+a <code>--daemon</code> needs, since detached it otherwise logs
+nothing</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>log_path</code></td>
+<td style="text-align: left;"><code>orangu-server.log</code> in the
+start directory</td>
+<td style="text-align: left;">the file <code>log_type = file</code>
+writes to; <code>~</code> is expanded, a missing directory created</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>web</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;">the pre-section spelling of
+<code>[web].port</code>, still honored when the file has no
+<code>[web]</code> section and ignored when it does</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>[orangu-server]</code></td>
+<td style="text-align: left;">default</td>
+<td style="text-align: left;">what it does</td>
+</tr>
+<tr>
+<td style="text-align: left;">:———————</td>
+<td style="text-align: left;">:—————————————–</td>
+<td
+style="text-align: left;">:———————————————————————————————————————————————————————————————————-</td>
+</tr>
 <tr>
 <td style="text-align: left;"><code>models</code></td>
 <td style="text-align: left;"><em>required</em></td>
@@ -1901,6 +2317,22 @@ devices</td>
 think, in its own template’s words</td>
 </tr>
 <tr>
+<td style="text-align: left;"><code>log_type</code></td>
+<td style="text-align: left;"><code>console</code></td>
+<td style="text-align: left;">where the server’s output goes:
+<code>console</code>, or <code>file</code> to append it — stamped, and
+without the once-a-second progress line — to <code>log_path</code>; what
+a <code>--daemon</code> needs, since detached it otherwise logs
+nothing</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>log_path</code></td>
+<td style="text-align: left;"><code>orangu-server.log</code> in the
+start directory</td>
+<td style="text-align: left;">the file <code>log_type = file</code>
+writes to; <code>~</code> is expanded, a missing directory created</td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>web</code></td>
 <td style="text-align: left;"><code>0</code></td>
 <td style="text-align: left;">the pre-section spelling of
@@ -1911,9 +2343,9 @@ think, in its own template’s words</td>
 </table>
 <table>
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 10%" />
+<col style="width: 38%" />
+<col style="width: 50%" />
 </colgroup>
 <thead>
 <tr>
@@ -1952,16 +2384,39 @@ disk</td>
 <p>Every section that is none of the above — not
 <code>[orangu-server]</code> and not <code>[web]</code> — is read as an
 <strong>MCP server</strong>, named after the section. These are an
-inventory for the web console’s MCP panel, which lists them and shows
-one on request; the server itself neither connects to them nor calls
+inventory for the web console’s <strong>Settings › MCP</strong> pane,
+which lists them and edits them — <strong>Add</strong>, and each row’s
+<strong>Edit</strong> and <strong>Delete</strong>, each through a small
+form with its own <strong>OK</strong> and <strong>Cancel</strong>; the
+dialog’s <strong>Save</strong> then writes the list to this file, one
+section at a time and nothing else touched (comments and spacing
+included), and says in a pop-up where it wrote and that a restart is
+what reads it. The server itself neither connects to them nor calls
 them, so an entry here changes nothing about inference. A section with
 no <code>endpoint</code> is rejected at startup, which is also what a
-misspelled section name looks like.</p>
+misspelled section name looks like; the pane refuses the same things
+before writing. A name is the section header, so a renamed server is a
+deleted one and an added one. | <code>[prometheus]</code> | default |
+what it does | | :————- | :—————————– | :——————————————————————————————-
+| | <code>port</code> | <code>8300</code> | dedicated,
+<strong>unauthenticated</strong> Prometheus <code>/metrics</code> port;
+the section’s absence disables it | | <code>host</code> | follows
+<code>[orangu-server].host</code> | bind address for the metrics
+listener alone |</p>
+<p>Every section that is none of the above — not
+<code>[orangu-server]</code>, <code>[web]</code>, or
+<code>[prometheus]</code> — is read as an <strong>MCP server</strong>,
+named after the section. These are an inventory for the web console’s
+MCP panel, which lists them and shows one on request; the server itself
+neither connects to them nor calls them, so an entry here changes
+nothing about inference. A section with no <code>endpoint</code> is
+rejected at startup, which is also what a misspelled section name looks
+like.</p>
 <table>
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 16%" />
+<col style="width: 10%" />
+<col style="width: 72%" />
 </colgroup>
 <thead>
 <tr>
@@ -2006,6 +2461,26 @@ prompt, cached and generated tokens. <code>/ready</code> is the
 readiness probe a load balancer wants, and is a different question from
 <code>/health</code>’s liveness. Both are documented, metric by metric,
 in the <em>HTTP endpoints</em> chapter.</p>
+<p><strong>A dedicated metrics port.</strong> A
+<code>[prometheus]</code> section — presence alone, same as
+<code>[web]</code> — binds a second listener that serves the identical
+Prometheus text on its own port: nothing new to scrape, just a second
+place to reach it from:</p>
+<div class="sourceCode" id="cb53"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[prometheus]</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8300</span></span></code></pre></div>
+<p>No <code>[prometheus]</code> section (default), and worth being
+deliberate about adding one: this listener carries <strong>no
+<code>api_key</code> check</strong>, even when one is configured for
+everything else — the point is a scrape target that doesn’t need the
+bearer token. Bind it only where that is actually fine — behind a
+firewall, on an interface a scraper alone can reach, or on loopback for
+a local Prometheus. Its <code>host</code> defaults to
+<code>[orangu-server].host</code> (and follows <code>--host</code>); set
+<code>[prometheus].host</code> to bind it elsewhere, as
+<code>[web].host</code> does. <code>--metrics</code> overrides the
+config file’s port for one run, the same way
+<code>--port</code>/<code>--web</code> do.</p>
 <h3 id="speculative-decoding-draft_model">Speculative decoding
 (<code>draft_model</code>)</h3>
 <p>A small model guesses the next few tokens; the served model checks
@@ -2013,10 +2488,10 @@ all of them in one forward and keeps the longest prefix it would have
 produced itself. Wrong guesses are discarded, so <strong>the answer is
 exactly the answer you would have got without it</strong> — only the
 time taken changes.</p>
-<div class="sourceCode" id="cb51"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="dt">draft_model </span><span class="ot">=</span><span class="st"> unsloth/gemma-4-E2B-it-GGUF:Q4_K_M</span></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="dt">draft_tokens </span><span class="ot">=</span><span class="st"> </span><span class="dv">4</span></span></code></pre></div>
+<div class="sourceCode" id="cb54"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="dt">draft_model </span><span class="ot">=</span><span class="st"> unsloth/gemma-4-E2B-it-GGUF:Q4_K_M</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="dt">draft_tokens </span><span class="ot">=</span><span class="st"> </span><span class="dv">4</span></span></code></pre></div>
 <p><code>draft_model</code> takes the same kind of spec as
 <code>model</code> — a path, an <code>NR</code>/<code>MODEL</code>
 label, or a Hugging Face repo. <code>draft_tokens</code> is how many
@@ -2040,7 +2515,12 @@ sampled or grammar-constrained request.</p>
 the models.</strong> Measured here on a 4 GiB card with a target that
 does not fit on it (<code>gemma-4-12B-it:Q4_K_M</code>, 1.43 tok/s
 unassisted):</p>
-<table>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 54%" />
+<col style="width: 11%" />
+<col style="width: 34%" />
+</colgroup>
 <thead>
 <tr>
 <th style="text-align: left;">drafter</th>
@@ -2150,12 +2630,12 @@ second listener; <code>-i</code>/<code>--init</code> asks
 <code>Add web console</code> and then <code>host</code>,
 <code>port</code>, <code>reexec</code> and <code>delete</code>, or
 writes no section at all.</p>
-<div class="sourceCode" id="cb54"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> 127.0.0.1</span></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="dt">reexec </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a><span class="dt">delete </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span></code></pre></div>
+<div class="sourceCode" id="cb57"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> 127.0.0.1</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="dt">reexec </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="dt">delete </span><span class="ot">=</span><span class="st"> </span><span class="kw">yes</span></span></code></pre></div>
 <ul>
 <li><code>port</code> — where the console listens, bound alongside
 <code>[orangu-server].port</code> rather than instead of it. Defaults to
@@ -2197,33 +2677,91 @@ what this replaced, and still works: a configuration written against it
 goes on serving the console on that port, with <code>host</code> and
 <code>reexec</code> at their defaults. A <code>[web]</code> section
 takes precedence over it wherever both appear.</p>
+<h3 id="the-prometheus-section">The <code>[prometheus]</code>
+section</h3>
+<p>A second, dedicated Prometheus listener, configured the same way as
+<code>[web]</code> above — <strong>having this section at all is what
+enables it</strong>. A config with no <code>[prometheus]</code> binds no
+third listener; <code>-i</code>/<code>--init</code> asks
+<code>Add a dedicated Prometheus metrics endpoint</code> and then
+<code>host</code> and <code>port</code>, or writes no section at all.
+See <strong>Monitoring: <code>/metrics</code> and
+<code>/ready</code></strong> above for what it serves and why it carries
+no <code>api_key</code> check.</p>
+<div class="sourceCode" id="cb58"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[prometheus]</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> 127.0.0.1</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8300</span></span></code></pre></div>
+<ul>
+<li><code>host</code> — the address it binds. <strong>When the key is
+absent it falls back to <code>[orangu-server].host</code></strong>, and
+<code>--host</code> moves it along with the API. Set it explicitly to
+keep the keyless metrics port somewhere the API isn’t — an API on
+<code>all</code> with metrics on <code>127.0.0.1</code> or a private
+scrape interface. An explicit <code>host</code> stands even under
+<code>--host</code>, the same as <code>[web].host</code>.</li>
+<li><code>port</code> — where the listener binds, alongside
+<code>[orangu-server].port</code> rather than instead of it. Defaults to
+<code>8300</code> when the section is present but says nothing.
+<code>GET /</code> on this port serves a small static page linking to
+<code>/metrics</code>, so a browser doesn’t land on a 404; nothing else
+is served.</li>
+</ul>
 <p><code>-c</code>/<code>--config</code> picks a config file explicitly;
 without it, <code>./orangu-server.conf</code> then
 <code>~/.orangu/orangu-server.conf</code> are tried, in that order — the
 same order every subcommand above resolves it in too, not just serving.
 <code>-i</code>/<code>--init</code> writes
 <code>~/.orangu/orangu-server.conf</code> interactively — it also
-prompts for <code>role</code> (TAB-completing over the five valid names,
-defaulting to <code>all</code>), right after <code>model</code>, and
-only writes the <code>role =</code> line when a non-default value was
-chosen. <strong>Answering <code>host</code> with anything but a loopback
-address then prompts for an <code>api_key</code></strong> — that is the
-question the wizard just created by widening the address, and asking it
-here is the difference between walking someone into an exposed server
-and letting them decide. Leaving it blank is still allowed and still
-writes no key; the prompt names the consequence rather than insisting. A
-<code>models</code> directory that doesn’t exist yet is created, parents
-included, rather than refused. <code>-d</code>/<code>--daemon</code>
-detaches from the terminal and runs in the background (Unix-only) — it
-requires <code>model</code> to be set in the config, since there’s no
-attached terminal left to pass a CLI argument to or prompt on; the
-config and model are resolved, and both listeners bound, <em>before</em>
-detaching, so a bad config or a port already in use is still reported to
-the invoking terminal rather than silently lost.
+prompts for <code>role</code> (TAB-completing over the five names a
+language model can take, defaulting to <code>all</code>), right after
+<code>model</code>, and only writes the <code>role =</code> line when a
+non-default value was chosen; an image model answers <code>image</code>
+on its own and is then asked the picture pipeline’s keys, each written
+only when it differs from the default (see <strong>Image
+generation</strong>). It then asks for every other
+<code>[orangu-server]</code> key with the default the server applies
+without it — <code>api_key</code>, <code>tls_cert</code> (and, with one,
+<code>tls_key</code>), <code>slots</code>, <code>queue_limit</code>,
+<code>context</code>, <code>kv_cache</code>, <code>draft_model</code>
+(and, with one, <code>draft_tokens</code>),
+<code>reasoning_effort</code>, <code>backend</code>,
+<code>device</code>, <code>device_split</code>, <code>threads</code>,
+<code>prefill_backend</code>, <code>mlp_unroll</code>,
+<code>npu_cache_gb</code>, <code>npu_precompile</code>,
+<code>read_size</code> — and writes only the ones answered with
+something else. <strong>On an address other than loopback the
+<code>api_key</code> prompt says that a blank answer leaves the server
+reachable off this machine</strong>; blank writes no key. It also asks
+<code>Add Prometheus metrics</code> — declining (the default) writes no
+<code>[prometheus]</code> section at all; accepting prompts for a
+<code>host</code> (defaulting to the API’s) and a <code>port</code>
+(suggesting <code>8300</code>) and writes a <code>[prometheus]</code>
+section. A <code>models</code> directory that doesn’t exist yet is
+created, parents included, rather than refused. The last
+<code>[orangu-server]</code> prompt is <code>log_type</code>
+(TAB-completing <code>console</code>/<code>file</code>, ghosting
+<code>console</code>), followed — only on <code>file</code> — by
+<code>log_path</code>, which TAB-completes real filesystem paths as you
+type and ghosts its default, <code>orangu-server.log</code> in the
+current directory, on the empty line; a <code>file</code> log’s
+<code>log_path</code> is always written, since that default moves with
+the directory the server is started from.
+<code>-d</code>/<code>--daemon</code> detaches from the terminal and
+runs in the background (Unix-only) — it requires <code>model</code> to
+be set in the config, since there’s no attached terminal left to pass a
+CLI argument to or prompt on; the config and model are resolved, the log
+file opened, and both listeners bound, <em>before</em> detaching, so a
+bad config, an unwritable <code>log_path</code> or a port already in use
+is still reported to the invoking terminal rather than silently lost. A
+daemon with the console as its log logs nothing at all — set
+<code>log_type = file</code> to keep its output.
 <code>-h</code>/<code>--help</code> and
 <code>-V</code>/<code>--version</code> are also available.
-<code>-s</code>/ <code>--shell-completions</code> prints a bash/zsh/fish
-completion script for the shell detected from <code>$SHELL</code> —
+<code>-s</code>/ <code>--shell-completions</code> prints a
+bash/zsh/fish/PowerShell completion script for the shell detected from
+<code>$SHELL</code> (or, with no <code>$SHELL</code> as on Windows, from
+<code>$PSModulePath</code> — see the Shell completions chapter) —
 covering every flag above, the subcommand names, and the positional
 <code>model</code> argument plus <code>show</code>’s,
 <code>delete</code>’s and <code>refresh</code>’s own arguments, those
@@ -2237,9 +2775,9 @@ shells.</p>
 same way, as <code>orangu</code>’s own
 <code>-w</code>/<code>--workspace</code> (see the Workspaces
 chapter):</p>
-<div class="sourceCode" id="cb55"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-w</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--workspace</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
+<div class="sourceCode" id="cb59"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">-w</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--workspace</span> ~/src/orangu unsloth/gemma-4-E2B-it-GGUF</span></code></pre></div>
 <p>It is a run-time parameter only — there is no
 <code>orangu-server.conf</code> key for it. Without the argument the
 current working directory is used. Either way the path is made absolute
@@ -2259,10 +2797,14 @@ the <em>HTTP endpoints</em> chapter) refuses any path that resolves
 outside it, and the features built on top of it later will do the
 same.</p>
 <h2 id="roles">Roles</h2>
-<p><code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>
+<p><code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>/<code>--image</code>
 (mutually exclusive; <code>--all</code> is the default) hint at which of
 <code>orangu-server</code>’s own features matter for a given deployment.
-These mirror <code>orangu</code>’s conventional deployment roles
+Five of them are a choice made for a language model;
+<code>--image</code> is not a choice at all — it is the role of a
+<code>qwen_image</code> picture generator, which takes it on its own and
+cannot take another (see <strong>Image generation</strong>). These
+mirror <code>orangu</code>’s conventional deployment roles
 (<code>all</code>/<code>code</code>/<code>review</code>/<code>explorer</code>/<code>embeddings</code>),
 but a single <code>orangu-server</code> process serves whatever model
 it’s given rather than picking one — so unlike a real
@@ -2389,9 +2931,9 @@ doubly linked list in C”) and same machine, the difference is not a
 matter of degree:</p>
 <table>
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 40%" />
+<col style="width: 40%" />
+<col style="width: 20%" />
 </colgroup>
 <thead>
 <tr>
@@ -2422,10 +2964,10 @@ was nothing else.</p>
 <p><code>medium</code> is the default rather than <code>low</code>
 because the point is to stop asking for the maximum, not to start asking
 for the minimum. Ask for either end explicitly:</p>
-<div class="sourceCode" id="cb56"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/models</span></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reasoning_effort </span><span class="ot">=</span><span class="st"> low</span></span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/models</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="dt">reasoning_effort </span><span class="ot">=</span><span class="st"> low</span></span></code></pre></div>
 <p>The levels are the template’s vocabulary, not this server’s — Qwen3.x
 accepts <code>xhigh</code>, <code>medium</code> and <code>low</code> and
 raises on anything else, other templates spell theirs
@@ -2438,9 +2980,17 @@ has no business breaking a model whose scale is spelled differently.</p>
 <p><code>code</code> behaves identically to <code>all</code> today — no
 <code>orangu-server</code> feature is <code>code</code>-specific yet
 beyond what <code>all</code> already provides.</p>
-<p>The role in effect is, in order: whichever CLI flag was passed; or,
-if none was and this is an attached run with no model given on the
-command line either, whatever’s typed at the interactive
+<p><code>image</code> is what a <code>qwen_image</code> model is served
+as: every chat turn and <code>/v1/images/generations</code> draw a
+picture, one at a time (a single slot), with the engine’s default
+sampling and no reasoning to suppress. An <code>x-orangu-role</code>
+header cannot move a request off it, or onto it.</p>
+<p>The role in effect is, in order: the model’s own, when it has one (a
+<code>qwen_image</code> file is always <code>image</code>, and an
+explicit flag or <code>--daemon</code> config key saying otherwise is an
+error rather than overridden); or whichever CLI flag was passed; or, if
+none was and this is an attached run with no model given on the command
+line either, whatever’s typed at the interactive
 <code>role [all]:</code> prompt; or, in <code>--daemon</code> mode only
 (no attached terminal to prompt on), the config file’s own
 <code>role</code> key; or, failing all three, <code>all</code>.</p>
@@ -2532,7 +3082,21 @@ orangu-server: [cpu] AMD Ryzen 7 4800H [8 cores / 16 threads, AVX2, 62.19 GiB RA
 tokenizer, the sampler and — on a split model — attention all run there,
 so its core count, instruction set and worker-thread count are part of
 what a throughput number means. <code>threads</code> sizes that worker
-pool.</p>
+pool. The instruction set named is the <code>int8</code> matmul kernel
+the engine will actually run — on ARM <code>i8mm (smmla)</code>,
+<code>dotprod (sdot)</code> or <code>NEON</code>; on x86-64
+<code>AVX-512 VNNI</code>, <code>AVX2</code>, <code>SSE4.1</code> or
+<code>scalar</code> — after the instruction has passed a self-test on
+this machine, not merely what the CPU advertises. On a machine with big
+and little cores (Linux reports a <code>cpu_capacity</code> per core)
+the worker count is qualified — `12 worker threads (default: 8 big</p>
+<ul>
+<li>4 little
+cores)<code>— because the little cores run the same tasks at a third of the speed, which is part of what a number from that machine means.</code>ORANGU_EXPERT_BIG_CORES=1`
+keeps the workers on the big cluster instead, one per big core: measured
+faster for decode alone and slower for prefill and pictures, so it is
+not the default.</li>
+</ul>
 <p>The number at the start of each line is the device’s
 <em>enumeration</em> index — the thing <code>device = &lt;n&gt;</code>
 names — which is why the lines are not in numerical order. Here the
@@ -2575,24 +3139,24 @@ nothing else is selected, so the inventory shows every other one as
 <code>not selected</code>. Three ways to say it, in order of precedence
 — the command line wins over the environment, which wins over the config
 file:</p>
-<div class="sourceCode" id="cb58"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--device</span> 1 model.gguf          <span class="co"># this run</span></span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE</span><span class="op">=</span>1 <span class="ex">orangu-server</span> model.gguf     <span class="co"># this run, for a sweep script</span></span></code></pre></div>
-<div class="sourceCode" id="cb59"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="dt">backend </span><span class="ot">=</span><span class="st"> vulkan</span></span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="dt">device </span><span class="ot">=</span><span class="st"> </span><span class="dv">1</span></span></code></pre></div>
-<div class="sourceCode" id="cb60"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The same choice, spelled so it survives a driver reordering the list</span></span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a><span class="dt">device </span><span class="ot">=</span><span class="st"> Radeon RX 5500M</span></span></code></pre></div>
+<div class="sourceCode" id="cb62"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--device</span> 1 model.gguf          <span class="co"># this run</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE</span><span class="op">=</span>1 <span class="ex">orangu-server</span> model.gguf     <span class="co"># this run, for a sweep script</span></span></code></pre></div>
+<div class="sourceCode" id="cb63"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="dt">backend </span><span class="ot">=</span><span class="st"> vulkan</span></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a><span class="dt">device </span><span class="ot">=</span><span class="st"> </span><span class="dv">1</span></span></code></pre></div>
+<div class="sourceCode" id="cb64"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The same choice, spelled so it survives a driver reordering the list</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="dt">device </span><span class="ot">=</span><span class="st"> Radeon RX 5500M</span></span></code></pre></div>
 <p>A name match is case-insensitive and matches on any substring, but
 must match exactly one device: two identical cards are an error telling
 you to use an index, rather than a silent pick between them.</p>
 <p>The environment form is what a benchmark sweep uses to walk a
 machine’s cards without editing anything:</p>
-<div class="sourceCode" id="cb61"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE</span><span class="op">=</span>0 <span class="ex">orangu-server</span> model.gguf</span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE</span><span class="op">=</span>1 <span class="ex">orangu-server</span> model.gguf</span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE</span><span class="op">=</span>0 <span class="ex">orangu-server</span> model.gguf</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE</span><span class="op">=</span>1 <span class="ex">orangu-server</span> model.gguf</span></code></pre></div>
 <p>A device that does not exist is a <strong>startup error listing the
 devices that do</strong>, never a fall-back to a different one — an A/B
 between two cards is worthless if one of the runs quietly measured the
@@ -2646,16 +3210,16 @@ devices</h3>
 <p><code>device_split</code> spreads one model’s layers over the
 selected devices. It is <strong>off by default</strong>, and the reason
 is in the next paragraph rather than buried at the end.</p>
-<div class="sourceCode" id="cb63"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="dt">device_split </span><span class="ot">=</span><span class="st"> auto</span></span></code></pre></div>
-<div class="sourceCode" id="cb64"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--device-split</span> all model.gguf       <span class="co"># this run</span></span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE_SPLIT</span><span class="op">=</span>3,1 <span class="ex">orangu-server</span> model.gguf  <span class="co"># this run, for a sweep</span></span></code></pre></div>
+<div class="sourceCode" id="cb67"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="dt">device_split </span><span class="ot">=</span><span class="st"> auto</span></span></code></pre></div>
+<div class="sourceCode" id="cb68"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--device-split</span> all model.gguf       <span class="co"># this run</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a><span class="va">ORANGU_DEVICE_SPLIT</span><span class="op">=</span>3,1 <span class="ex">orangu-server</span> model.gguf  <span class="co"># this run, for a sweep</span></span></code></pre></div>
 <table>
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 3%" />
+<col style="width: 96%" />
 </colgroup>
 <thead>
 <tr>
@@ -2992,6 +3556,17 @@ unchanged (227 / 201 / 164 tok/s at 4k / 8k / 16k, against 229 / 209 /
 161 before).</p>
 <p>If you still see resets, lower
 <code>ORANGU_PREFILL_CHUNK_MS</code>.</p>
+<p><strong>An embeddings input runs through the same chunks.</strong>
+<code>/v1/embeddings</code> feeds the text in chunks sized by the same
+sizer, each attending over the positions before it through a KV cache,
+so a long input to a causal embedding model (the Qwen3 embedding family,
+served by the llama-family architecture) stays under the timeout exactly
+as a prompt does: on the card measured above, Qwen3-Embedding-0.6B
+embeds 23 000 tokens, where a single pass resets the device at 8 192. A
+<strong>bidirectional</strong> model — <code>gemma-embedding</code>
+(embeddinggemma), every token attending to every other — cannot be split
+without changing its vectors, so it runs in one pass; its 2 048-token
+context keeps that pass short.</p>
 <p>Under <code>orangu-coordinator</code> that is the whole recovery: it
 restarts a profile whose <code>orangu-server</code> has stopped on the
 very next request, so the model comes back on a working device at full
@@ -3056,14 +3631,14 @@ licence</strong> at the top of it, written as a comment in that block’s
 own language — in the block itself, highlighted and selectable like the
 rest of the code, so what the download button saves is exactly what is
 on screen:</p>
-<div class="sourceCode" id="cb70"><pre
-class="sourceCode rust"><code class="sourceCode rust"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Copyright (C) 2026 Jane Roe</span></span>
-<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="co">//</span></span>
-<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a><span class="co">// This program is free software: you can redistribute it and/or modify</span></span>
-<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a><span class="co">// it under the terms of the GNU General Public License as published by</span></span>
-<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a><span class="co">// the Free Software Foundation, either version 3 of the License, or</span></span>
-<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a><span class="co">// (at your option) any later version.</span></span>
-<span id="cb70-7"><a href="#cb70-7" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Copyright (C) 2026 Jane Roe</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="co">//</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="co">// This program is free software: you can redistribute it and/or modify</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a><span class="co">// it under the terms of the GNU General Public License as published by</span></span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a><span class="co">// the Free Software Foundation, either version 3 of the License, or</span></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a><span class="co">// (at your option) any later version.</span></span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span></code></pre></div>
 <p>The licence and the copyright holder are read from the tree this
 server was rooted at (<code>-w</code>/<code>--workspace</code>) when it
 started: its <code>Cargo.toml</code>, <code>pyproject.toml</code> or
@@ -3154,8 +3729,8 @@ ordinary code block, so the console never substitutes an incomplete
 picture.</p>
 <table>
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 69%" />
+<col style="width: 30%" />
 </colgroup>
 <thead>
 <tr>
@@ -3275,14 +3850,412 @@ switch is about models, files on disk something else put there, while a
 chat session is the console’s own scratch data. Deleting the chat
 currently on screen starts a fresh empty one in its place; the dropdown
 stays open, so several can be cleared in a row.</p>
-<h2 id="model-management">Model management</h2>
-<p>The topbar’s <strong>Models</strong> button opens a panel showing the
-models directory from the same scan as <code>orangu-server list</code>,
-with its core numbered inventory fields:</p>
+<h2 id="image-generation">Image generation</h2>
+<p>This section is the reference; the <em>Image generation</em> chapter
+that follows <em>Building a model</em> is the walk-through — what to
+download, how to start, what the console’s settings do.</p>
+<p><code>orangu-server</code> also serves <strong>Qwen-Image</strong>, a
+text-to-image model, from the same GGUF inventory: a file whose
+<code>general.architecture</code> is <code>qwen_image</code>
+(e.g. <code>unsloth/Qwen-Image-2512-GGUF</code>, <code>list</code>’s
+<code>Yes (qwen_image)</code>). Point the server at it exactly as at a
+language model — <code>orangu-server 16</code>, or
+<code>model = unsloth/Qwen-Image-2512-GGUF:Q4_K_M</code> — and every
+chat turn is answered with a picture instead of text.</p>
+<p><strong>Qwen-Image 2.1</strong> — the recommended model — is served
+the same way: <code>unsloth/Qwen-Image-2.1-GGUF</code>
+(<code>list</code>’s <code>Yes (qwen_image_2_1)</code>), whose GGUFs
+carry no metadata at all and are recognised by their tensors. It is a
+7-billion-parameter single-stream transformer that draws with an alpha
+channel, and it has its own two companions, found the same way as
+below:</p>
+<ul>
+<li><strong>The text encoder</strong> — Qwen3-VL-8B-Instruct, a
+<code>qwen3vl</code> GGUF of width 4096 (any quantization;
+<code>download</code> fetches
+<code>unsloth/Qwen3-VL-8B-Instruct-GGUF:UD-Q4_K_XL</code>, and an
+embedding model of the same shape is never picked). The transformer
+reads its last layer <em>before</em> the final norm.</li>
+<li><strong>The VAE</strong> —
+<code>vae/qwen_image_2.1_vae_bf16.safetensors</code> from
+<code>unsloth/Qwen-Image-2.1-FP8</code> (the same file as
+<code>Comfy-Org/Qwen-Image-2.1</code>’s): RGBA, 64 latent channels at a
+sixteenth of the picture’s side. Qwen-Image’s VAE does not fit it.</li>
+<li><strong>The vision projector</strong> — an
+<code>mmproj-*.gguf</code> from
+<code>unsloth/Qwen3-VL-8B-Instruct-GGUF</code> (<code>download</code> of
+the encoder brings the one matching its quantization;
+<code>mmproj-F16.gguf</code> is fetched when the encoder is there
+without one). With it, a picture attached to a request is
+<strong>edited</strong>: the encoder reads it with the prompt (through
+its vision tower, <code>engine::image::qwen3vl</code>), and its latents
+stand in the transformer’s prompt where the encoder read it. Found
+beside the text encoder first; <code>vision = &lt;path&gt;</code> names
+one, <code>vision = none</code> turns editing off (an attachment is then
+a starting point, as for Qwen-Image).</li>
+</ul>
+<p>There is no adapter for 2.1 (<code>image_lora = auto</code> finds
+none; naming one is an error), and none is needed: its release settings
+— the defaults when the config leaves them out — are forty steps without
+guidance. Sizes are multiples of 32.
+<code>orangu-server download unsloth/Qwen-Image-2.1-GGUF:Q4_K_M</code>
+fetches the three files. Everything below applies to both models except
+where it names Qwen-Image’s own files.</p>
+<p>A <code>qwen_image</code> file is one third of the model, and the
+other two thirds are found beside it in the models directory:</p>
+<ul>
+<li><strong>The text encoder</strong> — Qwen2.5-VL-7B-Instruct, a
+<code>qwen2vl</code> GGUF (any quantization;
+<code>unsloth/Qwen2.5-VL-7B-Instruct-GGUF</code>). The picture is
+conditioned on this model’s hidden states, so it is loaded as the
+server’s language model through the ordinary path:
+<code>/v1/embeddings</code> still works, and <code>list</code> shows it
+as a model of its own that can be served alone.</li>
+<li><strong>The VAE</strong> — <code>qwen_image_vae.safetensors</code>
+from <code>Comfy-Org/Qwen-Image_ComfyUI</code>, the same file ComfyUI
+and stable-diffusion.cpp use. Nobody publishes it as GGUF, so the server
+reads the <code>safetensors</code> as published. It is recognised by its
+tensors, not its name.</li>
+<li><strong>The Lightning adapter</strong> —
+<code>Qwen-Image-2512-Lightning-8steps-V1.0-bf16. safetensors</code>
+from <code>lightx2v/Qwen-Image-2512-Lightning</code>, the publishers’
+step distillation of the model. Not strictly a third of it — the base
+model draws without it — but what the server serves by default, since
+the base model’s own fifty guided steps are hours on a CPU; see
+<em>Eight steps instead of fifty</em> below.</li>
+</ul>
+<p><code>orangu-server download unsloth/Qwen-Image-2512-GGUF:Q4_K_M</code>
+fetches all four, skipping a companion the directory already holds — a
+second quantization of the encoder is a choice, not a default. The web
+console’s model manager downloads the same way. Two keys name a
+companion explicitly when the directory holds several, or when they live
+elsewhere:</p>
+<div class="sourceCode" id="cb77"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen-Image-2512-GGUF:Q4_K_M</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a><span class="dt">text_encoder </span><span class="ot">=</span><span class="st"> unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q8_0</span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="dt">vae </span><span class="ot">=</span><span class="st"> /srv/models/qwen_image_vae.safetensors</span></span></code></pre></div>
+<p><code>text_encoder</code> takes the same kind of spec as
+<code>model</code>; <code>vae</code> a path, absolute or relative to
+<code>models</code>. Left out, the largest text encoder under
+<code>models</code> is used, and the first VAE found. The two are
+reported at startup and on <code>/props</code> under
+<code>image</code>.</p>
+<p><strong>The VAE runs in <code>int8</code> too.</strong> Its
+convolutions are stored as <code>f32</code>; by default the server
+encodes them as six-bit <code>Q6_K</code> at load (rows zero-padded to
+the kernel’s 256-wide blocks) and runs them against eight-bit
+activations on the same kernel as the transformer, each pixel’s window
+gathered straight into the quantizer rather than laid out as a table
+first — a decode three to four times faster on an <code>i8mm</code> core
+(512 px: 10.6 → 2.7 s; 1024 px: 35 → 16 s), the picture within a level
+or two of a pixel of the exact one. <code>vae_precision = f32</code>
+keeps the exact path.</p>
+<h3 id="eight-steps-instead-of-fifty-image_lora">Eight steps instead of
+fifty: <code>image_lora</code></h3>
+<p>Qwen-Image needs fifty guided steps — a hundred transformer passes —
+for a picture. Its publishers distil that into
+<strong>Qwen-Image-Lightning</strong>: a low-rank adapter (a LoRA, 850
+MB of <code>safetensors</code>) which, applied to the same weights,
+makes a picture in 4 or 8 steps with guidance off. That is twelve times
+fewer passes than the release settings, and the picture is, if anything,
+cleaner. So it is the default: <code>download</code> of the model
+fetches the 8-step file beside it, and a server with no
+<code>image_lora</code> key serves the Lightning adapter it finds under
+<code>models</code> — the most steps when there are several — at that
+many steps with guidance off:</p>
+<pre><code>[image] LoRA …/Qwen-Image-2512-Lightning-8steps-V1.0-bf16.safetensors (720 linears adapted; found under models — image_lora = none runs the base model)
+[image] a picture at the defaults (1024x1024, 8 steps, guidance off) takes about 23 min here; image_size = 512x512 would be about 4 min</code></pre>
+<p>A models directory without the file gets the base model and a warning
+naming the <code>download</code> that fetches the adapter.
+<code>image_lora = none</code> runs the base model at its fifty guided
+steps by choice; <code>image_lora = &lt;file&gt;</code> names another
+adapter — a path (absolute or relative to <code>models</code>) or the
+<code>&lt;user&gt;/&lt;repo&gt;:&lt;file&gt;</code> reference
+<code>download</code> fetched — with the same rule for the steps: a
+Lightning file’s count and guidance off, anything else Qwen-Image’s
+settings, and <code>image_steps</code> / <code>image_cfg_scale</code> in
+the file over either.</p>
+<div class="sourceCode" id="cb79"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download lightx2v/Qwen-Image-2512-Lightning:Qwen-Image-2512-Lightning-4steps-V1.0-bf16.safetensors</span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen-Image-2512-GGUF:Q4_K_M</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a><span class="dt">image_lora </span><span class="ot">=</span><span class="st"> lightx2v/Qwen-Image-2512-Lightning:Qwen-Image-2512-Lightning-4steps-V1.0-bf16.safetensors</span></span></code></pre></div>
+<p>The adapter is read once at startup
+(<code>[image] LoRA … (720 linears adapted)</code>) and, by default,
+<strong>merged into the weights</strong> — each adapted linear
+dequantized, the low-rank product added, and encoded again in its own
+type
+(<code>[image] LoRA merged into the transformer's weights in 165 s</code>
+on the development board) — so every pass then runs at the base model’s
+speed. The merged tensors are kept under
+<code>&lt;models&gt;/orangu-merged/</code>, keyed by both files’
+identities, so the merge is paid once: the next start maps them in
+seconds (<code>[image] LoRA merge read from …</code>). Delete the
+directory to reclaim the space (8.6 GiB for this model); it is rebuilt
+on demand. The merge rounds the weights a second time; the picture is a
+different, equally good one, not the same one nudged.
+<code>image_lora_merge = no</code> applies the adapter in
+<code>f32</code> on every pass instead — exact, at a tenth to a quarter
+of each pass on the CPU. <code>image_steps</code> and
+<code>image_cfg_scale</code> are what the adapter was trained for: the
+base model at eight unguided steps produces noise, the adapted one a
+picture. Any LoRA in the usual <code>safetensors</code> layout
+(<code>&lt;linear&gt;.lora_down.weight</code> /
+<code>lora_up.weight</code> / <code>alpha</code>, or
+<code>lora_A</code>/<code>lora_B</code>) works the same way; one naming
+linears this transformer lacks is applied where it matches and warns
+about the rest.</p>
+<p>Measured on the development board (twelve ARM cores, no GPU): a
+512-pixel picture in 3½ minutes, a 1024-pixel one in 19 min 35 s (145 s
+a step — the rate falls with size as attention grows) — where the base
+model’s release settings were about three hours.</p>
+<p>The same repository holds a <strong>4-step</strong> file (the config
+above). It halves the wait — 512 px in 2 minutes, 1024 px in 10 — and
+the picture shows it: a faint grain over fur and skin, softer detail, a
+flatter background, more so the larger the picture. Take it when a fast
+draft is the point; the 8-step file is the one fetched and served by
+default. (With both under <code>models</code> and no key, the 8-step one
+is served: the most steps wins.)</p>
+<h3 id="the-image-role">The <code>image</code> role</h3>
+<p>An image model is not served in a role you pick: it is always
+<code>image</code>, and <code>--image</code> is the flag that says
+so.</p>
+<ul>
+<li><code>orangu-server 16</code> (or a config <code>model =</code>)
+with no role flag comes up in it, printing <code>Role: image</code>
+where the role prompt would otherwise have been, and the banner’s
+<code>Mode</code> line says <code>image</code>.</li>
+<li><code>orangu-server</code> with no model prompts from the table as
+usual; picking an image model settles the role, so the role prompt is
+skipped.</li>
+<li><code>orangu-server --image</code> greys every row of the table that
+is not an image model, so only the models the role serves stand out;
+picking a greyed row is refused. The <code>Model:</code> prompt
+pre-selects the config’s <code>model =</code> only when the flag serves
+it; under <code>--image</code> beside the usual language-model config it
+offers the first image model in the table instead, so Enter is a picture
+generator. The other five flags do the reverse — <code>--all</code>,
+<code>--code</code>, <code>--review</code>, <code>--explorer</code> and
+<code>--embedding</code> grey the image models, since a picture
+generator cannot come up in a language model’s role:
+<code>orangu-server --code 16</code> is an error that says so, and so is
+<code>--image</code> on a language model (and their prompt pre-selects
+the first language model when the config names a picture one).</li>
+<li>Under <code>--daemon</code>, the config’s <code>role</code> key
+stands in for the flag, with the same rules: <code>role = code</code>
+beside an image <code>model</code> is refused, and a missing key is
+<code>image</code>.</li>
+<li><code>bundle</code> refuses an image model (three files do not fit
+one bundle) and refuses <code>--image</code>.</li>
+</ul>
+<p><code>--init</code> follows the same rule. Picking an image model at
+its <code>model</code> prompt answers <code>role: image</code> on its
+own, and then asks for every key of the picture pipeline —
+<code>text_encoder</code>, <code>vision</code> (Qwen-Image 2.1),
+<code>vae</code>, <code>image_lora</code> (and, with an adapter,
+<code>image_lora_merge</code>), <code>vae_precision</code>,
+<code>image_weights</code> (Qwen-Image 2.1), <code>image_cache</code>,
+<code>image_size</code>, <code>image_steps</code>,
+<code>image_cfg_scale</code>, <code>image_negative_prompt</code>,
+<code>image_strength</code>, <code>image_format</code>,
+<code>image_reference_size</code> — each defaulting to what the server
+does without it; Enter on all of them writes none of them, like every
+other default the wizard leaves out. <code>image_lora</code> offers
+<code>auto</code> and says which Lightning file that is under
+<code>models</code> (or that there is none yet), and the two prompts
+after it offer what the server takes under that adapter — the step count
+its name carries (<code>image_steps [8]</code>) and
+<code>image_cfg_scale [1]</code> — or, after <code>none</code>,
+Qwen-Image’s own <code>50</code> and <code>4</code>. A language model is
+asked none of these.</p>
+<h3 id="what-a-request-gets">What a request gets</h3>
+<p>Six keys set what a picture request gets when it does not say. The
+defaults are the model’s own release settings — Qwen-Image 2.1’s forty
+unguided steps, Qwen-Image’s fifty at guidance 4 — except that under a
+Lightning adapter — the default, when one is under <code>models</code> —
+<code>image_steps</code> and <code>image_cfg_scale</code> follow the
+adapter (its step count, guidance off) unless the file sets them:</p>
 <table>
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
+<col style="width: 6%" />
+<col style="width: 10%" />
+<col style="width: 82%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>[orangu-server]</code></th>
+<th style="text-align: left;">default</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>image_size</code></td>
+<td style="text-align: left;"><code>1024x1024</code></td>
+<td style="text-align: left;"><code>WIDTHxHEIGHT</code>, both multiples
+of 16 — the VAE’s 8 pixels per latent cell times the transformer’s 2x2
+patch; 32 for Qwen-Image 2.1</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_steps</code></td>
+<td style="text-align: left;"><code>50</code> (2.1: <code>40</code>);
+the adapter’s (<code>8</code>) under one</td>
+<td style="text-align: left;">denoising steps; the time a picture takes
+is close to linear in this</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_cfg_scale</code></td>
+<td style="text-align: left;"><code>4</code> (2.1: <code>1</code>);
+<code>1</code> under an adapter</td>
+<td style="text-align: left;">classifier-free guidance: how far the
+picture is pushed towards the prompt and away from the negative one.
+<code>1</code> turns guidance off, which halves the work per step</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_negative_prompt</code></td>
+<td style="text-align: left;">a single space</td>
+<td style="text-align: left;">what the picture is pushed away from; only
+read when guidance is on</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_strength</code></td>
+<td style="text-align: left;"><code>0.6</code></td>
+<td style="text-align: left;">for a picture started from an attached
+one: how much of the schedule to run — <code>1</code> ignores the
+attachment’s content, <code>0</code> returns it unchanged</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image_format</code></td>
+<td style="text-align: left;"><code>png</code></td>
+<td style="text-align: left;">the container a picture comes back in when
+the request names none: <code>png</code>, <code>jpeg</code>,
+<code>gif</code> (one frame, 256 colours), <code>webp</code> (lossless)
+or <code>svg</code> (a document of the picture’s size with the pixels
+inside as PNG — there is no pixels-to-vector) — an attached picture’s
+own format wins</td>
+</tr>
+</tbody>
+</table>
+<p>The web console sends none of these, so for it they <em>are</em> the
+settings. <code>/v1/images/generations</code> takes every one of them
+per request.</p>
+<p><strong>Time.</strong> The transformer is 20 billion parameters and
+every step is a full pass over them for every image token — 4096 tokens
+at 1024x1024 — twice when guidance is on. That is minutes per picture on
+a GPU and hours on a CPU at the defaults; the console shows a step
+counter and an estimate as it goes, and <strong>Stop</strong> cancels at
+the next step. For a quick look, reduce <code>image_size</code> (512x512
+is a quarter of the tokens) and <code>image_steps</code>, or set
+<code>image_cfg_scale = 1</code>. The transformer runs on the same
+backend as the encoder — unless the two together exceed an automatically
+chosen device, in which case the transformer and VAE run on the CPU and
+the startup log says so (<code>--device</code> overrides that) — and the
+whole file is read through <code>mmap</code> like every other model: the
+Q4_K_M is 12.3 GiB on disk and needs about that much memory, plus the
+encoder’s.</p>
+<p><strong><code>backend = auto</code> measures before it commits a
+picture to a GPU.</strong> A picture is prefill-shaped work — hundreds
+of tokens through every linear — and whether a GPU beats the CPU at that
+is a fact about the two chips, not about the GPU existing: an integrated
+GPU sharing the CPU’s memory, beside a CPU with an <code>int8</code>
+matrix unit, can be several times <em>slower</em>. So with
+<code>auto</code>, the server times one of the transformer’s own linears
+on the device and on the CPU at startup
+(<code>[image] calibration 3072x12288 x 256 tokens: device 352 ms, cpu 39 ms — the CPU: the whole pipeline runs there</code>)
+and, when the CPU wins, runs the encoder, transformer and VAE all on the
+CPU — the banner’s backend then reads
+<code>CPU (calibrated: faster than the device for pictures)</code>. An
+explicit <code>backend = vulkan</code> (or <code>--device</code>) is
+honoured as given, calibration or not.</p>
+<p><strong>The wait is said up front.</strong> The same calibration
+seeds an estimate of the pipeline’s rate, and the startup log says what
+the configured defaults cost at it —
+<code>[image] a picture at the defaults (1024x1024, 50 steps, guidance on) takes about 3 h 32 min here; image_size = 512x512, image_steps = 20, image_cfg_scale = 1 would be about 11 min</code>
+— with the cheaper settings spelled out whenever the default is over a
+quarter of an hour. Every picture then refines the rate from its own
+steps, and every request is announced with it: the console shows
+<em>Starting · 6s</em> beside the blinking robot the moment the prompt
+is sent (a <code>step</code> 0 progress event, see the HTTP reference),
+the time counting down second by second and reset by each step’s own
+estimate (<em>Step 3/8 · 2m 05s</em>).</p>
+<h3 id="in-the-web-console">In the web console</h3>
+<p>Type a prompt and send it: the reply is the picture, at
+<code>image_size</code>, with a save control under it that downloads the
+full-size file, and a caption with the size, steps and seed. It is kept
+beside the session at
+<code>~/.orangu/server/sessions/&lt;uuid&gt;/files/</code> and comes
+back on a later visit through <strong>History</strong>. While it is
+drawn the robot blinks beside a countdown — <em>Starting · 22s</em>,
+then <em>Step 2/4 · 11s</em> — the server’s own estimate, corrected at
+every step.</p>
+<p><strong>Settings › Image</strong> (the gear in the topbar) is where
+the picture’s settings live: the size (256 × 256 up to 2048 × 2048, or
+any <code>WIDTHxHEIGHT</code> in multiples of 16 — 32 for Qwen-Image
+2.1, which greys the presets it cannot draw), the steps (4, 8, 20, 40,
+50, or a number), the guidance (off, Qwen-Image’s 4, 6, or a value), the
+negative prompt, the strength an attached picture is followed at, and
+the format the picture comes back in (PNG, JPEG, GIF, WebP or SVG) —
+each with an (i) that explains it on hover, under a line that says what
+a picture at those settings costs on this server, from its measured
+rate, before any is sent. The dialog’s footer — <strong>Save</strong> at
+its left, <strong>Cancel</strong> at its right — is shared by every
+pane: Save makes what the panes hold the server’s (here, the defaults
+every turn from then on draws at, from any browser) and closes; Cancel
+(or ×, or Escape) drops the edits. The pane’s <strong>Reset</strong>
+puts the form back to the configuration file’s values, for Save to
+apply. The usual rhythm on a slow machine: 512 × 512 and 4 steps for a
+preview of the prompt in two minutes (256 × 256 is faster still, but the
+model wanders off the prompt at that size — a cat asked for, a man
+drawn), then 1024 × 1024 for the picture. The pane’s header names the
+adapter the server carries (<code>…-8steps-…</code>); on a language
+model the pane is greyed. The same settings are
+<code>GET</code>/<code>POST /props</code> in the <em>HTTP endpoints</em>
+chapter.</p>
+<p><strong>Attach</strong> a picture — the menu’s <strong>Image</strong>
+item, or <strong>File</strong>; PNG, JPEG, GIF, WebP and SVG are read —
+and the model starts from it instead of from noise, at the attachment’s
+own size (snapped to 16 pixels, and scaled down to
+<code>image_size</code>’s longer side when it is larger), running
+<code>image_strength</code> of the schedule. The reply comes back in the
+same format the picture arrived in: a JPEG stays a JPEG, a PNG a PNG, a
+GIF a GIF (one frame, 256 colours), a WebP a lossless WebP, an SVG an
+SVG — drawn first, and the picture comes back as an SVG document
+carrying it as PNG, there being no pixels-to-vector. An animated GIF or
+WebP is read as its first frame. The attachment itself shows as a
+thumbnail under your message.</p>
+<p>Attaching a picture to a <em>language</em> model’s chat does not send
+it to the model, which has no vision path; the model is told a picture
+was attached and not shown to it, so it does not guess at the
+contents.</p>
+<h3 id="through-the-api">Through the API</h3>
+<p><code>POST /v1/images/generations</code> is OpenAI’s Images API —
+<code>prompt</code>, <code>n</code>, <code>size</code>,
+<code>output_format</code> (<code>png</code>, <code>jpeg</code>,
+<code>gif</code> or <code>webp</code>),
+<code>response_format: "b64_json"</code> — plus the knobs above per
+request (<code>steps</code>, <code>cfg_scale</code>,
+<code>negative_prompt</code>, <code>seed</code>) and, in place of
+OpenAI’s multipart <code>/v1/images/edits</code>, an <code>image</code>
+(a <code>data:</code> URL or bare base64 of a PNG, JPEG, GIF, WebP or
+SVG) with a <code>strength</code> to start from.
+<code>stream: true</code> reports a step at a time.
+<code>POST /v1/chat/completions</code> on an image server answers the
+last user message with the picture as a markdown image over a
+<code>data:</code> URL — which any chat client that renders markdown
+shows inline — and takes a picture from an <code>image_url</code>
+content part. Both are documented field by field in the <em>HTTP
+endpoints</em> chapter.</p>
+<h2 id="model-management">Model management</h2>
+<p><strong>Settings › Models</strong> (the gear in the topbar) is a
+panel showing the models directory from the same scan as
+<code>orangu-server list</code>, with its core numbered inventory
+fields:</p>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 85%" />
 </colgroup>
 <tbody>
 <tr>
@@ -3327,9 +4300,9 @@ directory with how much of its filesystem is used and free.</p>
 <p>Two icon buttons per row — hover either for what it does:</p>
 <table>
 <colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
+<col style="width: 11%" />
+<col style="width: 12%" />
+<col style="width: 76%" />
 </colgroup>
 <thead>
 <tr>
@@ -3457,10 +4430,10 @@ file-lifecycle API on the API port, it assumes a trusted network. A
 server reachable from an untrusted one should not have <code>web</code>
 enabled at all.</p>
 <h2 id="session-management">Session management</h2>
-<div class="sourceCode" id="cb73"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune            <span class="co"># list sessions, pick one (or &#39;all&#39;) interactively</span></span>
-<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune all        <span class="co"># delete every non-active session</span></span>
-<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune <span class="op">&lt;</span>uuid<span class="op">&gt;</span>     <span class="co"># a specific session, by NR or full id</span></span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune            <span class="co"># list sessions, pick one (or &#39;all&#39;) interactively</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune all        <span class="co"># delete every non-active session</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> prune <span class="op">&lt;</span>uuid<span class="op">&gt;</span>     <span class="co"># a specific session, by NR or full id</span></span></code></pre></div>
 <p><code>prune</code> deletes chat sessions from
 <code>~/.orangu/server/sessions/</code>. Needs no config file and loads
 no model. Every invocation, regardless of its own argument, first
@@ -3487,7 +4460,14 @@ prompt, the same flag <code>delete</code> uses.</p>
 (<code>kill -INT &lt;pid&gt;</code>), or <code>POST /v1/shutdown</code>
 (loopback-only — refused from a non-localhost peer, the same safety rule
 <code>orangu-coordinator</code>’s own shutdown endpoint uses). Both the
-API and (if enabled) the web UI listener stop together.</p>
+API and (if enabled) the web UI listener stop together, and the process
+is gone within a few seconds whatever it was doing: a picture in flight
+stops at its next transformer block or VAE layer rather than at its next
+step (minutes, at 1024 px), and NPU preparation stops between two graphs
+or two measured blocks rather than after the set. Measured on the
+development board: idle 0.2 s; a 1024-pixel picture in flight 1.2 s; the
+same with the NPU compiling and binding in the background 2.5 s (it was
+107 s and 26 s).</p>
 <h2 id="what-a-request-cost">What a request cost</h2>
 <p>Every generation endpoint reports what the request cost —
 <code>usage</code> in OpenAI’s shape, <code>timings</code> and
@@ -3507,12 +4487,16 @@ web console’s own <code>/api/…</code> surface — is documented in the
 (bearer token, queue <code>503</code>, TLS) that apply to all of
 them.</p>
 <h2 id="scope">Scope</h2>
-<p>Text-in/text-out GGUF chat, completion, and embedding models, for
-sixteen servable architecture families: Llama-style
-(<code>general.architecture</code> one of <code>llama</code>,
-<code>qwen2</code>, <code>qwen3</code>, <code>mistral</code>, and
-<code>qwen3vl</code> — Qwen3-VL’s text backbone, <em>text-only</em>
-input), Gemma4
+<p>Text-in/text-out GGUF chat, completion, and embedding models — and
+one text-to-image model — for seventeen servable architecture families:
+Llama-style (<code>general.architecture</code> one of
+<code>llama</code>, <code>qwen2</code>, <code>qwen3</code>,
+<code>mistral</code>, <code>qwen3vl</code> — Qwen3-VL’s text backbone,
+<em>text-only</em> input — and <code>qwen2vl</code>, Qwen2.5-VL’s, the
+same way; and <code>qwen3moe</code>, Qwen3-MoE
+(e.g. <code>unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF</code>), which is
+the <code>qwen3</code> block with softmax top-k routed experts in place
+of the dense feed-forward and no shared expert), Gemma4
 (<code>gemma</code>/<code>gemma2</code>/<code>gemma3</code>/<code>gemma4</code>,
 dense <strong>and</strong> the <code>gemma-4-26B-A4B</code>
 routed-expert MoE — a dense shared MLP plus softmax top-k experts per
@@ -3521,8 +4505,9 @@ MoE layer — plus the bidirectional-attention, embeddings-only
 e.g. <code>unsloth/Qwen3.6-35B-A3B-GGUF</code>), Qwen3.5-family dense
 (<code>qwen35</code>, e.g. <code>unsloth/Qwen3.8-27B-GGUF</code> — the
 same hybrid full-attention/gated-DeltaNet layer shape as
-<code>qwen35moe</code>, plain SwiGLU FFN instead of MoE routing),
-Qwen3-Next (<code>qwen3next</code>), the Qwen4 preview
+<code>qwen35moe</code>, plain SwiGLU FFN instead of MoE routing — and
+Prism’s Hadamard-folded ternary <code>Ternary-Bonsai-2-27B</code>, see
+below), Qwen3-Next (<code>qwen3next</code>), the Qwen4 preview
 (<code>qwen4exp</code>, e.g.
 <code>unsloth/Qwen3.8-Flash-Next-GGUF</code> — the same hybrid
 full-attention/gated-DeltaNet sub-layers and routed-plus-shared-expert
@@ -3583,8 +4568,15 @@ Delta Attention layers alternating with gated, <em>rotated</em> absorbed
 latent attention, over sigmoid-routed experts whose selection is
 group-limited: the experts form <code>expert_group_count</code> groups
 and only the best <code>expert_group_used_count</code> of them may serve
-a token) — using
-<code>F32</code>/<code>F16</code>/<code>BF16</code>/<code>Q8_0</code>/<code>Q4_0</code>/<code>Q5_0</code>/<code>MXFP4</code>/<code>Q2_K</code>/<code>Q3_K</code>/<code>Q4_K</code>/<code>Q5_K</code>/<code>Q6_K</code>
+a token), and Qwen-Image (<code>qwen_image</code>,
+e.g. <code>unsloth/Qwen-Image-2512-GGUF</code>, and
+<code>qwen_image_2_1</code>, <code>unsloth/Qwen-Image-2.1-GGUF</code>
+with a <code>qwen3vl</code> encoder — not a language model: a
+dual-stream diffusion transformer that denoises a latent picture under a
+prompt’s hidden states, served with a <code>qwen2vl</code> text encoder
+and the Qwen-Image VAE beside it; see <strong>Image generation</strong>)
+— using
+<code>F32</code>/<code>F16</code>/<code>BF16</code>/<code>Q8_0</code>/<code>Q4_0</code>/<code>Q5_0</code>/<code>MXFP4</code>/<code>PQ2_0</code>/<code>PTQ1_0</code>/<code>Q2_K</code>/<code>Q3_K</code>/<code>Q4_K</code>/<code>Q5_K</code>/<code>Q6_K</code>
 and the
 <code>IQ1_S</code>/<code>IQ1_M</code>/<code>IQ1_XS</code>/<code>IQ1_XXS</code>/<code>IQ1_XXXS</code>/<code>IQ2_XXS</code>/<code>IQ2_XS</code>/<code>IQ2_S</code>/<code>IQ3_XXS</code>/<code>IQ3_S</code>/<code>IQ4_NL</code>/<code>IQ4_XS</code>
 tensors. Weight matrices and embedding tables are read lazily from the
@@ -3675,6 +4667,87 @@ full. The multi-section RoPE these files declare
 exact for text-only input; image and video input is out of scope, and
 with it <code>ple.image_token_id</code>, which only names the
 placeholder id a vision batch would hash.</p>
+<p>Ternary Bonsai 2 (<code>prism-ml/Ternary-Bonsai-2-27B-gguf</code>) is
+a <code>qwen35</code> file with two things no other release here has,
+both declared in its header. <strong>Prism’s ternary types</strong>:
+<code>PQ2_0</code> (ggml type 142) is <code>Q2_0</code>’s 2-bit field
+and <code>PTQ1_0</code> (143) is <code>TQ1_0</code>’s base-3 trit
+packing, each with one <code>f16</code> scale per <strong>128</strong>
+weights rather than ggml’s 64 and 256 — 2.13 and 1.75 bits per weight,
+7.2 and 5.9 GB for 27B parameters. They carry private ids because a
+stock ggml would read a <code>PQ2_0</code> tensor as <code>Q2_0</code>
+with the wrong scale stride; here they are read on the CPU
+(NEON-unpacked into the same int8 dot kernels every other type uses) and
+on Vulkan/Metal, where each has an element-wise kernel for prefill and a
+word-reading block-hoisted one for decode. <strong>Hadamard-folded
+weights</strong> (<code>prism.hadamard.*</code>): every projection — 401
+tensors, in the <code>F16</code> release as much as the ternary ones —
+is stored in a rotated input basis (a normalized
+Sylvester–Walsh–Hadamard transform over 1024-wide blocks, with a fixed
+±1 sign per input channel folded in), which is what lets a ternary
+quantization of it hold up. The engine applies the matching rotation to
+each such projection’s input just before the matmul, once per shared
+input (Q/K/V, gate/up, the joint QKV and gate), the inverse to every
+looked-up embedding row, and the head-order regrouping the file’s
+<code>gdn_v_grouped</code> flag asks of the delta-net output — on the
+host, in <code>f32</code>, for every backend, at under 3% of a decode
+step. Every folded weight is checked off against a transform site at
+load, so a file that folds something this build does not transform is
+refused naming the tensor rather than served in the wrong basis; the
+Qwen 3.5-family dense trunk is the one that applies it, and
+<code>list</code> says <code>No (qwen35, prism.hadamard: …)</code> for a
+fold variant this build does not know. Without any of this the
+<code>F16</code> file loads as an ordinary <code>qwen35</code> and
+generates fluent nonsense — which is also what upstream
+<code>llama.cpp</code> does with it. A compiled NPU feed-forward block
+is never used on a folded file, for the same reason.</p>
+<p>Where the 27B stands on the development board (CIX P1, 8 big + 4
+little cores, Mali-G720), <code>PTQ1_0</code>,
+<code>orangu-bench</code>: <strong>2.0 tok/s decode and 9.8 tok/s
+prefill on the CPU backend with <code>threads = 8</code></strong> (the
+fused <code>sdot</code> trit kernel and the <code>i8mm</code> K GEMM;
+0.2 tok/s the day the format first decoded), and <strong>3.9 tok/s
+decode on Vulkan with <code>ORANGU_BUSY_POLL=1</code></strong> for
+either file (the <code>PTQ1_0</code> one repacked at load, see below;
+the token submitted eight layers at a time so the device never waits for
+the host’s encoding), the fastest decode on the board (0.7 the day the
+format first ran there) — with <code>prefill_backend = auto</code> the
+same server puts the prompts on the cores and prefills at <strong>9–10
+tok/s</strong> (1.6 on the device) while decoding on the device. Prism’s
+own <code>llama.cpp</code> fork — the only other engine that reads these
+files — measured through the same <code>orangu-bench</code> two-engine
+sweep on the same board: 0.22 tok/s decode and 0.41 prefill on Vulkan
+for <code>PTQ1_0</code> (0.79 / 1.47 for <code>PQ2_0</code>), and a CPU
+path that does not answer a prompt in twenty minutes. On that Mali the
+ternary decode kernels are bound by instructions per weight, not bytes:
+the float kernels streamed at 7.5 GB/s where <code>Q8_0</code> streams
+at 37, and the integer-dot kernels that replaced them
+(<code>dot4I8Packed</code> over trits packed four to a word, the
+activations quantized to <code>int8</code> by a dispatch per token in
+the layout <code>main</code>’s own i8 kernels read; built wherever the
+device executes the packed dot natively,
+<code>ORANGU_TERNARY_IDOT=0</code> keeps the float ones,
+<code>ORANGU_TERNARY_I8=0</code> the in-kernel quantize) doubled that; a
+<code>PTQ1_0</code> file is repacked as <code>PQ2_0</code> when it loads
+for a Vulkan device (lossless, 21% more bytes,
+<code>ORANGU_TERNARY_REPACK=0</code> keeps the file’s format), because
+the device’s <code>PTQ1_0</code> kernel is bound by the base-3 unpacking
+and its <code>PQ2_0</code> one is not — either file then decodes at 3.9
+tok/s. What the Vulkan token still pays for is now the device: a token
+is one submission — the residual stream, the norms, the recurrent
+sub-layer (projections, conv step, delta rule, gated norm, fold,
+<code>ssm_out</code>; the state and conv history resident between
+tokens), the attention sub-layer and the dense FFN all recorded on the
+device, one readback for the head — and the kernels are ~80% of it.
+<code>ORANGU_BUSY_POLL=1</code> (now the default) matters more than
+before, not less: one long wait a token lets the core clock down for the
+head and the sampling that follow. Prefill on the device is bounded at
+~150 GFLOP/s by its GEMMs, so for prompts the CPU backend is the faster
+one on this board. <code>doc/PERF-BONSAI.md</code> has the profiles, the
+numbers behind each step and the task list. On a big.LITTLE board set
+<code>threads</code> to the number of big cores for this model: the
+little cores are 4.5× slower on the kernel and finish their rows
+last.</p>
 <p>Kimi-K3 (<code>kimi-k3</code>) runs on the CPU path only. Three
 layers in every four are Kimi Delta Attention — a gated delta-net whose
 per-token state is a matrix rather than a growing key/value list, so
@@ -4066,8 +5139,8 @@ codebook buffer that grew from about 15 KiB to about 33 KiB.</p>
 <code>Q4_0_4_4</code>, <code>Q4_0_4_8</code>, <code>Q4_0_8_8</code>, and
 the <code>IQ4_NL_4_4</code>/<code>_4_8</code>/<code>_8_8</code>
 equivalents. ggml retired those ids and upstream refuses such a file
-outright (“TYPE_Q4_0_4_4 REMOVED, use Q4_0 with runtime repacking”).
-They are ARM-SIMD <em>pre-repacked</em>
+outright (“TYPE<em>Q4_0_4_4 REMOVED, use Q4_0 with runtime repacking”).
+They are ARM-SIMD _pre-repacked</em>
 <code>Q4_0</code>/<code>IQ4_NL</code>: the packing interleaves 4 or 8
 rows, and for the <code>Q4_0</code> family also flips a bit per nibble.
 That is a lossless permutation, so orangu undoes it once when the model

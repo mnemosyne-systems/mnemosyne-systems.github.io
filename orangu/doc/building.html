@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -130,6 +131,11 @@ history, connection state, and waiting state</li>
 at compile time, so a new chapter file must be added to its
 <code>MANUAL_SOURCES</code> list</li>
 <li><code>src/config.rs</code> - INI parsing and normalization</li>
+<li><code>src/logging.rs</code> - where <code>orangu-server</code> and
+<code>orangu-coordinator</code> log
+(<code>log_type</code>/<code>log_path</code>): the <code>log</code>
+facade with <code>fern</code> behind it — bare lines on the console
+exactly as <code>println!</code> put them, stamped lines in a file</li>
 <li><code>src/llm/openai.rs</code> - OpenAI-compatible client for
 <code>orangu-server</code></li>
 <li><code>src/session.rs</code> - tool-calling conversation flow</li>

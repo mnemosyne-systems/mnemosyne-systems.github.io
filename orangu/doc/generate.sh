@@ -14,7 +14,7 @@
 # ORANGU_REF picks the ref fetched from GitHub — use it to publish the manual as
 # it stood at a release rather than whatever main happens to hold:
 #
-#     ORANGU_REF=1.3.0 ./generate.sh
+#     ORANGU_REF=1.4.0 ./generate.sh
 #
 # Requirements: pandoc, python3, and (unless ORANGU_SRC is set) gh + base64.
 #
@@ -54,6 +54,7 @@ coordinator|manual/en/44-coordinator|Coordinator
 workflows|manual/en/45-workflows|Workflow Files
 server|manual/en/46-server|Inference Server
 gguf|manual/en/47-gguf|Building a Model
+image|manual/en/48-image|Image Generation
 http|manual/en/80-http|HTTP Endpoints
 local-llm|manual/en/73-openai|Serving Models per Role
 compression|manual/en/75-compression|Compression
@@ -119,9 +120,10 @@ done
 # Links that leave the manual entirely still have to point somewhere real.
 sed -i "s|(\(\.\./\)*BUILDING\.md|(https://github.com/$REPO/blob/$BRANCH/BUILDING.md|g" "$SRC"/*.md
 
-# Fetch every image referenced by the manual.
+# Fetch every image referenced by the manual. Only names with an extension
+# are files; the bare ones are API paths such as /v1/images/generations.
 mkdir -p images
-imgs=$(grep -roh 'images/[A-Za-z0-9._-]\+' "$SRC" | sort -u || true)
+imgs=$(grep -roh 'images/[A-Za-z0-9_-]\+\.[A-Za-z0-9]\+' "$SRC" | sort -u || true)
 for ref in $imgs; do
   name=${ref#images/}
   fetch "images/$name" "images/$name" || echo "  warn: missing image $name" >&2

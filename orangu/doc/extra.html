@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -152,8 +153,8 @@ diff pager (<code>pager.diff</code>, then <code>core.pager</code>)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>bat</code></td>
-<td style="text-align: left;">it is installed (no further configuration
-needed)</td>
+<td style="text-align: left;">it is installed as <code>bat</code> or
+<code>batcat</code> (no further configuration needed)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>gh</code></td>
@@ -221,12 +222,19 @@ an optional <code>cat</code> clone with syntax highlighting and Git
 integration.</p>
 <p>If it is installed, <strong>orangu</strong> will use it for plain
 <code>/show_file</code> output. No further configuration is required —
-installing <code>bat</code> is enough for it to be used.</p>
+installing <code>bat</code> is enough for it to be used. On systems
+where the binary is called <code>batcat</code> instead (Debian and
+Ubuntu, where the name <code>bat</code> was already taken by another
+package), <strong>orangu</strong> finds it under that name as well:
+<code>bat</code> is tried first, then <code>batcat</code>.</p>
 <p><strong>Installation</strong></p>
 <p>Install <code>bat</code> using your platform package manager or one
 of the installation methods described in the upstream project.</p>
 <p>On Fedora, for example:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install bat</span></code></pre></div>
+<p>On Debian or Ubuntu, where the binary is installed as
+<code>batcat</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install bat</span></code></pre></div>
 <p>Please refer to the upstream documentation for full installation and
 configuration details:</p>
 <p><a href="https://github.com/sharkdp/bat/"
@@ -261,10 +269,10 @@ assignee, or label; there is no plain Git fallback for it.</p>
 <p><code>gh</code> is not available in the default Fedora repositories.
 Add the official GitHub CLI repository first, then install the
 package:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://cli.github.com/packages/rpm/gh-cli.repo <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/yum.repos.d/github-cli.repo</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install gh</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://cli.github.com/packages/rpm/gh-cli.repo <span class="kw">|</span> <span class="fu">sudo</span> tee /etc/yum.repos.d/github-cli.repo</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install gh</span></code></pre></div>
 <p>After installation, authenticate with your GitHub account:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gh</span> auth login</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gh</span> auth login</span></code></pre></div>
 <p>Please refer to the upstream documentation for full installation and
 configuration details:</p>
 <p><a href="https://cli.github.com/manual/"
@@ -342,9 +350,10 @@ fall back to plain Git when <code>glab</code> is not installed, while
 (<code>origin/HEAD</code>, then <code>main</code>/<code>master</code>)
 when running against GitLab.</p>
 <p><strong>Installation</strong></p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install glab</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install glab</span></code></pre></div>
 <p>After installation, authenticate with your GitLab account:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">glab</span> auth login</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">glab</span> auth login</span></code></pre></div>
 <p>Please refer to the upstream documentation for full installation and
 configuration details:</p>
 <p><a href="https://gitlab.com/gitlab-org/cli"

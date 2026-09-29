@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html" class="active">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -122,11 +123,14 @@ local <code>.gguf</code> path, an <code>NR</code>/<code>MODEL</code>
 label under the configured <code>models</code> directory, or a
 <code>&lt;user&gt;/&lt;model&gt;[:quant]</code> Hugging Face repo
 (fetched on first use). The role flag
-(<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>,
-mutually exclusive, <code>--all</code> by default) selects how the
-server presents itself; give each running server its own port in
-<code>orangu-server.conf</code> when you run more than one at a
-time.</p>
+(<code>--all</code>/<code>--code</code>/<code>--review</code>/<code>--explorer</code>/<code>--embedding</code>/
+<code>--image</code>, mutually exclusive, <code>--all</code> by default;
+<code>--image</code> is fixed by a <code>qwen_image</code> model rather
+than chosen) selects how the server presents itself; give each running
+server its own port in <code>orangu-server.conf</code> when you run more
+than one at a time — including <code>metrics</code>, if the dedicated
+Prometheus listener is enabled: two servers sharing one metrics port
+would otherwise fail to start rather than merge.</p>
 <p><code>role = all</code></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--all</span> unsloth/gemma-4-26B-A4B-it-qat-GGUF:UD-Q4_K_XL</span></code></pre></div>
 <p><code>role = code</code></p>
@@ -168,6 +172,11 @@ subdirectory under <code>~/.orangu/workspace/&lt;hash&gt;/</code> and
 run <code>/search</code> again to re-index. Restarting with the
 <strong>same</strong> model reuses the cache and only re-embeds files
 that changed.</p>
+<p>A causal embedding model (such as
+<code>Qwen/Qwen3-Embedding-0.6B-GGUF</code>) takes inputs up to its full
+context: the server runs a long input in chunks, as it does a prompt. A
+bidirectional one (embeddinggemma) runs each input in one pass, within
+its own context length.</p>
   </main>
 </div>
 

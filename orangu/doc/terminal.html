@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -186,13 +187,25 @@ startup continues normally regardless.</p>
 <tr>
 <td><code>-r</code></td>
 <td><code>--resume</code></td>
-<td>Resume a stored session by UUID (<code>-l</code> prints them).</td>
+<td>Resume a stored session by UUID, or pick one from a list.</td>
 </tr>
 <tr>
 <td><code>-a</code></td>
 <td><code>--all</code></td>
 <td>Reopen the workspace tabs that were open at the end of the last
 run.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--developer</code></td>
+<td>Open the prompt in developer mode, the default — what
+<code>/developer</code> does.</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--committer</code></td>
+<td>Open the prompt in committer mode, on the merge flow — what
+<code>/committer</code> does. The two are mutually exclusive.</td>
 </tr>
 <tr>
 <td><code>-t</code></td>
@@ -283,11 +296,11 @@ tab or session. The reporting forms still work: a bare
 </ul>
 <p><code>/create_patch</code> is not in either group: a one-shot has no
 stored review report, but it still resolves the conflicts of an
-in-progress merge, rebase, or cherry-pick, which is what makes
+in-progress merge, rebase, cherry-pick, or revert, which is what makes
 <code>orangu -p "/create_patch"</code> usable from a script that hits
 one.</p>
 <p><code>/export</code> covers the targets that are computed at export
-time: <code>pr</code>, <code>statistics</code>, and
+time: <code>pr</code>, <code>issue</code>, <code>statistics</code>, and
 <code>duplicates</code>. <code>console</code>, <code>review</code>, and
 <code>auto review</code> export what an interactive session accumulated,
 and report that there is nothing to export.</p>
@@ -388,6 +401,28 @@ starting:</p>
 <pre class="text"><code>orangu --resume 550e8400-e29b-41d4-a716-446655440000</code></pre>
 <p>This restores the previous conversation context and per-session
 readline history.</p>
+<h3 id="picking-a-session">Picking a session</h3>
+<p>Without a UUID, <code>--resume</code> (or <code>-r</code>) opens a
+full-screen list of every stored session, most recently updated first,
+with the same columns <code>--list</code> prints, closed by a
+<code>New</code> row:</p>
+<pre class="text"><code>Resume a session  ↑/↓ Move  Enter Select  Esc Quit
+SESSION                               WORKSPACE           BRANCH         DATE
+550e8400-e29b-41d4-a716-446655440000  /home/user/project  main           2026-06-26 11:04
+6ba7b810-9dad-11d1-80b4-00c04fd430c8  /home/user/other    feature/login  2026-06-26 03:27
+New                                   Start a new session</code></pre>
+<p><code>Up</code>/<code>Down</code> (or <code>k</code>/<code>j</code>),
+<code>PageUp</code>/<code>PageDown</code>,
+<code>Home</code>/<code>End</code> and the mouse wheel move the
+highlight; <code>Enter</code> takes the highlighted row and
+<code>Esc</code> (or <code>q</code>) exits without starting anything. A
+session opens in the workspace it was started in unless
+<code>--workspace</code> names another, as
+<code>/session &lt;uuid&gt;</code> does. <code>New</code> skips resuming
+altogether — the automatic workspace-and-branch resume included — and
+starts a fresh session in the current (or <code>--workspace</code>)
+directory. With no stored sessions, <code>New</code> is the only
+row.</p>
 <h3 id="listing-sessions">Listing sessions</h3>
 <p>To see every stored session without starting a run, pass
 <code>--list</code> (short form <code>-l</code>):</p>
@@ -423,13 +458,13 @@ was last active.</p>
 <p>The <code>metadata</code> file records when the session was created,
 last used, which workspace it belongs to, and which Git branch was
 active:</p>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;started_at&quot;</span><span class="fu">:</span> <span class="dv">1748000000</span><span class="fu">,</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;last_updated_at&quot;</span><span class="fu">:</span> <span class="dv">1748003600</span><span class="fu">,</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;workspace&quot;</span><span class="fu">:</span> <span class="st">&quot;/home/user/myproject&quot;</span><span class="fu">,</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;feature/my-pr&quot;</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;started_at&quot;</span><span class="fu">:</span> <span class="dv">1748000000</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;last_updated_at&quot;</span><span class="fu">:</span> <span class="dv">1748003600</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;workspace&quot;</span><span class="fu">:</span> <span class="st">&quot;/home/user/myproject&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;branch&quot;</span><span class="fu">:</span> <span class="st">&quot;feature/my-pr&quot;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p><code>branch</code> is an empty string for sessions started outside a
 Git repository or in a detached HEAD state. Timestamps are Unix seconds
 (UTC).</p>
@@ -463,6 +498,67 @@ LLM</li>
 ignored</li>
 </ul>
 <h2 id="shortcuts-and-keys">Shortcuts and keys</h2>
+<h3 id="alt-on-macos">Alt on macOS</h3>
+<p>Every <code>Alt+…</code> binding below is pressed with the
+<strong>Option (⌥)</strong> key on a Mac — it is the same key. What
+differs is what the terminal sends for it: by default macOS treats
+Option as a character modifier, so <code>⌥S</code> types <code>ß</code>,
+<code>⌥J</code> types <code>∆</code>, <code>⌥X</code> types
+<code>≈</code>, and orangu never sees a key it can act on. Tell the
+terminal to send Option as Meta (an Escape-prefixed key, which orangu
+reads as <code>Alt</code>), once, in its settings:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">terminal</th>
+<th style="text-align: left;">setting</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Terminal.app</td>
+<td style="text-align: left;">Settings → Profiles → Keyboard →
+<strong>Use Option as Meta key</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">iTerm2</td>
+<td style="text-align: left;">Settings → Profiles → Keys → General →
+Left Option key → <strong>Esc+</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Ghostty</td>
+<td style="text-align: left;"><code>macos-option-as-alt = true</code>
+(or <code>left</code>) in its config</td>
+</tr>
+<tr>
+<td style="text-align: left;">Alacritty</td>
+<td style="text-align: left;"><code>option_as_alt = "Both"</code> (or
+<code>"OnlyLeft"</code>) under <code>[window]</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">kitty</td>
+<td style="text-align: left;"><code>macos_option_as_alt yes</code> (or
+<code>left</code>) in <code>kitty.conf</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">WezTerm</td>
+<td
+style="text-align: left;"><code>send_composed_key_when_left_alt_is_pressed = false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Setting it for the <strong>left</strong> Option key alone is the
+usual choice: the bindings work, and the right Option key still types
+accented characters. The bindings that need it are the ones on this page
+and in the interactive tools — the manual viewer’s
+<code>Alt+S</code>/<code>Alt+J</code>/<code>Alt+K</code>/<code>Alt+X</code>,
+the review screens’ <code>Alt+X</code>, the prompt’s
+<code>Alt+Backspace</code>/<code>Alt+D</code>, and the scrolling and
+panning keys. <code>Ctrl+…</code> bindings are unaffected.</p>
 <h3 id="prompt-editing">Prompt editing</h3>
 <ul>
 <li><code>Ctrl+A</code> or <code>Home</code> moves the cursor to the
@@ -560,21 +656,27 @@ files, commit hashes, and so on) continue to use the cycling
 <code>Tab</code> behavior described next.</p>
 <h3 id="the-merge-flow">The merge flow</h3>
 <p>The prompt has two modes, selected with <code>/developer</code> and
-<code>/committer</code> (see the Core tools chapter). In
-<strong>developer mode</strong> — the default — an untouched line opens
-with the greeting <code>Welcome, I'm orangu</code> and nothing else is
-suggested until you type. Everything in this section is what
-<strong>committer mode</strong> adds.</p>
+<code>/committer</code> (see the Core tools chapter), or at startup with
+<code>--developer</code> and <code>--committer</code>. In
+<strong>developer mode</strong> — the default — the first untouched line
+opens with the greeting <code>Welcome, I'm orangu</code> and nothing
+else is suggested until you type; once the first prompt has been
+submitted (or a session is resumed, which was greeted when it was first
+opened), an untouched line shows just the cursor. Everything in this
+section is what <strong>committer mode</strong> adds.</p>
 <p>Merging a reviewed pull request is the same six commands every time,
 so in committer mode the prompt hints them for you, in order, starting
 from the empty line:</p>
 <pre class="text"><code>pull &lt;PR_NUMBER&gt;
+rebase                          (only while the branch is behind the base branch)
 build | review | auto review    (optional, on the pulled branch)
 switch to main|master
 merge &lt;BRANCH_NAME&gt;
 push
 delete &lt;BRANCH_NAME&gt;
-comment on &lt;PR_NUMBER&gt; merged.md</code></pre>
+comment on &lt;PR_NUMBER&gt; merged.md
+close pr &lt;PR_NUMBER&gt;            (only after a rebase on the pulled branch)
+close issue &lt;ISSUE_NUMBER&gt;      (only after a rebase, when a commit names an issue)</code></pre>
 <ul>
 <li>Before a request is checked out, the empty prompt hints
 <code>pull &lt;PR_NUMBER&gt;</code> for the open pull/merge requests
@@ -584,11 +686,14 @@ fetched at startup; <code>Shift+Tab</code> cycles through them.</li>
 things worth doing to a request before taking it to the base branch.
 They are never the first suggestion and they never advance anything: the
 flow is remembered across them, so after a build or a review the prompt
-still opens with <code>switch to main</code>. They drop off the list
-once the flow has left the branch.</li>
+still opens with <code>rebase</code> or <code>switch to main</code>,
+whichever the request is waiting on. They drop off the list once the
+flow has left the branch.</li>
 <li><code>pull</code> remembers the request number and the branch it
-checked out. From then on the empty prompt hints the next step —
-<code>switch to main</code>, then
+checked out. When it reports the branch as behind the base branch, the
+first step hinted is <code>rebase</code>; a rebase done, or skipped by
+switching to the base, moves the flow on. From then on the empty prompt
+hints the next step — <code>switch to main</code>, then
 <code>merge &lt;BRANCH_NAME&gt;</code>, <code>push</code>,
 <code>delete &lt;BRANCH_NAME&gt;</code>, and finally
 <code>comment on &lt;PR_NUMBER&gt; merged.md</code> (the body is read
@@ -596,6 +701,22 @@ from <code>~/.orangu/comments/merged.md</code>, like any other comment
 template).</li>
 <li>Each step advances only when the command it hints actually succeeds,
 so a failed merge keeps the merge on offer.</li>
+<li>Running <code>rebase</code> on the pulled branch — whether hinted or
+not — adds the closing steps: the forge cannot tie a merge of rewritten
+commits to the request, so after the comment the flow hints
+<code>close pr &lt;PR_NUMBER&gt;</code>, and then
+<code>close issue &lt;ISSUE_NUMBER&gt;</code> when the request refers to
+an issue. The issue is read when the request is pulled, from the subject
+of each commit the branch adds on top of the base branch (newest first)
+and then from the request’s title: <code>#58</code> in any bracketing or
+punctuation (<code>[#58] …</code>, <code>… (#58)</code>), or
+<code>issue 58</code> / <code>Issue #58</code>. The first reference
+found wins; with none, <code>close pr</code> is the last step. Without a
+rebase the comment is the last step.</li>
+<li>When the last step has run, the request is dropped from the
+<code>pull &lt;PR_NUMBER&gt;</code> suggestions at once and the open
+requests are fetched again in the background, so the empty prompt never
+offers to pull a request that has just been merged.</li>
 <li>The steps come first everywhere the prompt suggests something: as
 the inline ghost, in the <code>Shift+Tab</code> cycle, and in the
 <code>Tab</code> candidate list — where the rest of the flow follows the
@@ -605,13 +726,13 @@ follow.</li>
 <li>While a request is being merged, its branch also leads the argument
 completions — <code>merge</code>, <code>delete</code>, and
 <code>switch to</code> offer the remembered branch and the base branch
-first, and <code>comment on</code> offers the request number and
-<code>merged.md</code> first. Every other candidate is still listed,
-just after them.</li>
+first, and <code>comment on</code> and <code>close pr</code> offer the
+request number (and <code>merged.md</code>) first. Every other candidate
+is still listed, just after them.</li>
 <li>The flow belongs to the workspace it was started in, so other
 workspace tabs are not hinted at its branches. Checking out a branch
-that is neither the request’s nor the base ends it, as does commenting
-on the request.</li>
+that is neither the request’s nor the base ends it, as does its last
+step.</li>
 <li>Steps run in developer mode are still tracked, so
 <code>/committer</code> picks up where the branch actually is instead of
 starting over.</li>
@@ -655,24 +776,39 @@ natural-language prefixes <code>cherry pick</code>,
 <code>cherry-pick</code>, or <code>git cherry-pick</code>, complete
 abbreviated commit hashes from the default branch
 (<code>origin/main</code>, <code>origin/master</code>,
-<code>main</code>, or <code>master</code>, tried in that order).</li>
+<code>main</code>, or <code>master</code>, tried in that order), then
+<code>abort</code>.</li>
+<li>If the line starts with <code>/revert</code>, or with the
+natural-language prefixes <code>git revert</code>,
+<code>revert commit</code>, or <code>revert</code>, complete the
+abbreviated hashes of the latest commits on the current branch, newest
+first — so the latest commit is previewed as the inline ghost — then
+<code>abort</code>.</li>
 <li>If the line starts with <code>/fetch</code>, or with the
 natural-language prefixes <code>fetch</code> or <code>git fetch</code>,
 complete the configured remotes (from <code>git remote</code>), with
 <code>origin</code> floated to the front so the default is offered first
 and previewed as the inline ghost.</li>
+<li>If the line starts with <code>/add_repository</code>, or with the
+natural-language prefix <code>add repository</code> (checked ahead of
+the bare <code>add</code> form in 2), complete the first word from the
+users already added (every configured remote but <code>origin</code>)
+and the second from the branches already fetched from that user’s copy,
+then <code>main</code> and <code>master</code>.</li>
 <li>If the line starts with <code>/rebase</code>, or with the
 natural-language prefixes <code>rebase</code> or
 <code>git rebase</code>, complete the rebase target in priority order:
 local branch names first (from <code>git branch</code>), then the
 configured remotes (from <code>git remote</code>, <code>origin</code>
 floated to the front), then the remote-tracking branches (from
-<code>git branch --all</code>, e.g. <code>origin/main</code>). The first
-local branch is previewed as the inline ghost.</li>
+<code>git branch --all</code>, e.g. <code>origin/main</code>), then
+<code>abort</code>. The first local branch is previewed as the inline
+ghost.</li>
 <li>If the line starts with <code>/merge</code>, or with the
 natural-language prefixes <code>merge</code> or <code>git merge</code>,
 complete local branch names first (from <code>git branch</code>), then
-remote-only branch names (from <code>git branch --all</code>).</li>
+remote-only branch names (from <code>git branch --all</code>), then
+<code>abort</code>.</li>
 <li>If the line starts with <code>/branch -d</code>, or with the
 natural-language prefixes <code>delete</code>,
 <code>delete branch</code>, or <code>git branch -D</code>, complete
@@ -709,6 +845,9 @@ committer mode, while the first word is being typed — the empty line
 included — the merge flow’s remaining steps are offered before those
 entries.</li>
 </ol>
+<p>In modes 5, 6, 9, and 10, <code>abort</code> moves to the front — and
+becomes the inline ghost — while that operation (cherry-pick, revert,
+rebase, or merge) is in progress and stopped on conflicts.</p>
 <p>Path-completion details:</p>
 <ul>
 <li>General filesystem completion lists entries from the matching
@@ -735,10 +874,48 @@ by a full page</li>
 window by a full page</li>
 <li><code>Alt+Up</code> scrolls backward one line at a time</li>
 <li><code>Alt+Down</code> scrolls forward one line at a time</li>
+<li><code>Ctrl+Home</code> jumps to the start of the output;
+<code>Ctrl+End</code> jumps back to the end, where new output
+appears</li>
+<li>A scrollbar runs down the right edge of the output window whenever
+there is more output than fits; its thumb shows where the visible rows
+sit in the whole</li>
 <li>The output scrollback buffer keeps the most recent 10,000 lines</li>
 <li>Scrolling is limited to the output window; it does not replace the
 header or prompt area</li>
 </ul>
+<h3 id="mouse">Mouse</h3>
+<p>With the <code>mouse</code> configuration key on (the default) the
+terminal hands the mouse to <code>orangu</code>, which does with it what
+the terminal would have done — plus a few things of its own:</p>
+<ul>
+<li>The wheel scrolls the output window</li>
+<li>A left-button drag selects text: the cells between the press and the
+pointer are highlighted in reverse video, and releasing the button
+copies them to the system clipboard. The selection runs across rows like
+a terminal’s, not as a rectangle, and it is made of what is on screen,
+so it copies exactly what you see — wrapped, panned, or clipped as
+drawn, one line per screen row with trailing blanks trimmed.
+<code>Copied N lines to the clipboard</code> appears on the status line
+for a few seconds</li>
+<li>A double-click on a word selects and copies the word. Letters,
+digits, and the characters paths and identifiers are made of
+(<code>_</code>, <code>-</code>, <code>.</code>, <code>/</code>,
+<code>~</code>, <code>@</code>) count as part of a word, so a
+double-click on <code>src/tui/screen.rs</code> takes the whole path</li>
+<li>A double-click on a collapsible section (a tool call, a reasoning
+block) folds or unfolds it instead</li>
+<li>A single click drops the highlight, as does any key, the wheel, or a
+resize — the content under it may have moved</li>
+</ul>
+<p>The selection and its copy work on every screen: the main window,
+<code>/review</code>, <code>/auto_review</code>, and
+<code>/manual</code>. The text lands on the clipboard the same way
+<code>/copy</code> and the review reports do, so it can be pasted
+anywhere. Hold <strong>Shift</strong> while clicking or dragging to
+bypass <code>orangu</code> and use the terminal’s own selection; set
+<code>mouse = off</code> to leave the mouse to the terminal
+altogether.</p>
 <h3 id="horizontal-panning">Horizontal panning</h3>
 <p><code>orangu</code> maintains a virtual canvas that can be wider than
 the visible terminal. Source files shown with <code>/show_file</code>

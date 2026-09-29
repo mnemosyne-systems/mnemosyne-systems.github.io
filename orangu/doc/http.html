@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html" class="active">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -385,6 +386,13 @@ disabled under <code>--embedding</code></td>
 <td style="text-align: left;"><code>POST /v1/embeddings</code></td>
 <td style="text-align: left;">pooled and L2-normalized; carries OpenAI’s
 <code>usage</code></td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>POST /v1/images/generations</code></td>
+<td style="text-align: left;">OpenAI’s Images API, on a
+<code>qwen_image</code> or <code>qwen_image_2_1</code> model;
+<code>501</code> on a language model</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>GET /health</code></td>
@@ -947,6 +955,163 @@ it just paid for.</p>
 <p>This is the endpoint <code>/search</code> embeds code through, and
 the one a server tagged <code>role = embeddings</code> exists to
 serve.</p>
+<h4
+id="post-v1imagesgenerations"><code>POST /v1/images/generations</code></h4>
+<p>Only on a server whose model is a <code>qwen_image</code> or
+<code>qwen_image_2_1</code> diffusion transformer (see the <em>Image
+generation</em> section of the server chapter); a language model answers
+<code>501</code>.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/v1/images/generations <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;prompt&quot;: &quot;a lighthouse at dusk, oil painting&quot;, &quot;size&quot;: &quot;768x512&quot;, &quot;steps&quot;: 20}&#39;</span> <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">|</span> <span class="ex">jq</span> <span class="at">-r</span> <span class="st">&#39;.data[0].b64_json&#39;</span> <span class="kw">|</span> <span class="fu">base64</span> <span class="at">-d</span> <span class="op">&gt;</span> lighthouse.png</span></code></pre></div>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">field</th>
+<th style="text-align: left;">default</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>prompt</code></td>
+<td style="text-align: left;"><em>required</em></td>
+<td style="text-align: left;">what to draw</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>negative_prompt</code></td>
+<td style="text-align: left;"><code>image_negative_prompt</code></td>
+<td style="text-align: left;">what to draw away from; read only when
+<code>cfg_scale &gt; 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>size</code></td>
+<td style="text-align: left;"><code>image_size</code></td>
+<td style="text-align: left;"><code>WIDTHxHEIGHT</code>, both multiples
+of 16; <code>auto</code> is the default, or the attached
+<code>image</code>’s own proportions when there is one</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>n</code></td>
+<td style="text-align: left;"><code>1</code></td>
+<td style="text-align: left;">pictures to make, <code>1</code> to
+<code>10</code>, in turn; a <code>seed</code> seeds the set, each one
+<code>seed + i</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>output_format</code></td>
+<td style="text-align: left;"><code>image_format</code>
+(<code>png</code>)</td>
+<td style="text-align: left;"><code>png</code>, <code>jpeg</code>,
+<code>gif</code>, <code>webp</code> (lossless) or <code>svg</code> (an
+SVG document carrying the picture as PNG); an attached picture defaults
+to its own format</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>response_format</code></td>
+<td style="text-align: left;"><code>b64_json</code></td>
+<td style="text-align: left;">the only value — there are no files to
+return a <code>url</code> to</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>seed</code></td>
+<td style="text-align: left;">drawn</td>
+<td style="text-align: left;">reproduces a picture on the same build;
+the reply reports the one used</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>steps</code></td>
+<td style="text-align: left;"><code>image_steps</code></td>
+<td style="text-align: left;">denoising steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cfg_scale</code></td>
+<td style="text-align: left;"><code>image_cfg_scale</code></td>
+<td style="text-align: left;">classifier-free guidance; <code>1</code>
+runs the prompt alone, half the work</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>image</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">a picture to start from — a
+<code>data:image/…;base64,…</code> URL or bare base64 of a PNG, JPEG,
+GIF, WebP or SVG. Resized to <code>size</code>. On a
+<code>qwen_image_2_1</code> server with a vision projector
+(<code>/props</code>’ <code>image.vision</code>), the picture is
+<strong>edited</strong> by the prompt instead: read by the text encoder
+and kept wherever the prompt does not ask for a change</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>strength</code></td>
+<td style="text-align: left;"><code>image_strength</code></td>
+<td style="text-align: left;">with <code>image</code>: how much of the
+schedule to run, <code>0</code> (unchanged) to <code>1</code> (the
+picture’s content is ignored). Not read for an edit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>stream</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">server-sent events instead of one
+body</td>
+</tr>
+</tbody>
+</table>
+<p>The reply is OpenAI’s:
+<code>{"created", "model", "data": [{"b64_json", …}]}</code>, with each
+picture also carrying <code>output_format</code>, <code>size</code>,
+<code>seed</code>, <code>steps</code>, <code>generation_ms</code> and
+<code>timings</code> —
+<code>{"encode_ms", "steps_ms", "decode_ms"}</code>, where the picture’s
+time went: the prompts through the text encoder, the denoising loop, and
+the VAE plus the file format — and <code>timings.stages</code>, the
+loop’s transformer passes by operation class in milliseconds
+(<code>passes</code>, <code>modulation_ms</code>, <code>qkv_ms</code>,
+<code>attention_ms</code>, <code>out_ms</code>, <code>mlp_ms</code>,
+<code>other_ms</code>). It is what <code>orangu-bench --image</code>
+reads; the server logs the same split per picture. Streamed, the events
+are <code>image_generation.progress</code> — <code>step</code>,
+<code>steps</code>, <code>seconds_per_step</code>,
+<code>eta_seconds</code> — once per step, then one
+<code>image_generation.completed</code> with the same fields the body
+form has, then <code>[DONE]</code>. The first progress event has
+<code>step</code> <strong>0</strong>: it is the server’s announcement
+before any work, its <code>seconds_per_step</code> and
+<code>eta_seconds</code> the estimate from a rate model — the linears’
+cost per token and attention’s, which grows with the token count,
+learned from each finished picture’s own stage timings and seeded at
+startup by a calibration matmul; within about 20% across a fourfold
+change of size, closer at the size last measured. Its
+<code>eta_seconds</code> also counts the encode ahead of the first step
+— for an edit, the reference through the vision tower, the VAE and the
+prefix, and every step attending to the reference’s tokens as well as
+the picture’s. A client can show the wait the moment it sends; the real
+steps follow from <code>1</code>. Closing the stream cancels the work at
+the next step. <code>GET /props</code> carries the same figures under
+<code>image</code> as <code>token_passes_per_second</code> (at the
+defaults’ size) and <code>estimated_default_seconds</code> (the whole
+picture: encode, steps, decode), and the rate model itself — see
+<strong><code>GET /props</code></strong> below.</p>
+<p><code>POST /v1/chat/completions</code> on the same server draws from
+the last user message: its text is the prompt, and the last
+<code>image_url</code> part of an array-shaped <code>content</code>
+(<code>{"type": "image_url", "image_url": {"url": "data:image/png;base64,…"}}</code>)
+is the picture to start from. Every knob is the server’s
+<code>image_*</code> default except <code>seed</code>. The assistant’s
+<code>content</code> is the picture as a markdown image over a
+<code>data:</code> URL, which a markdown-rendering chat client shows
+inline; <code>message.images</code> carries the same picture as
+<code>b64_json</code> with <code>mime</code>, <code>size</code>,
+<code>seed</code>, <code>steps</code> and <code>generation_ms</code> for
+a client that wants the bytes. Streamed, the chunks carry an empty
+<code>delta</code> and an <code>image_progress</code> object
+(<code>step</code>, <code>steps</code>, <code>eta_seconds</code>) until
+the final chunk delivers the content with
+<code>finish_reason: "stop"</code>.</p>
 <h3 id="what-a-request-cost">What a request cost</h3>
 <p>Every generation endpoint reports what the request cost, so a client
 never has to infer it from its own wall clock — which cannot separate
@@ -981,8 +1146,8 @@ ecosystem’s tooling already reads. They are close enough for
 <code>curl</code> inspection; they are not a byte-for-byte schema match
 with anything.</p>
 <h4 id="get-health"><code>GET /health</code></h4>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span><span class="st">&quot;ok&quot;</span><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span><span class="st">&quot;ok&quot;</span><span class="fu">}</span></span></code></pre></div>
 <p>Liveness, and nothing more: is this process up. It is what a
 supervisor uses to decide whether to restart the server, and it must
 stay <code>200</code> while the server is merely busy, because
@@ -991,8 +1156,8 @@ load. Reachable without an <code>api_key</code> — a liveness probe that
 needs a credential is a liveness probe that fails before credentials are
 distributed, and this endpoint names no model and discloses nothing.</p>
 <h4 id="get-ready"><code>GET /ready</code></h4>
-<div class="sourceCode" id="cb8"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;queue full&quot;</span><span class="fu">,</span> <span class="dt">&quot;queue_depth&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;queue_limit&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;slots_busy&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">&quot;slots_total&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span> <span class="st">&quot;queue full&quot;</span><span class="fu">,</span> <span class="dt">&quot;queue_depth&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;queue_limit&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;slots_busy&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">&quot;slots_total&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">}</span></span></code></pre></div>
 <p>Readiness: would a request sent now be served. That is what a load
 balancer needs, and it is a different question from <code>/health</code>
 — here “busy” is exactly the case worth reporting.</p>
@@ -1083,6 +1248,11 @@ resolve against</td>
 <td style="text-align: left;">which process answered, and for how long
 it has been up</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>image</code></td>
+<td style="text-align: left;"><code>null</code> for a language model; on
+a <code>qwen_image</code> model, the picture pipeline — see below</td>
+</tr>
 </tbody>
 </table>
 <p><code>version</code> dates the release; <code>commit</code> is the
@@ -1094,6 +1264,117 @@ one left over from a previous run.</p>
 <p>Hardware-only startup flags — thread count, GPU layer count, batch
 size — are not exposed here or anywhere else over HTTP; they appear only
 in the server’s own startup log.</p>
+<p>On a picture model, <code>image</code> is what a client needs to know
+how a picture will come out, and how long it will take, before asking
+for one:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;"><code>image.</code></th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>architecture</code></td>
+<td style="text-align: left;"><code>qwen_image</code> or
+<code>qwen_image_2_1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>size_unit</code></td>
+<td style="text-align: left;">the pixels each side of a picture must be
+a multiple of: <code>16</code>, or <code>32</code> for Qwen-Image
+2.1</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>text_encoder</code>,
+<code>vae</code></td>
+<td style="text-align: left;">the companion files the pipeline was
+loaded with</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>vision</code></td>
+<td style="text-align: left;">the vision projector a
+<code>qwen_image_2_1</code> pipeline edits attached pictures with, or
+<code>null</code> — an attached picture is then a starting point</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lora</code></td>
+<td style="text-align: left;">the adapter in the weights —
+<code>path</code>, and <code>steps</code>, the count a Lightning file’s
+name says it was distilled for — or <code>null</code> for the base
+model</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>n_layer</code>, <code>n_head</code>,
+<code>head_dim</code>, <code>dim</code></td>
+<td style="text-align: left;">the transformer’s shape</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>defaults</code></td>
+<td style="text-align: left;">what a request gets when it does not say:
+<code>size</code>, <code>steps</code>, <code>cfg_scale</code>,
+<code>negative_prompt</code>, <code>strength</code>, <code>format</code>
+— as they stand now</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>configured</code></td>
+<td style="text-align: left;">the same six as the server came up, from
+the configuration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>token_passes_per_second</code>,
+<code>estimated_default_seconds</code></td>
+<td style="text-align: left;">the last measured rate at the defaults’
+size, and what a picture at the defaults costs at it — <code>null</code>
+before anything was measured</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>rate</code></td>
+<td style="text-align: left;">the model behind both: <code>encode</code>
+(seconds per picture), <code>linear_per_token_pass</code> and
+<code>attention_per_token_pass</code> (seconds per latent-token pass,
+attention’s measured at <code>attention_tokens</code> tokens and growing
+with the count), <code>decode_per_pixel</code>,
+<code>edit_encode_per_token</code> (an edit’s encode per reference
+latent token, <code>null</code> until an edit ran), and
+<code>step_share</code> (the share of steps that run the transformer —
+the step cache, <code>image_cache</code>, reuses the rest;
+<code>1</code> with it off). Seconds for any settings =
+<code>encode + steps × step_share × n × passes × (linear + attention × n / attention_tokens) + decode_per_pixel × pixels</code>,
+<code>n</code> the latent tokens (<code>width/16 × height/16</code>) and
+<code>passes</code> 2 under guidance, 1 without; an edit attends over
+<code>n + r</code> keys in place of <code>n</code>, <code>r</code> the
+reference’s tokens. <code>null</code> before anything was measured</td>
+</tr>
+</tbody>
+</table>
+<h4 id="post-props"><code>POST /props</code></h4>
+<p>Changes the picture defaults — the ones every request that does not
+say otherwise gets, and so what a chat turn draws. The body is
+<code>{"image": {…}}</code> with any of <code>size</code>
+(<code>WIDTHxHEIGHT</code>, multiples of 16), <code>steps</code>,
+<code>cfg_scale</code> (<code>1</code> turns guidance off),
+<code>negative_prompt</code>, <code>strength</code> (0–1),
+<code>format</code> (<code>png</code>, <code>jpeg</code>,
+<code>gif</code>, <code>webp</code>, <code>svg</code>); keys left out
+keep their value, and <code>"reset": true</code> puts every one back to
+the configuration first. The answer is <code>GET /props</code>’
+document, so the caller sees what it set and what it now costs:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST localhost:8100/props <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;image&quot;: {&quot;size&quot;: &quot;512x512&quot;, &quot;steps&quot;: 4}}&#39;</span></span></code></pre></div>
+<p><code>400</code> names the value the config loader would have refused
+too (a size not in multiples of 16, zero steps, a guidance below 0, a
+strength outside 0–1) and changes nothing; <code>501</code> on a
+language model. The web console’s <strong>Settings › Image</strong> pane
+is this endpoint, on the console’s own port as <code>/api/props</code>;
+the change holds until the server restarts, when the configuration’s
+values are back.</p>
 <h4 id="get-slots"><code>GET /slots</code></h4>
 <p>One entry per slot: <code>id</code>, <code>busy</code>,
 <code>prompt_tokens</code>, <code>generated_tokens</code>. This is the
@@ -1104,10 +1385,11 @@ id="post-slotsid_slotactionsaverestore"><code>POST /slots/{id_slot}?action=save|
 <p>Persists a slot’s KV cache to, or restores it from,
 <code>~/.orangu/server/&lt;fingerprint&gt;/slots/&lt;filename&gt;</code>.
 The body is a JSON object with one field:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST <span class="st">&#39;localhost:8100/slots/0?action=save&#39;</span> <span class="dt">\</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;filename&quot;: &quot;tab-a.bin&quot;}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;id_slot&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">&quot;filename&quot;</span><span class="fu">:</span><span class="st">&quot;tab-a.bin&quot;</span><span class="fu">,</span><span class="dt">&quot;n_saved&quot;</span><span class="fu">:</span><span class="dv">433</span><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST <span class="st">&#39;localhost:8100/slots/0?action=save&#39;</span> <span class="dt">\</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;filename&quot;: &quot;tab-a.bin&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;id_slot&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">&quot;filename&quot;</span><span class="fu">:</span><span class="st">&quot;tab-a.bin&quot;</span><span class="fu">,</span><span class="dt">&quot;n_saved&quot;</span><span class="fu">:</span><span class="dv">433</span><span class="fu">}</span></span></code></pre></div>
 <p><code>restore</code> answers the same shape with
 <code>n_restored</code>. A missing or model-incompatible saved file is
 <strong>not</strong> an error: <code>restore</code> succeeds with
@@ -1122,7 +1404,7 @@ missing <code>filename</code>, or an <code>action</code> that is neither
 pure reprefill-avoidance cache, so an over-eager sweep only ever costs a
 one-time prefill.</p>
 <h4 id="get-metrics"><code>GET /metrics</code></h4>
-<p>Prometheus text (<code>text/plain; version=0.0.4</code>). Four gauges
+<p>Prometheus text (<code>text/plain; version=0.0.4</code>). Five gauges
 describe the scheduler right now:</p>
 <table>
 <colgroup>
@@ -1144,6 +1426,10 @@ style="text-align: left;"><code>orangu_server_slots_total</code></td>
 <tr>
 <td style="text-align: left;"><code>orangu_server_slots_busy</code></td>
 <td style="text-align: left;">slots currently generating</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>orangu_server_slots_idle</code></td>
+<td style="text-align: left;">slots free to take a request</td>
 </tr>
 <tr>
 <td
@@ -1253,6 +1539,83 @@ means clients are asking for less room than the model wants.
 mid-generation; the server stops within a token of noticing and frees
 the slot, so a rate here is not a fault, but one that climbs usually
 means a client-side timeout set below what this server can deliver.</p>
+<p><strong>About the process itself.</strong> Related figures are folded
+into a few metrics that carry a label, rather than one metric each. All
+of them are gauges.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">metric</th>
+<th style="text-align: left;">notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_host_info{name,version,commit,rustc,profile,target,os,os_version,kernel,arch}</code></td>
+<td style="text-align: left;">constant <code>1</code>; the build and the
+host are in the labels. <code>commit</code> and <code>rustc</code> read
+<code>unknown</code> when the build could not resolve them</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_uptime{start_time}</code></td>
+<td style="text-align: left;">the value is seconds since the server
+started; the <code>start_time</code> label is when, as a Unix
+timestamp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>orangu_server_cpu{stat}</code></td>
+<td style="text-align: left;"><code>process_seconds</code> is CPU time
+this process has used so far (cumulative, so <code>rate()</code> gives
+cores busy); <code>load1</code>, <code>load5</code>, <code>load15</code>
+are the host’s load averages (not reported on Windows);
+<code>logical_cores</code> is what the process may use</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_http_requests{stat}</code></td>
+<td style="text-align: left;"><code>in_flight</code> is requests being
+handled right now on the API and web console listeners, and a streamed
+answer counts until its last byte is sent; scrapes of the dedicated
+metrics port are not counted, though a scrape through the API port
+counts itself; <code>total</code>, <code>client_errors</code> (4xx) and
+<code>server_errors</code> (5xx) count responses since start</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>process_resident_memory_bytes</code>,
+<code>process_virtual_memory_bytes</code></td>
+<td style="text-align: left;">this process’s memory</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>process_open_fds</code></td>
+<td style="text-align: left;">open file descriptors (Linux only)</td>
+</tr>
+<tr>
+<td
+style="text-align: left;"><code>orangu_server_host_memory_total_bytes</code>,
+<code>orangu_server_host_memory_available_bytes</code></td>
+<td style="text-align: left;">the host’s physical memory</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A second, unauthenticated copy of this endpoint.</strong>
+Adding a <code>[prometheus]</code> section (or passing
+<code>--metrics</code>) binds this exact response on a port of its own,
+with no <code>api_key</code> check even when one is configured for
+everything above — see <strong>Monitoring: <code>/metrics</code> and
+<code>/ready</code></strong> in the <em>Running the server</em> chapter.
+No section (absent) disables it; there is no difference in content
+between the two, only in where each is reachable from. That includes the
+build and host labels above, so on the dedicated port they are visible
+to anyone who can reach it. That port also answers <code>GET /</code>
+with a small static HTML page linking to <code>/metrics</code>; every
+other path is a <code>404</code>.</p>
 <h4 id="post-completion"><code>POST /completion</code></h4>
 <p>The native generation endpoint. Same engine, a smaller surface, and
 its own field names:</p>
@@ -1323,9 +1686,9 @@ out. The vector is pooled and normalized exactly as
 is what <code>/v1/embeddings</code>’ <code>usage</code> is for.</p>
 <h4 id="post-tokenize-and-post-detokenize"><code>POST /tokenize</code>
 and <code>POST /detokenize</code></h4>
-<div class="sourceCode" id="cb12"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/tokenize <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;content&quot;: &quot;hello&quot;, &quot;add_special&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/tokenize <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;content&quot;: &quot;hello&quot;, &quot;add_special&quot;: true}&#39;</span></span></code></pre></div>
 <p><code>tokenize</code> takes <code>content</code> and an optional
 <code>add_special</code> (default <code>false</code>, for the model’s
 own BOS-style framing) and answers <code>{"tokens": [...]}</code>.
@@ -1334,11 +1697,14 @@ own BOS-style framing) and answers <code>{"tokens": [...]}</code>.
 cleanup applied — so a round trip gives back readable text rather than
 the tokenizer’s internal spelling.</p>
 <h4 id="post-apply-template"><code>POST /apply-template</code></h4>
-<p><code>{"messages": [...]}</code> in, <code>{"prompt": "…"}</code>
-out: exactly the string <code>/v1/chat/completions</code> would build
-from those messages and hand to the model, including a
-<code>review</code>-role server’s reasoning-suppression prefill. Nothing
-is generated. <code>501</code> when the model carries no
+<p><code>{"messages": [...], "tools": [...]}</code> in,
+<code>{"prompt": "…"}</code> out: exactly the string
+<code>/v1/chat/completions</code> would build from those messages and
+tool definitions (<code>tools</code> is optional, and an empty list is
+none) and hand to the model, including a <code>review</code>-role
+server’s reasoning-suppression prefill. <code>/tokenize</code> on the
+result counts what a request’s tools cost in tokens. Nothing is
+generated. <code>501</code> when the model carries no
 <code>tokenizer.chat_template</code>.</p>
 <p>This is the endpoint to reach for when an answer looks like the model
 was asked something other than what you sent.</p>
@@ -1358,8 +1724,8 @@ running it, and reading again.</p>
 <h4 id="get-gpu-timings"><code>GET /gpu-timings</code></h4>
 <p>The per-stage GPU timestamp breakdown for the decode steps in the
 window.</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;enabled&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span> <span class="dt">&quot;timings&quot;</span><span class="fu">:</span> <span class="kw">null</span><span class="fu">,</span> <span class="dt">&quot;unavailable&quot;</span><span class="fu">:</span> <span class="st">&quot;split&quot;</span><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;enabled&quot;</span><span class="fu">:</span> <span class="kw">false</span><span class="fu">,</span> <span class="dt">&quot;timings&quot;</span><span class="fu">:</span> <span class="kw">null</span><span class="fu">,</span> <span class="dt">&quot;unavailable&quot;</span><span class="fu">:</span> <span class="st">&quot;split&quot;</span><span class="fu">}</span></span></code></pre></div>
 <p><code>steps: 0</code> means no timestamped decode step happened —
 either <code>ORANGU_GPU_TIMESTAMPS=1</code> is not set, or this adapter
 has no timestamp query. Reported as zero <em>steps</em> rather than zero
@@ -1602,14 +1968,14 @@ change</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb14"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_file <span class="dt">\</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;, &quot;content&quot;: &quot;print(1)\n&quot;, &quot;mode&quot;: &quot;0640&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes_written&quot;</span><span class="fu">:</span><span class="dv">9</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0640&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_file <span class="dt">\</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;, &quot;content&quot;: &quot;print(1)\n&quot;, &quot;mode&quot;: &quot;0640&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes_written&quot;</span><span class="fu">:</span><span class="dv">9</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0640&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -1731,17 +2097,17 @@ address real lines; the one exception is an insert at
 <li>The file’s trailing-newline state is preserved — a file that ended
 without a newline still does afterwards.</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/modify_file <span class="dt">\</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;,</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="st">       &quot;edits&quot;: [{&quot;start_line&quot;: 2, &quot;end_line&quot;: 2, &quot;replacement&quot;: &quot;TWO\n&quot;},</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="st">                 {&quot;start_line&quot;: 4, &quot;end_line&quot;: 3, &quot;replacement&quot;: &quot;four\n&quot;}]}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;lines_before&quot;</span><span class="fu">:</span><span class="dv">3</span><span class="fu">,</span><span class="dt">&quot;lines_after&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;edits_applied&quot;</span><span class="fu">:</span><span class="dv">2</span><span class="fu">,</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;diff&quot;</span><span class="fu">:</span><span class="st">&quot;--- a/a.txt</span><span class="ch">\n</span><span class="st">+++ b/a.txt</span><span class="ch">\n</span><span class="st">@@ -2,1 +2,1 @@</span><span class="ch">\n</span><span class="st">-two</span><span class="ch">\n</span><span class="st">+TWO</span><span class="ch">\n</span><span class="st">@@ -3,0 +4,1 @@</span><span class="ch">\n</span><span class="st">+four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/modify_file <span class="dt">\</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;,</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="st">       &quot;edits&quot;: [{&quot;start_line&quot;: 2, &quot;end_line&quot;: 2, &quot;replacement&quot;: &quot;TWO\n&quot;},</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="st">                 {&quot;start_line&quot;: 4, &quot;end_line&quot;: 3, &quot;replacement&quot;: &quot;four\n&quot;}]}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;lines_before&quot;</span><span class="fu">:</span><span class="dv">3</span><span class="fu">,</span><span class="dt">&quot;lines_after&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;edits_applied&quot;</span><span class="fu">:</span><span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;diff&quot;</span><span class="fu">:</span><span class="st">&quot;--- a/a.txt</span><span class="ch">\n</span><span class="st">+++ b/a.txt</span><span class="ch">\n</span><span class="st">@@ -2,1 +2,1 @@</span><span class="ch">\n</span><span class="st">-two</span><span class="ch">\n</span><span class="st">+TWO</span><span class="ch">\n</span><span class="st">@@ -3,0 +4,1 @@</span><span class="ch">\n</span><span class="st">+four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git add a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -1852,14 +2218,14 @@ change</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_file <span class="dt">\</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;a.txt&quot;, &quot;to&quot;: &quot;docs/b.txt&quot;, &quot;mode&quot;: &quot;0600&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb19"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0600&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_file <span class="dt">\</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;a.txt&quot;, &quot;to&quot;: &quot;docs/b.txt&quot;, &quot;mode&quot;: &quot;0600&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0600&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt docs/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -1935,13 +2301,13 @@ change</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb21"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git rm -f src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/hello.py&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git rm -f src/hello.py&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -1995,11 +2361,11 @@ out.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb22"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/show_file <span class="dt">\</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb23"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;content&quot;</span><span class="fu">:</span><span class="st">&quot;one</span><span class="ch">\n</span><span class="st">TWO</span><span class="ch">\n</span><span class="st">three</span><span class="ch">\n</span><span class="st">four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes&quot;</span><span class="fu">:</span><span class="dv">19</span><span class="fu">,</span><span class="dt">&quot;lines&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/show_file <span class="dt">\</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;a.txt&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;content&quot;</span><span class="fu">:</span><span class="st">&quot;one</span><span class="ch">\n</span><span class="st">TWO</span><span class="ch">\n</span><span class="st">three</span><span class="ch">\n</span><span class="st">four</span><span class="ch">\n</span><span class="st">&quot;</span><span class="fu">,</span><span class="dt">&quot;bytes&quot;</span><span class="fu">:</span><span class="dv">19</span><span class="fu">,</span><span class="dt">&quot;lines&quot;</span><span class="fu">:</span><span class="dv">4</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2089,14 +2455,14 @@ change</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb24"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_directory <span class="dt">\</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;, &quot;mode&quot;: &quot;0750&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb25"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0750&quot;</span><span class="fu">,</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/create_directory <span class="dt">\</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;, &quot;mode&quot;: &quot;0750&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0750&quot;</span><span class="fu">,</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2188,14 +2554,14 @@ change</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb26"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_directory <span class="dt">\</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;src&quot;, &quot;to&quot;: &quot;lib/src&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb27"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;src&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0755&quot;</span><span class="fu">,</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv src lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/move_directory <span class="dt">\</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;from&quot;: &quot;src&quot;, &quot;to&quot;: &quot;lib/src&quot;, &quot;parents&quot;: true}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;src&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0755&quot;</span><span class="fu">,</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv src lib/src&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2278,13 +2644,13 @@ change</td>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb28"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_directory <span class="dt">\</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;}&#39;</span></span></code></pre></div>
-<div class="sourceCode" id="cb29"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_directory <span class="dt">\</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;src/engine/backend&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;path&quot;</span><span class="fu">:</span><span class="st">&quot;src/engine/backend&quot;</span><span class="fu">,</span><span class="dt">&quot;deleted&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/demo&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="st">&quot;nothing_to_stage&quot;</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2383,10 +2749,10 @@ deletion is most likely to be wanted. <code>git mv</code> is forced only
 when the request itself passed <code>"overwrite": true</code>.</p>
 <p>Each reply carries a <code>git</code> object saying what happened, or
 <code>null</code> when the workspace isn’t a repository:</p>
-<div class="sourceCode" id="cb30"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/orangu&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;from&quot;</span><span class="fu">:</span><span class="st">&quot;a.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;to&quot;</span><span class="fu">:</span><span class="st">&quot;sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;mode&quot;</span><span class="fu">:</span><span class="st">&quot;0644&quot;</span><span class="fu">,</span><span class="dt">&quot;overwritten&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;git&quot;</span><span class="fu">:{</span><span class="dt">&quot;repo_root&quot;</span><span class="fu">:</span><span class="st">&quot;/home/user/src/orangu&quot;</span><span class="fu">,</span><span class="dt">&quot;forge&quot;</span><span class="fu">:</span><span class="st">&quot;github&quot;</span><span class="fu">,</span><span class="dt">&quot;staged&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;command&quot;</span><span class="fu">:</span><span class="st">&quot;git mv a.txt sub/b.txt&quot;</span><span class="fu">,</span><span class="dt">&quot;skipped&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">,</span><span class="dt">&quot;error&quot;</span><span class="fu">:</span><span class="kw">null</span><span class="fu">}}</span></span></code></pre></div>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2469,10 +2835,10 @@ operation has already succeeded, so the reply is a normal
 happened rather than implying the write was rolled back.</p>
 <p>To bypass Git entirely for one request, pass
 <code>"git": false</code>:</p>
-<div class="sourceCode" id="cb31"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;scratch.txt&quot;, &quot;git&quot;: false}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST http://127.0.0.1:8100/v1/delete_file <span class="dt">\</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;path&quot;: &quot;scratch.txt&quot;, &quot;git&quot;: false}&#39;</span></span></code></pre></div>
 <p>The file is removed from disk and the index is left alone. Outside a
 repository this is what every request does anyway, and <code>git</code>
 comes back <code>null</code>.</p>
@@ -2486,8 +2852,8 @@ through plain <code>git</code>.</p>
 <p>Every failure — including a malformed request body — comes back with
 the same shape and a stable <code>code</code> a client can branch on,
 rather than message text:</p>
-<div class="sourceCode" id="cb32"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;error&quot;</span><span class="fu">:{</span><span class="dt">&quot;code&quot;</span><span class="fu">:</span><span class="st">&quot;outside_workspace&quot;</span><span class="fu">,</span><span class="dt">&quot;message&quot;</span><span class="fu">:</span><span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">../secret.txt</span><span class="ch">\&quot;</span><span class="st">: path escapes the configured workspace&quot;</span><span class="fu">}}</span></span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;error&quot;</span><span class="fu">:{</span><span class="dt">&quot;code&quot;</span><span class="fu">:</span><span class="st">&quot;outside_workspace&quot;</span><span class="fu">,</span><span class="dt">&quot;message&quot;</span><span class="fu">:</span><span class="st">&quot;</span><span class="ch">\&quot;</span><span class="st">../secret.txt</span><span class="ch">\&quot;</span><span class="st">: path escapes the configured workspace&quot;</span><span class="fu">}}</span></span></code></pre></div>
 <p>The body is always a single <code>error</code> object and nothing
 else:</p>
 <table>
@@ -2690,6 +3056,13 @@ SSE reply</td>
 </tr>
 <tr>
 <td
+style="text-align: left;"><code>GET /api/sessions/{id}/files/{name}</code></td>
+<td style="text-align: left;">a picture kept beside the session: one
+attached to a message (PNG, JPEG, GIF, WebP, SVG), or one a
+<code>qwen_image</code> model made</td>
+</tr>
+<tr>
+<td
 style="text-align: left;"><code>DELETE /api/sessions/{id}</code></td>
 <td style="text-align: left;">deletes one chat session, directory and
 all — History’s per-row cross</td>
@@ -2715,6 +3088,16 @@ and <code>generation_ms</code>. Errors arrive as an <code>error</code>
 event. An empty message with no attachments is a <code>400</code>, and a
 model with no chat template makes the whole endpoint a
 <code>501</code>.</p>
+<p>A PNG, JPEG, GIF, WebP or SVG attachment is kept as a picture rather
+than read as text: it is stored beside the session and comes back in the
+<code>attachments</code> event with an <code>image_url</code> the page
+shows as a thumbnail. On a <code>qwen_image</code> server the turn is a
+picture request — the text is the prompt, the last attached picture is
+what it starts from — and the events are <code>progress</code>
+(<code>step</code>, <code>steps</code>, <code>eta_seconds</code>) once
+per step, then the same <code>done</code> event as a text reply, whose
+<code>html</code> holds the picture and whose <code>content</code> is a
+markdown image over the session file’s URL.</p>
 <p>The model manager, on the same port:</p>
 <table>
 <colgroup>
@@ -2810,8 +3193,8 @@ the listing underneath it. <code>select</code> is a <code>403</code>
 when <code>[web].reexec</code> is <code>no</code>, and
 <code>DELETE /api/models</code> a <code>403</code> when
 <code>[web].delete</code> is <code>no</code>.</p>
-<p>Finally, a read-only MCP inventory, since configuration belongs to
-the server process and edits only take effect on restart:</p>
+<p>Finally, the MCP inventory — the configuration file’s MCP sections,
+which orangu clients read and this server only keeps:</p>
 <table>
 <colgroup>
 <col style="width: 50%" />
@@ -2826,13 +3209,30 @@ the server process and edits only take effect on restart:</p>
 <tbody>
 <tr>
 <td style="text-align: left;"><code>GET /api/mcps</code></td>
-<td style="text-align: left;">every configured MCP section:
-<code>name</code>, <code>endpoint</code>, <code>enabled</code>,
-<code>approval_mode</code></td>
+<td style="text-align: left;"><code>servers</code> — every configured
+MCP section: <code>name</code>, <code>endpoint</code>,
+<code>enabled</code>, <code>approval_mode</code> — and
+<code>path</code>, the configuration file (<code>null</code> for a
+bundled binary with no file, when the list is read-only)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>GET /api/mcps/{name}</code></td>
 <td style="text-align: left;">one of them, or <code>404</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PUT /api/mcps</code></td>
+<td style="text-align: left;">the whole list, as an array of the same
+objects (<code>enabled</code> defaults to <code>true</code>,
+<code>approval_mode</code> to <code>writes</code>): every entry is
+checked first (<code>400</code> names the fault — a name that is empty,
+<code>orangu-server</code>, <code>web</code> or holds
+<code>[ ] = # ;</code>, an empty endpoint, an approval mode other than
+<code>auto</code>/<code>prompt</code>/<code>writes</code>/<code>deny</code>,
+a duplicate), then sections the list no longer names are removed and new
+or changed ones rewritten in place, the rest of the file untouched; the
+answer is <code>GET</code>’s document read back from the file with
+<code>restart_required: true</code> — a server started from the file is
+what reads it. <code>501</code> without a file</td>
 </tr>
 </tbody>
 </table>
@@ -2849,18 +3249,18 @@ never proxied — it must work even before any profile has been activated.
 Neither <code>orangu-server</code> nor a generic OpenAI-compatible
 server exposes this path, so a client can probe it to tell the three
 apart:</p>
-<div class="sourceCode" id="cb33"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;orangu_coordinator&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;0.12.0&quot;</span><span class="fu">,</span></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;models&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;all&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;review&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;explorer&quot;</span><span class="fu">:</span> <span class="st">&quot;unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF&quot;</span><span class="fu">,</span></span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;embeddings&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;orangu_coordinator&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;0.12.0&quot;</span><span class="fu">,</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;models&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;all&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;review&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;explorer&quot;</span><span class="fu">:</span> <span class="st">&quot;unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF&quot;</span><span class="fu">,</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;embeddings&quot;</span><span class="fu">:</span> <span class="st">&quot;bartowski/gemma-4-12B-it-GGUF&quot;</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p><code>models</code> reports the model each conventional role
 currently resolves to, so a caller can see what <code>model</code> to
 send for a given role without needing its own copy of
@@ -2872,9 +3272,9 @@ when</strong> above for how often a client should ask.</p>
 id="post-v1coordinatoractivate"><code>POST /v1/coordinator/activate</code></h4>
 <p>A pre-warming hint a caller can send <em>before</em> the request that
 actually needs a model:</p>
-<div class="sourceCode" id="cb34"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST localhost:9000/v1/coordinator/activate <span class="dt">\</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;model&quot;: &quot;review&quot;}&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-X</span> POST localhost:9000/v1/coordinator/activate <span class="dt">\</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="at">-d</span> <span class="st">&#39;{&quot;model&quot;: &quot;review&quot;}&#39;</span></span></code></pre></div>
 <p><code>model</code> is a real model id or a role name, matched exactly
 the way ordinary routing matches one. Answered directly, never
 proxied.</p>

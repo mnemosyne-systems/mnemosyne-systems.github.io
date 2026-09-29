@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -247,12 +248,16 @@ yet.</li>
 </ol>
 <p>Once an entry is chosen, <code>ensure_active</code> (also
 <code>process.rs</code>) does the actual lifecycle work: if it’s already
-the active entry and its process is still alive (checked via
-<code>try_wait</code>), reuse it; otherwise stop whatever’s running
-(clearing <code>current_pid</code> <em>before</em> reaping, so a
-concurrent <code>shutdown</code> never targets a stale,
-possibly-recycled PID) and <code>start</code> the requested entry —
-write that profile’s own generated <code>orangu-server.conf</code>
+the active entry — or a different entry the running process already
+serves, which is any entry differing from it in nothing but
+<code>role</code>
+(<code>CoordinatorLlmEntry::serves_same_process_as</code>) — and its
+process is still alive (checked via <code>try_wait</code>), reuse it;
+otherwise stop whatever’s running (clearing <code>current_pid</code>
+<em>before</em> reaping, so a concurrent <code>shutdown</code> never
+targets a stale, possibly-recycled PID) and <code>start</code> the
+requested entry — write that profile’s own generated
+<code>orangu-server.conf</code>
 (<code>~/.orangu/coordinator/servers/&lt;name&gt;.conf</code>, carrying
 <code>models</code>/<code>host</code>/ <code>port</code> and whichever
 of <code>backend</code>/<code>slots</code>/<code>web</code> were set),
@@ -284,6 +289,38 @@ manual <code>~</code> expansion left to reproduce —
 <code>orangu-server</code> being a sibling process built from the same
 source, not an independently-installed external tool, is what makes this
 simplification possible.</p>
+<h3 id="which-role-a-client-asks-for">Which role a client asks for</h3>
+<p>A client reaches a role by naming it in <code>model</code> —
+<code>/auto_review</code> sends <code>model: "review"</code>, and
+<code>select_entry</code> matches that against each profile’s role
+before anything else. That only happens once the client has
+<em>confirmed</em> it is talking to a coordinator, and confirmation is a
+probe (<code>GET /v1/coordinator</code>) whose result the status refresh
+fills in on a timer.</p>
+<p>So the review path resolves it at the point of use rather than
+reading the header’s copy. Reading the copy meant a review started in
+the first seconds of a session — before the first refresh — was sent
+with <code>orangu.conf</code>’s own model id, which matches no profile,
+so routing fell through to <code>all</code> and the review was answered
+by a <em>reasoning</em> role: a response cap spent on thought instead of
+findings, and the one thing <code>--review</code> exists to prevent.</p>
+<h3 id="one-process-several-roles">One process, several roles</h3>
+<p>A role is not a property of the process it used to require one for.
+It picks the sampling defaults a request starts from and whether
+reasoning is suppressed; it does not change which weights are loaded. So
+profiles that name the same model, listener, backend, <code>slots</code>
+and <code>web</code> port share one <code>orangu-server</code>, and
+<code>proxy::send_upstream</code> names the resolved role in an
+<code>x-orangu-role</code> header on every forwarded request.</p>
+<p><code>http::openai::request_role</code> reads it, and only ever
+narrows within what the process can already do: an unrecognised value,
+or one asking a generation-incapable server (<code>--embedding</code>)
+to answer chat, falls back to the process’s own role rather than failing
+the request.</p>
+<p>What this is worth is not the swap latency alone — though a role
+switch goes from a full model load to nothing — but the prefix cache on
+the far side of it, which used to die with the process every time a
+review followed a chat turn.</p>
 <h3 id="recovering-a-profile-that-stopped">Recovering a profile that
 stopped</h3>
 <p><code>ensure_active</code> restarts a child it finds dead
@@ -319,7 +356,33 @@ last 20 captured lines of stdout/stderr, then restarts it before serving
 whatever triggered the check. A crash mid-stream still surfaces to the
 <em>client</em> as a broken connection (an already-started 200 response
 can’t be retroactively turned into an error), but the coordinator’s own
-console now always has the actual reason logged.</p>
+log now always has the actual reason.</p>
+<h3 id="logging">Logging</h3>
+<p>Everything the coordinator says while running goes through the
+<code>log</code> facade — <code>log::info!</code> for what used to be
+<code>println!</code>, <code>log::warn!</code> for
+<code>eprintln!</code> — and <code>orangu::logging::install</code>
+(<code>src/logging.rs</code>, shared with <code>orangu-server</code>)
+decides where that lands from <code>[orangu-coordinator].log_type</code>
+and <code>log_path</code>: <code>fern</code> with a bare-message format
+on stdout/stderr for the console, so the output is byte-for-byte what it
+was, or a stamped format on an append-mode file. <code>--quiet</code> is
+a console level (<code>Console::ErrorsOnly</code>),
+<code>--daemon</code> on the console is <code>Console::Nothing</code> —
+a detached process has <code>/dev/null</code> for a stdout, and there is
+no logging at all — and a file is never quiet. Records from dependencies
+are dropped outright. The logger is installed right after the config
+loads, before the listener is bound and before a daemon detaches, so an
+unwritable <code>log_path</code> fails on the terminal.</p>
+<p>Under <code>log_type = file</code>, <code>write_server_config</code>
+forwards the two keys into every profile’s generated
+<code>orangu-server.conf</code>: the server then appends its own stamped
+lines to the same file (without its once-a-second progress line, which
+is not a log record), and what still arrives through the captured
+stdout/stderr pipes — its fatal <code>error:</code> line, mostly — is
+echoed into the log by <code>spawn_output_capture</code> as before. The
+keys are read once, at startup; a reload that changes them takes effect
+on the next start.</p>
 <h3 id="client-side-integration-orangu">Client-side integration
 (<code>orangu</code>)</h3>
 <p>Everything above assumes <code>orangu</code> cooperates by sending

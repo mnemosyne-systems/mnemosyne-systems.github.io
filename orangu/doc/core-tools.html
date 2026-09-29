@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -214,10 +215,12 @@ prompt. In particular it is separate from the local
 <pre class="text"><code>/tools</code></pre>
 <h2 id="developer">/developer</h2>
 <p>Puts the prompt in <strong>developer mode</strong>, the default:
-writing code. The prompt keeps out of the way — an untouched line opens
-with the greeting <code>Welcome, I'm orangu</code>, and from there only
-what you type is hinted (slash commands, natural-language bindings, and
-argument completion, exactly as described in the Terminal chapter).</p>
+writing code. The prompt keeps out of the way — the first untouched line
+opens with the greeting <code>Welcome, I'm orangu</code> — after the
+first prompt is submitted, or on a resumed session, an untouched line is
+just the cursor — and from there only what you type is hinted (slash
+commands, natural-language bindings, and argument completion, exactly as
+described in the Terminal chapter).</p>
 <p>The greeting is a label, not a suggestion: it is drawn in grey like
 any other hint, but it is deliberately kept out of the <code>Tab</code>
 and <code>Shift+Tab</code> candidates, so it can never be completed into
@@ -225,6 +228,9 @@ the line.</p>
 <p>Switching mode changes only what the prompt suggests. Every command
 stays available in both modes, and nothing about the session, the model,
 or the workspace changes.</p>
+<p><code>orangu --developer</code> opens the prompt in this mode. It is
+the default, so the flag only names it; <code>--committer</code> is the
+one that changes anything.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/developer</code></pre>
 <p>Natural-language forms:</p>
@@ -235,17 +241,49 @@ developer mode</code></pre>
 reviewed pull request. The prompt walks the merge flow, hinting one step
 at a time, starting from the empty line:</p>
 <pre class="text"><code>pull &lt;PR_NUMBER&gt;
+rebase                          (only while the branch is behind the base branch)
 build | review | auto review    (optional, on the pulled branch)
 switch to main|master
 merge &lt;BRANCH_NAME&gt;
 push
 delete &lt;BRANCH_NAME&gt;
-comment on &lt;PR_NUMBER&gt; merged.md</code></pre>
+comment on &lt;PR_NUMBER&gt; merged.md
+close pr &lt;PR_NUMBER&gt;            (only after a rebase on the pulled branch)
+close issue &lt;ISSUE_NUMBER&gt;      (only after a rebase, when a commit names an issue)</code></pre>
 <p><code>pull</code> remembers the request number and the branch it
 checked out, so the following steps are hinted with the real names —
 <code>merge pr-231</code>, not a placeholder. Each step advances only
 when the command it hints actually succeeds, so a failed merge keeps the
 merge on offer.</p>
+<p>A request that needs a rebase (<code>pull</code> says so: the branch
+is behind the base branch) opens with <code>rebase</code> as its first
+step, ahead of <code>switch to main</code>. It also gets the closing
+steps once <code>rebase</code> has been run on its branch: rebasing
+rewrites the commits, so the forge no longer recognises the merge as the
+request’s and leaves it open, and it will not close the issue the
+request was for either. After the comment the flow therefore hints:</p>
+<ul>
+<li><code>close pr &lt;PR_NUMBER&gt;</code> — the request itself;</li>
+<li><code>close issue &lt;ISSUE_NUMBER&gt;</code> — after that, when the
+request refers to an issue.</li>
+</ul>
+<p>Whether it does, and which issue, is decided when the request is
+pulled. The <strong>subject of each commit</strong> the branch adds on
+top of the base branch is checked first, newest commit first, and then
+the <strong>request’s title</strong>, so a request whose title says
+nothing but whose commit is
+<code>[#58] Leave room for the terminator</code> closes issue 58. A
+reference is <code>#</code> followed by the number, in any bracketing or
+punctuation — <code>[#58] …</code>, <code>… (#58)</code>,
+<code>Fixes #58:</code> — or the word <code>issue</code> followed by the
+number, as in <code>issue 58</code> or <code>Issue #58</code>. The first
+reference found is the one closed; a request with none in any subject or
+in its title ends with <code>close pr</code>.</p>
+<p>A request merged as it was pulled ends with the comment: the forge
+closes it itself, and neither <code>close</code> step is offered.</p>
+<p>Once the last step has run, the request is dropped from the open
+requests the empty prompt offers to <code>pull</code>, and the list is
+fetched again in the background.</p>
 <p><code>build</code>, <code>review</code>, and <code>auto review</code>
 are offered as optional steps while the pulled branch is still checked
 out — what you would reasonably do to a request before taking it to the
@@ -265,12 +303,16 @@ follow. See <strong>The merge flow</strong> in the Terminal chapter for
 the full behaviour.</p>
 <p>The flow belongs to the workspace it was started in, so other
 workspace tabs are unaffected. Checking out a branch that is neither the
-request’s nor the base ends it, as does commenting on the request. Steps
-taken in developer mode are still tracked, so <code>/committer</code>
-picks up where the branch actually is.</p>
+request’s nor the base ends it, as does its last step — the comment, or
+the closing steps after a rebase. Steps taken in developer mode are
+still tracked, so <code>/committer</code> picks up where the branch
+actually is.</p>
 <p>The comment body comes from
 <code>~/.orangu/comments/merged.md</code>, like any other
 <code>/comment</code> template.</p>
+<p><code>orangu --committer</code> opens the prompt in this mode, so a
+session meant for merging starts on the flow rather than the greeting.
+It cannot be combined with <code>--developer</code>.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/committer</code></pre>
 <p>Natural-language forms:</p>
@@ -857,11 +899,12 @@ edit file src/main.rs</code></pre>
 ref and optionally with per-line blame columns.</p>
 <pre class="text"><code>/show_file [--hash] [--author] &lt;path&gt; [&lt;ref&gt;]</code></pre>
 <p>The command is workspace-scoped. Without a ref, the current workspace
-file is shown — when <code>bat</code> is installed it is used for the
-plain view, otherwise the built-in syntax-highlighted renderer is used.
-When a ref (commit hash, branch, or tag) is given, the file content at
-that ref is retrieved via <code>git show &lt;ref&gt;:&lt;path&gt;</code>
-and rendered with the built-in renderer.</p>
+file is shown — when <code>bat</code> is installed (as <code>bat</code>
+or <code>batcat</code>) it is used for the plain view, otherwise the
+built-in syntax-highlighted renderer is used. When a ref (commit hash,
+branch, or tag) is given, the file content at that ref is retrieved via
+<code>git show &lt;ref&gt;:&lt;path&gt;</code> and rendered with the
+built-in renderer.</p>
 <p><code>--hash</code> and <code>--author</code> add per-line blame
 columns sourced from <code>git blame</code>, using the same ref when one
 is provided.</p>
@@ -1235,6 +1278,9 @@ GitHub/GitLab issue (see the <code>/comment</code> tool in the Git tools
 chapter) and <code>/export review</code> can write it to a PDF (see the
 <code>/export</code> tool).</p>
 <h3 id="key-bindings">Key bindings</h3>
+<p><code>Alt</code> is the Option key on a Mac, and the terminal has to
+send it as Meta for these to work — see “Alt on macOS” in the Terminal
+section.</p>
 <table>
 <colgroup>
 <col style="width: 50%" />
@@ -1337,6 +1383,8 @@ and requires a connected LLM server.</p>
 natural-language form <code>auto review</code>. Give it a file —
 <code>/auto_review &lt;file&gt;</code> — to review just that one file
 instead of the whole branch (see <em>Reviewing a single file</em>
+below), a glob pattern — <code>/auto_review src/main/java/**</code> — to
+review every file it matches (see <em>Reviewing files by pattern</em>
 below), or the <code>all</code> keyword — <code>/auto_review all</code>
 — to review every file in the project instead (see <em>Reviewing every
 file</em> below). The view opens in a <strong>pre-start phase</strong>
@@ -1349,9 +1397,11 @@ Add the <code>deep</code> keyword — <code>/auto_review deep</code> — to
 start every file in <strong>Deep</strong> mode instead of Normal, the
 same Deep the Alt+m pre-start cycle offers per file (see <em>Normal,
 Deep, and Ignore</em> below), applied to the whole launch at once. The
-three keywords and a file argument combine freely, in any order — the
-longest accepted form is <code>/auto_review deep all immediate</code>
-(or, natural-language, <code>auto review deep all immediate</code>).</p>
+three keywords and a file or pattern argument combine freely, in any
+order — <code>/auto_review src/main/java/** immediate</code>,
+<code>/auto_review deep src/**/*.java</code>, and the longest accepted
+form, <code>/auto_review deep all immediate</code> (or,
+natural-language, <code>auto review deep all immediate</code>).</p>
 <h3 id="what-is-reviewed-1">What is reviewed</h3>
 <p>The same change set as <code>/review</code>: everything the current
 branch adds on top of the default branch — committed changes on the
@@ -1400,20 +1450,61 @@ candidate fills in its full repository-relative path; a hand-typed bare
 name (e.g. <code>tui.rs</code>) is resolved too. On a branch, a file
 with no changes against the default branch is refused with
 <code>'&lt;file&gt;' has no changes against &lt;base&gt;.</code></p>
+<h3 id="reviewing-files-by-pattern">Reviewing files by pattern</h3>
+<p><code>/auto_review &lt;pattern&gt;</code> reviews every file matching
+a glob pattern — <code>/auto_review src/main/java/**</code> reviews
+everything under <code>src/main/java</code>. A file argument is a
+pattern whenever it contains a <code>*</code>, <code>?</code>,
+<code>[</code>, or <code>{</code>; otherwise it is a single file as
+above. The pattern generalizes the single-file argument, so what gets
+reviewed follows the same rule: on <code>main</code>/<code>master</code>
+every Git-tracked file the pattern matches is reviewed
+<strong>whole</strong> (a full read of its current content; untracked
+and <code>.gitignore</code>d files never match); on any other branch
+only the <strong>changed</strong> files it matches are reviewed, as
+their diff against the default branch, under the same rebased-branch
+guard. The view, the categories, and the report are the same as a
+whole-branch run — the checklist just holds the matching files.</p>
+<p>Patterns follow <code>.gitignore</code> rules: <code>*</code> and
+<code>?</code> never cross a <code>/</code> (<code>src/*.rs</code> is
+only the direct children of <code>src</code>), <code>**</code> does
+(<code>src/**/*.rs</code> is every <code>.rs</code> file under
+<code>src</code> at any depth, and <code>src/main/java/**</code>
+everything under that directory), <code>[a-z]</code> and
+<code>{tui,cli}</code> work as usual, and a pattern
+<strong>without</strong> a <code>/</code> — <code>*.java</code>,
+<code>Foo?.rs</code> — matches on the file’s <strong>name</strong> at
+any depth, the same way a hand-typed bare <code>tui.rs</code> resolves.
+Paths match as <code>git</code> reports them, repository-relative with
+<code>/</code> separators; a leading <code>./</code> is ignored. A
+pattern matching nothing is refused —
+<code>No tracked file matches '&lt;pattern&gt;' to review.</code> on
+<code>main</code>/<code>master</code>,
+<code>No changed file matches '&lt;pattern&gt;' against &lt;base&gt;.</code>
+on a branch — and a malformed one with
+<code>Invalid pattern '&lt;pattern&gt;': …</code>. The
+<code>immediate</code> and <code>deep</code> keywords combine with a
+pattern in any order —
+<code>/auto_review src/main/java/** immediate</code>,
+<code>/auto_review deep src/**/*.java immediate</code> — and the
+natural-language form takes one too:
+<code>auto review src/main/java/**</code>. If <code>all</code> is given
+alongside a pattern, <code>all</code> wins.</p>
 <h3 id="reviewing-every-file">Reviewing every file</h3>
 <p><code>/auto_review all</code> reviews every file <code>git</code>
-tracks in the project instead of the branch diff or a single file — the
-view, the categories, and the report are exactly the same, just with
-every tracked file in the checklist. Each file gets the same treatment
-as a single-file review on <code>main</code>/<code>master</code>: a full
-read of its current content, every line in scope, regardless of which
-branch you are on — <code>all</code> reviews what is actually on disk,
-not a diff, so a branch behind the default branch is reviewed anyway
-(the rebased-branch guard does not apply here). Untracked files and
-anything excluded by <code>.gitignore</code> are left out — the file
-list comes straight from <code>git ls-files</code>. If <code>all</code>
-is combined with a file argument, <code>all</code> wins and the file is
-ignored; combine it with <code>immediate</code> —
+tracks in the project instead of the branch diff, a single file, or a
+pattern — the view, the categories, and the report are exactly the same,
+just with every tracked file in the checklist. Each file gets the same
+treatment as a single-file review on
+<code>main</code>/<code>master</code>: a full read of its current
+content, every line in scope, regardless of which branch you are on —
+<code>all</code> reviews what is actually on disk, not a diff, so a
+branch behind the default branch is reviewed anyway (the rebased-branch
+guard does not apply here). Untracked files and anything excluded by
+<code>.gitignore</code> are left out — the file list comes straight from
+<code>git ls-files</code>. If <code>all</code> is combined with a file
+or pattern argument, <code>all</code> wins and the file is ignored;
+combine it with <code>immediate</code> —
 <code>/auto_review all immediate</code> — to skip the pre-start phase
 and begin reviewing the whole project at once. The natural-language form
 takes it too: <code>auto review all</code>.</p>
@@ -1660,8 +1751,24 @@ prompt carries the whole file plus its diff (not just the diff), and —
 on an orangu-server — a file’s category requests are all pinned to the
 same <code>id_slot</code>, so its file and diff are prompt-processed
 once and reused from the server’s KV cache across every category instead
-of being recomputed each time. The reviews are independent of each other
-and nothing is added to your chat session.</p>
+of being recomputed each time. On a 9k-token file that reuse is the
+difference between about a minute and about five seconds per
+category.</p>
+<p>Large files are the exception, and deliberately: a file over 32 KiB
+(or 4,000 lines) is reviewed from its <strong>diff alone</strong>,
+without the whole-file section. Prompt cost does not scale linearly —
+attention is quadratic, so the rate at which a server processes a prompt
+falls as the prompt gets longer, and a single 100 KiB source file can
+cost more to send than the rest of a change set put together. Reviewing
+a 37-file change with the cap in place is less than half the prompt
+tokens of doing it without.</p>
+<p>If the server refuses a prompt anyway — its device holds less context
+than that, which varies by machine — the file is retried once without
+its whole-file section and with its diff bounded, and reviewed from that
+rather than recorded as a failed request. The omitted part of a bounded
+diff is marked inline, so the model is not left to read a truncation as
+the end of the change. The reviews are independent of each other and
+nothing is added to your chat session.</p>
 <p>While the model works, the status bar shows
 <code>Thinking (...)</code> until the first token arrives and then the
 live generation rate (<code>Working @ X.Y t/s (...)</code>), so a
@@ -1802,6 +1909,9 @@ a short note is shown instead.</p>
 GitHub/GitLab issue (see the <code>/comment</code> tool in the Git tools
 chapter).</p>
 <h3 id="key-bindings-1">Key bindings</h3>
+<p><code>Alt</code> is the Option key on a Mac, and the terminal has to
+send it as Meta for these to work — see “Alt on macOS” in the Terminal
+section.</p>
 <table>
 <colgroup>
 <col style="width: 50%" />
@@ -1985,15 +2095,68 @@ Git has no unresolved paths, the command refuses and points at
 <code>/review</code> and <code>/auto_review</code> instead of sending an
 underspecified request to the model.</p>
 <p>The same command handles conflicts from an in-progress merge, rebase,
-or cherry-pick. It asks Git for every unmerged path and gives the
-complete list directly to the model; conflict paths are never
+cherry-pick, or revert. It asks Git for every unmerged path and gives
+the complete list directly to the model; conflict paths are never
 compressed. A live conflict is enough to run <code>/create_patch</code>;
 no review report is required. When a report and conflicts both exist,
 the model handles both in one pass. It is instructed to reconstruct the
 intended combined behavior from the base, both sides, surrounding code,
-and tests; remove conflict markers; stage resolved paths; and confirm
-that Git has no unmerged entries. It does not abort or continue the Git
-operation, so that final control remains with you.</p>
+and tests; and to explain, per conflict, what each side changed and why
+the resolution is right — that explanation is what you read. The model
+does not edit the conflicted files or run Git itself: it writes each
+resolution out as a block, and orangu applies it, stages the file, and
+continues the operation — see below.</p>
+<p>The prompt carries the evidence rather than sending the model to look
+for it. It names the operation in progress and what the two sides of the
+markers mean — during a rebase
+<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code> is the base being rebased
+onto and the <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> side is the
+commit being replayed, the reverse of a merge, which is the classic way
+to resolve a conflict the wrong way round — and for each unmerged path
+it shows every conflict region as it stands on disk, with its markers,
+eight lines of context either way, and the same line numbers
+<code>show_file</code> reports, so the model can edit the region with
+<code>modify_file</code> at once. The excerpts share a budget of about
+24 000 characters; a conflict larger than that is described by its line
+ranges for the model to read back. A path with no markers on disk (a
+delete/modify or binary conflict) is described as such instead.</p>
+<p>Each resolution comes back as a block naming the path and the
+conflict’s own line range:</p>
+<pre class="text"><code>=== RESOLVED src/libpgmoneta/utils.c lines 4258-4262 ===
+      ws = pgmoneta_append(ws, WORKSPACE_DEFAULT);
+=== END RESOLVED ===</code></pre>
+<p>orangu replaces the lines from
+<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> through
+<code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> with the block’s content —
+refusing a range that is no longer a conflict block, so a drifted number
+never overwrites code — and stages the file with <code>git add</code>; a
+code fence or copied line numbers inside the block are tolerated. A
+model that edited the file with a tool anyway is fine too: a path with
+no markers left is left as it is.</p>
+<p>When the model has reported, orangu finishes the operation itself:
+with no unmerged paths left it runs <code>git rebase --continue</code>
+(or <code>git merge --continue</code>,
+<code>git cherry-pick --continue</code>,
+<code>git revert --continue</code>), keeping the commit message as it
+is, and reports
+<code>Rebase finished: branch '&lt;name&gt;' is at &lt;commit&gt;</code>
+— so the branch comes out whole rather than parked mid-rebase on a
+detached HEAD. If no block was given for a conflict it says which path
+and lines are still unresolved and stops without continuing, and if the
+next commit of a rebase conflicts too it stops there and says so; in
+both cases <code>/create_patch</code> again picks up where it left off.
+This tail runs only when the model’s turn completed, not when it was
+cancelled or failed, and it follows the turn even when a tab switch sent
+it to the background.</p>
+<p>Taking another user’s branch through to a clean, rebased copy is
+therefore:</p>
+<pre class="text"><code>/add_repository Jubilee101 muse
+/branch Jubilee101/muse
+/squash
+/rebase
+/create_patch</code></pre>
+<p>with <code>/create_patch</code> needed only when the rebase stops on
+a conflict.</p>
 <p>Run it with the slash command or either natural-language form:</p>
 <pre class="text"><code>/create_patch
 create patch
@@ -2228,6 +2391,11 @@ works with no prior command.</li>
 every open pull/merge request in the repository, fetched from the forge
 (<code>gh</code>/<code>glab</code>) at export time, one page per pull
 request with as much detail as the forge returns.</li>
+<li><code>/export issue</code> (or <code>/export issues</code>) — an
+<strong>issue report</strong>: every open issue in the repository,
+fetched from the forge (<code>gh</code>/<code>glab</code>) at export
+time, one page per issue with its description and as much detail as the
+forge returns.</li>
 <li><code>/export statistics</code> (or
 <code>/export statistics total</code>) — the <strong>persistent activity
 history</strong>: the same Total-then-year report
@@ -2239,9 +2407,9 @@ rendered to a PDF.</li>
 <p>The argument <strong>Tab-completes</strong> (and shows the inline
 ghost hint): pressing Tab after <code>/export</code> offers
 <code>console</code>, <code>review</code>, <code>auto review</code>,
-<code>duplicates</code>, <code>pr</code>, and <code>statistics</code>,
-and the multi-word <code>auto review</code> completes from as little as
-<code>a</code> (so <code>export a</code> →
+<code>duplicates</code>, <code>pr</code>, <code>issue</code>, and
+<code>statistics</code>, and the multi-word <code>auto review</code>
+completes from as little as <code>a</code> (so <code>export a</code> →
 <code>export auto review</code>). The natural-language
 <code>export &lt;target&gt;</code> form (without the leading slash)
 completes the same way.</p>
@@ -2253,9 +2421,10 @@ completes the same way.</p>
 name and <code>{branch}</code> is the current branch
 (<code>nobranch</code> when not on one); both are sanitized for use in a
 filename, so a branch such as <code>feature/x</code> becomes
-<code>feature-x</code>. The <code>pr</code> and <code>statistics</code>
-exports are saved as <code>{repository}-pr.pdf</code> and
-<code>{repository}-statistics.pdf</code> instead — no branch, since
+<code>feature-x</code>. The <code>pr</code>, <code>issue</code>, and
+<code>statistics</code> exports are saved as
+<code>{repository}-pr.pdf</code>, <code>{repository}-issue.pdf</code>,
+and <code>{repository}-statistics.pdf</code> instead — no branch, since
 those reports cover the whole repository, not one branch. An existing
 file with the same name is overwritten. On success the saved path is
 printed to the output window.</p>
@@ -2374,8 +2543,49 @@ bodies the list endpoint does not carry — shows <code>N/A</code> in both
 columns. (A repository with no open pull requests is the status page
 followed by a short note instead.)</li>
 </ul>
-<p>The <strong>statistics</strong> export has the most pages of the six,
-since most of the work is in the PDF rather than the console:</p>
+<p>The <strong>issue</strong> export is organized like the pr
+export:</p>
+<ul>
+<li><strong>Page 1 — issue status.</strong> A single table: the
+repository name, generation date/time, the open issues broken down by
+status — <strong>Open</strong> (the total), <strong>Assigned</strong>
+(with at least one assignee), and <strong>Unassigned</strong> — then
+<strong>Oldest</strong> and <strong>Newest</strong>, each a clickable
+link to that issue followed by its creation date. With no open issues
+both read <code>N/A</code>; with exactly one, <strong>Oldest</strong> is
+left empty rather than repeating the same entry as
+<strong>Newest</strong>.</li>
+<li><strong>Page 2 — table of contents.</strong> One entry per open
+issue, <code>#N Title</code>, <strong>clickable links</strong> that jump
+to their page.</li>
+<li><strong>Page 3 onward — one page per issue</strong> (more when its
+description is long). The title <strong>links to the issue’s home page
+on the forge</strong>, followed by a table (spanning the full page
+width) of author, a <strong>Link</strong> row with the issue’s full URL
+(also clickable), created/updated dates, milestone, comment count,
+assignees, and labels — whatever the forge returned. The
+<strong>Assignees</strong> value is shown in <strong>bold</strong> when
+it is <code>none</code>, so an issue nobody has picked up catches the
+eye. Below the table, the <strong>Description</strong>: the issue’s body
+rendered from its Markdown the same way the review export renders a
+report — brand-coloured headings, <strong>bold</strong> and
+<em>italic</em> emphasis, lists, fenced code blocks, block quotes, and
+tables — flowing across further pages when it is long
+(<code>No description.</code> when the issue has none). Finally a
+<strong>Last comment</strong> table (also full width): a header spanning
+both columns, then one row with the comment’s <strong>author</strong>
+(left) and its <strong>text</strong> (right, word-wrapped and truncated
+if very long); an issue with no comments — or, on GitLab, whose note
+bodies the list endpoint does not carry — shows <code>N/A</code> in both
+columns. (A repository with no open issues is the status page followed
+by a short note instead.)</li>
+</ul>
+<p>On GitHub the report is built from <code>gh issue list</code> (up to
+1000 open issues, pull requests excluded); on GitLab from
+<code>glab api projects/:id/issues</code>, paginated so every open issue
+is included.</p>
+<p>The <strong>statistics</strong> export has the most pages of the
+seven, since most of the work is in the PDF rather than the console:</p>
 <ul>
 <li><strong>Page 1 — Total.</strong> A <strong>Repository
 Activity</strong> table (total commits, days active, current streak,
@@ -2439,6 +2649,8 @@ specifically):</p>
 <pre class="text"><code>/export duplicates</code></pre>
 <p>Export a pull request report:</p>
 <pre class="text"><code>/export pr</code></pre>
+<p>Export an issue report:</p>
+<pre class="text"><code>/export issue</code></pre>
 <p>Export the persistent activity history:</p>
 <pre class="text"><code>/export statistics
 /export statistics total</code></pre>
@@ -2449,6 +2661,7 @@ export review
 export auto review
 export duplicates
 export pr
+export issue
 export statistics
 export statistics total</code></pre>
 <h2 id="graph">/graph</h2>
@@ -2475,8 +2688,26 @@ connections.</p>
 <p>Nodes are automatically clustered and color-coded based on the file
 they belong to, helping you easily visualize architectural boundaries
 and module dependencies.</p>
+<h3 id="inspecting-nodes-and-paths">Inspecting nodes and paths</h3>
+<p><code>/graph explain &lt;symbol&gt;</code> describes one unambiguous
+graph node: its source location, kind, structural community, degree, and
+incoming and outgoing relationships. Each connection includes the
+extracted or inferred relation and its evidence location when
+available.</p>
+<p><code>/graph path &lt;source&gt; &lt;target&gt;</code> finds the
+shortest directed path between two graph nodes. Add
+<code>--undirected</code> when you want to explore a relationship in
+either direction. A path is limited to eight hops by default.</p>
+<p>For a one-shot query, pass either command with <code>-p</code>;
+Orangu prints the result and exits.</p>
 <p><strong>Examples</strong></p>
-<pre class="text"><code>/graph</code></pre>
+<pre class="text"><code>/graph
+/graph explain shortest_path
+/graph path shortest_path resolve_node
+/graph path resolve_node shortest_path --undirected
+
+orangu -p &quot;/graph explain shortest_path&quot;
+orangu -p &quot;/graph path shortest_path resolve_node&quot;</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>graph
 show graph

@@ -38,8 +38,8 @@
 
     <div class="hero-left">
       <a class="hero-badge" href="#whats-new">
-        <span class="hero-badge-ver">1.3</span>
-        orangu 1.3.0 is out
+        <span class="hero-badge-ver">1.4</span>
+        orangu 1.4.0 is out
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
       </a>
 
@@ -199,7 +199,7 @@
           </li>
           <li class="arch-part">
             <h3>orangu-server</h3>
-            <p>A native pure-Rust GGUF inference engine: model loading, tokenization, the transformer forward pass, sampling, and request scheduling — with no llama.cpp, no ggml, and no Python. It serves OpenAI-compatible endpoints and a built-in web console.</p>
+            <p>A native pure-Rust GGUF inference engine: model loading, tokenization, the transformer forward pass, sampling, and request scheduling — with no llama.cpp, no ggml, and no Python. It serves OpenAI-compatible endpoints and a built-in web console, and since 1.4.0 it draws pictures as well as text.</p>
             <div class="arch-backends">
               <span>CPU</span><span>Vulkan</span><span>Metal</span><span>CUDA</span><span>ROCm</span><span>OpenCL</span><span>NPU</span>
             </div>
@@ -210,7 +210,7 @@
           </li>
           <li class="arch-part">
             <h3>orangu-gguf <span class="arch-opt">Tool</span></h3>
-            <p>The model builder, new in 1.3.0. It pretrains a model from scratch out of a manifest of permissively-licensed repositories &mdash; cloning them, training a tokenizer, packing the text into tokens, and writing the result as a GGUF file <code>orangu-server</code> loads directly &mdash; and it rewrites an existing model at a smaller weight format, from <code>q6_k</code> down to <code>q2_k</code>.</p>
+            <p>The model builder. It pretrains a model from scratch out of a manifest of permissively-licensed repositories &mdash; cloning them, training a tokenizer, packing the text into tokens, and writing the result as a GGUF file <code>orangu-server</code> loads directly &mdash; and it rewrites an existing model at a smaller weight format, from <code>q6_k</code> down to <code>q2_k</code>.</p>
           </li>
         </ul>
       </div>
@@ -322,6 +322,21 @@
           <h3>Review into fixes</h3>
           <p><code>/create_patch</code> turns a review report into the change it asked for &mdash; and unpicks a conflicted merge, rebase, or cherry-pick.</p>
         </a>
+        <a href="doc/image.html" class="doc-cell">
+          <span class="doc-cell-label">Images</span>
+          <h3>Pictures, too</h3>
+          <p>Point <code>orangu-server</code> at Qwen-Image 2.1 and a chat turn is answered with a picture &mdash; or an edit of one you attach.</p>
+        </a>
+        <a href="doc/git-tools.html#add_repository" class="doc-cell">
+          <span class="doc-cell-label">Collaboration</span>
+          <h3>Someone else&rsquo;s branch</h3>
+          <p><code>/add_repository</code> fetches a contributor&rsquo;s copy of the project, and <code>/revert</code> backs out a pushed commit safely.</p>
+        </a>
+        <a href="doc/server.html#the-prometheus-section" class="doc-cell">
+          <span class="doc-cell-label">Operations</span>
+          <h3>Prometheus metrics</h3>
+          <p>A dedicated metrics listener with gauges, latency histograms, and token counters &mdash; ready to scrape.</p>
+        </a>
       </div>
     </div>
   </section>
@@ -339,7 +354,7 @@
           <span class="stat-label">Cloud dependencies</span>
         </div>
         <div class="stat-cell">
-          <span class="stat-number">1.3</span>
+          <span class="stat-number">1.4</span>
           <span class="stat-label">Current version</span>
         </div>
       </div>
@@ -374,21 +389,21 @@
 
       <div class="release-card">
         <div class="release-head">
-          <span class="release-ver">orangu 1.3.0</span>
+          <span class="release-ver">orangu 1.4.0</span>
           <span class="release-badge">Latest</span>
-          <span class="release-date">September 9, 2026</span>
+          <span class="release-date">September 29, 2026</span>
         </div>
         <ul class="release-list">
-          <li><strong>Train your own model</strong> &mdash; <code>orangu-gguf</code> pretrains a model from a manifest of permissively-licensed repositories and writes it straight out as GGUF, or rewrites one you already have at a smaller weight format.</li>
-          <li><strong>Workflows</strong> &mdash; A YAML file describes jobs, variables, functions, approvals, loops, and control flow, and runs the same slash commands you type. <code>--dry-run</code> checks the whole file before anything executes.</li>
-          <li><strong>NPU support</strong> &mdash; A seventh backend joins CPU, Vulkan, Metal, CUDA, ROCm, and OpenCL: Rockchip&rsquo;s RKNPU on boards like the RK3588.</li>
-          <li><strong><code>/create_patch</code></strong> &mdash; Turns a review report into the fixes it asked for, and resolves the conflicts a stopped merge, rebase, or cherry-pick leaves behind.</li>
-          <li><strong>New models</strong> &mdash; Qwen 3.8-Flash-Next with multi-token prediction, GLM 5.3, and Ornith 1.5.</li>
-          <li><strong>Model list, sorted</strong> &mdash; The server&rsquo;s model list sorts, with a refresh-all option, and <code>LAST_USED</code> is tracked in plain <code>orangu-server</code> too.</li>
+          <li><strong>Image generation</strong> &mdash; <code>orangu-server</code> serves Qwen-Image 2.1: every chat turn in the web console, and every <code>/v1/images/generations</code> request, is answered with a picture &mdash; with transparency, and edits of a picture you attach.</li>
+          <li><strong>Massive performance improvements</strong> &mdash; A long run of work across the coordinator and the server makes the whole stack considerably faster.</li>
+          <li><strong><code>/add_repository</code></strong> &mdash; Adds another user&rsquo;s copy of the project as a remote and fetches their branch, on GitHub, GitLab, or any other host.</li>
+          <li><strong><code>/revert</code></strong> &mdash; Records a commit that undoes another: the safe way to back out a change already pushed, with conflicts resolved by <code>/create_patch</code>.</li>
+          <li><strong>Prometheus metrics</strong> &mdash; A dedicated, optional metrics listener on <code>orangu-server</code>, with gauges, latency histograms, and token counters.</li>
+          <li><strong>New model</strong> &mdash; Ternary Bonsai 2, with Prism&rsquo;s 2-bit and ternary weight types.</li>
         </ul>
         <p class="release-note">
-          <strong>Also in 1.3.0:</strong>
-          Windows fixes, dependency updates, and further performance work across the engine. The <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf" style="color:var(--amber);text-decoration:none">complete manual</a> ships as PDF and HTML with the <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf" style="color:var(--amber);text-decoration:none">cheat sheet</a>, and is embedded in the binary for <code>/manual</code>.
+          <strong>Also in 1.4.0:</strong>
+          A session picker for <code>--resume</code>, <code>--developer</code> and <code>--committer</code> start-up flags, <code>/auto_review</code> over glob patterns, <code>/graph explain</code> and <code>/graph path</code>, mouse selection in the terminal, and Windows fixes. The <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf" style="color:var(--amber);text-decoration:none">complete manual</a> ships as PDF and HTML with the <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf" style="color:var(--amber);text-decoration:none">cheat sheet</a>, and is embedded in the binary for <code>/manual</code>.
         </p>
       </div>
 

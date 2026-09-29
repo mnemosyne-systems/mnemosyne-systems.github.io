@@ -62,6 +62,7 @@
         <li><a href="workflows.html">Workflow Files</a></li>
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -133,11 +134,14 @@ hand:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">--init</span></span></code></pre></div>
 <p>The wizard:</p>
 <ol type="1">
-<li>Asks for the <strong>LLM URL</strong> (the server
-<code>endpoint</code>).</li>
+<li>Asks for the <strong>Endpoint</strong> (the server
+<code>endpoint</code>, default <code>http://localhost:8100</code>). An
+entry without a scheme, such as <code>localhost:8100</code>, gets
+<code>http://</code> prepended.</li>
 <li>Queries the server’s <code>/v1/models</code> endpoint and pre-fills
 the first advertised model as the <strong>Model</strong> value; if no
-model can be detected, you enter one manually.</li>
+model can be detected, the prompt has no default and you enter one
+yourself.</li>
 <li>Walks every <code>[orangu]</code> and server option, showing its
 default in <code>[brackets]</code>. Press Enter to keep the default.
 Boolean options accept
@@ -339,10 +343,13 @@ to <code>on</code> to wrap at the visible width. Options:
 <td style="text-align: left;"><code>mouse</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Enable mouse capture in the terminal. When
-<code>true</code> (the default), the TUI handles mouse scroll and
-double-click. Hold <strong>Shift</strong> while clicking/dragging to do
-native text selection and copy. Set to <code>false</code> to disable all
-mouse handling</td>
+<code>true</code> (the default), the TUI handles the mouse itself: the
+wheel scrolls, a drag selects text and copies it to the clipboard on
+release, and a double-click copies the word under the pointer or folds a
+collapsible section. Hold <strong>Shift</strong> while clicking/dragging
+to use the terminal’s own selection instead. Set to <code>false</code>
+to disable all mouse handling and leave the mouse to the terminal. See
+the Terminal chapter</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>workspaces</code></td>
@@ -360,6 +367,19 @@ window after each command to indicate success or failure, blink an
 <code>/auto_review</code> finishes. Defaults to <code>off</code>.
 Options: <code>on</code>, <code>true</code>, <code>1</code>,
 <code>off</code>, <code>false</code>, <code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>prime</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">When a TUI tab opens a fresh session, send
+its opening — the system prompt and tool definitions every turn starts
+with, ~1900 tokens on <code>gemma-4-E2B</code> — to the server as a
+one-token request in the background, so the server has it prefilled by
+the time the first prompt is typed. Measured on the CIX P1: the first
+turn of a fresh server goes from a full prefill to the cached one.
+Defaults to <code>on</code>. Options: <code>on</code>,
+<code>true</code>, <code>1</code>, <code>off</code>, <code>false</code>,
+<code>0</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>auto_rebase</code></td>
