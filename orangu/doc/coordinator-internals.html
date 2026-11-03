@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -266,11 +270,24 @@ resolve which <code>orangu-server</code> executable to run
 <code>--config &lt;that path&gt; &lt;role flag&gt; &lt;model&gt;</code>,
 piped stdout/stderr captured into the rolling tail, record
 <code>current_pid</code> immediately (before the possibly-long health
-check), then poll <code>GET /v1/models</code> on the new origin every
-500ms until it succeeds or <code>startup_timeout</code> elapses. A
-profile’s <code>host</code> travels into that generated config verbatim,
-so it takes exactly the spellings <code>orangu-server</code>’s own
-<code>host</code> does — including the default, <code>all</code>.
+check), then poll <code>GET /health</code> on the new origin — after 50
+ms, doubling up to every 500 ms — until it succeeds or
+<code>startup_timeout</code> elapses. A swap first waits for the proxied
+responses still streaming (<code>Coordinator::in_flight</code>, counted
+by an <code>InFlight</code> guard carried in each response body’s stream
+and dropped with it), bounded by <code>DRAIN_TIMEOUT</code> (two
+minutes), and then saves each of the outgoing server’s slots
+(<code>Coordinator::save_slots</code>: <code>GET /slots</code>, then
+<code>POST /slots/{id}?action=save</code> per slot, each bounded by
+<code>SLOT_FILE_TIMEOUT</code>) to
+<code>coordinator-&lt;profile&gt;-&lt;slot&gt;.bin</code> in that
+model’s slot directory. Every server the coordinator starts gets
+<code>ORANGU_SLOT_RESTORE=coordinator-&lt;profile&gt;</code> and
+restores those files at start, before its prefix warm-up, so a
+conversation the swap stopped is still cached when its model comes back.
+A profile’s <code>host</code> travels into that generated config
+verbatim, so it takes exactly the spellings <code>orangu-server</code>’s
+own <code>host</code> does — including the default, <code>all</code>.
 <code>config.rs</code> resolves that wildcard in the two directions it
 has to: <code>resolve_bind_host</code> (<code>all</code>/<code>*</code>
 → <code>0.0.0.0</code>) for the coordinator’s own listener, and

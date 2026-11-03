@@ -38,8 +38,8 @@
 
     <div class="hero-left">
       <a class="hero-badge" href="#whats-new">
-        <span class="hero-badge-ver">1.4</span>
-        orangu 1.4.0 is out
+        <span class="hero-badge-ver">2.0</span>
+        orangu 2.0.0 is out
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
       </a>
 
@@ -199,7 +199,7 @@
           </li>
           <li class="arch-part">
             <h3>orangu-server</h3>
-            <p>A native pure-Rust GGUF inference engine: model loading, tokenization, the transformer forward pass, sampling, and request scheduling — with no llama.cpp, no ggml, and no Python. It serves OpenAI-compatible endpoints and a built-in web console, and since 1.4.0 it draws pictures as well as text.</p>
+            <p>A native pure-Rust GGUF inference engine: model loading, tokenization, the transformer forward pass, sampling, and request scheduling — with no llama.cpp, no ggml, and no Python. It serves OpenAI- and Anthropic-compatible endpoints and a built-in web console, draws pictures, makes short video clips and speaks text aloud, and since 2.0.0 can split one model over several machines as a tree of workers.</p>
             <div class="arch-backends">
               <span>CPU</span><span>Vulkan</span><span>Metal</span><span>CUDA</span><span>ROCm</span><span>OpenCL</span><span>NPU</span>
             </div>
@@ -337,6 +337,21 @@
           <h3>Prometheus metrics</h3>
           <p>A dedicated metrics listener with gauges, latency histograms, and token counters &mdash; ready to scrape.</p>
         </a>
+        <a href="doc/workers.html" class="doc-cell">
+          <span class="doc-cell-label">Scale</span>
+          <h3>Workers</h3>
+          <p>Deploy <code>orangu-server</code> as a pyramid: a model too large for one machine is split layer by layer over several.</p>
+        </a>
+        <a href="doc/video.html" class="doc-cell">
+          <span class="doc-cell-label">Media</span>
+          <h3>Video and speech</h3>
+          <p>Short clips with sound from LTX-2.5, and text spoken aloud by Qwen3-TTS &mdash; from the same server, still fully local.</p>
+        </a>
+        <a href="doc/http.html#anthropic-compatible-endpoints" class="doc-cell">
+          <span class="doc-cell-label">API</span>
+          <h3>Anthropic Claude API</h3>
+          <p><code>orangu-server</code> answers <code>/v1/messages</code> as well as the OpenAI endpoints, so Claude API clients run against your own models.</p>
+        </a>
       </div>
     </div>
   </section>
@@ -354,7 +369,7 @@
           <span class="stat-label">Cloud dependencies</span>
         </div>
         <div class="stat-cell">
-          <span class="stat-number">1.4</span>
+          <span class="stat-number">2.0</span>
           <span class="stat-label">Current version</span>
         </div>
       </div>
@@ -389,21 +404,21 @@
 
       <div class="release-card">
         <div class="release-head">
-          <span class="release-ver">orangu 1.4.0</span>
+          <span class="release-ver">orangu 2.0.0</span>
           <span class="release-badge">Latest</span>
-          <span class="release-date">September 29, 2026</span>
+          <span class="release-date">November 2, 2026</span>
         </div>
         <ul class="release-list">
-          <li><strong>Image generation</strong> &mdash; <code>orangu-server</code> serves Qwen-Image 2.1: every chat turn in the web console, and every <code>/v1/images/generations</code> request, is answered with a picture &mdash; with transparency, and edits of a picture you attach.</li>
-          <li><strong>Massive performance improvements</strong> &mdash; A long run of work across the coordinator and the server makes the whole stack considerably faster.</li>
-          <li><strong><code>/add_repository</code></strong> &mdash; Adds another user&rsquo;s copy of the project as a remote and fetches their branch, on GitHub, GitLab, or any other host.</li>
-          <li><strong><code>/revert</code></strong> &mdash; Records a commit that undoes another: the safe way to back out a change already pushed, with conflicts resolved by <code>/create_patch</code>.</li>
-          <li><strong>Prometheus metrics</strong> &mdash; A dedicated, optional metrics listener on <code>orangu-server</code>, with gauges, latency histograms, and token counters.</li>
-          <li><strong>New model</strong> &mdash; Ternary Bonsai 2, with Prism&rsquo;s 2-bit and ternary weight types.</li>
+          <li><strong>New architecture</strong> &mdash; The inference server has been reworked from the ground up, and with it come massive performance improvements across the whole stack.</li>
+          <li><strong>Workers</strong> &mdash; Deploy <code>orangu-server</code> as a pyramid: a model too large for one machine is split layer by layer over a tree of nodes, with encryption between them.</li>
+          <li><strong>Video and speech</strong> &mdash; Initial support for short clips with sound from LTX-2.5, and for text spoken aloud by Qwen3-TTS.</li>
+          <li><strong>Anthropic Claude API</strong> &mdash; <code>orangu-server</code> answers <code>/v1/messages</code> alongside the OpenAI-compatible endpoints.</li>
+          <li><strong>Improved PDF support</strong> &mdash; Local OCR, tables preserved in the query context, and searchable PDF output.</li>
+          <li><strong>New models</strong> &mdash; DeepSeek 4.1, Mistral 4, Muse Spark, Qwen-Image 2.1, Gemma Embedding 2, FLUX2, and MiniMax 3.1.</li>
         </ul>
         <p class="release-note">
-          <strong>Also in 1.4.0:</strong>
-          A session picker for <code>--resume</code>, <code>--developer</code> and <code>--committer</code> start-up flags, <code>/auto_review</code> over glob patterns, <code>/graph explain</code> and <code>/graph path</code>, mouse selection in the terminal, and Windows fixes. The <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf" style="color:var(--amber);text-decoration:none">complete manual</a> ships as PDF and HTML with the <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf" style="color:var(--amber);text-decoration:none">cheat sheet</a>, and is embedded in the binary for <code>/manual</code>.
+          <strong>Also in 2.0.0:</strong>
+          A container image for the whole serving stack, a live Monitor pane in the web console, <code>/issue</code>, <code>/graph diff</code>, <code>/comment all</code>, chunked model downloads, the build&rsquo;s Git hash in <code>--version</code>, and Windows fixes. The <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf" style="color:var(--amber);text-decoration:none">complete manual</a> ships as PDF and HTML with the <a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf" style="color:var(--amber);text-decoration:none">cheat sheet</a>, and is embedded in the binary for <code>/manual</code>.
         </p>
       </div>
 

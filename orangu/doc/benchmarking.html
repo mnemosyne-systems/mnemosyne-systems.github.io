@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -367,8 +371,7 @@ baseline rather than beside nothing:</p>
 <td style="text-align: left;">Decode</td>
 <td style="text-align: left;"><code>0 to 2048</code></td>
 <td style="text-align: left;">the tracked series in
-<code>perf-history.tsv</code>; <code>PERF-GAP.md</code>’s standard
-harness, best of 3</td>
+<code>perf-history.tsv</code>, best of 3</td>
 </tr>
 <tr>
 <td style="text-align: left;">Prefill</td>
@@ -385,9 +388,8 @@ tracked decode length, timed as one turn</td>
 <tr>
 <td style="text-align: left;">Continuation prefill</td>
 <td style="text-align: left;"><code>10 to 130 added</code></td>
-<td style="text-align: left;"><code>PERF-GAP.md</code> increment 7, the
-sweep that found the 2× cooperative-GEMM cliff between 50 and 66
-tokens</td>
+<td style="text-align: left;">the sweep that found the 2×
+cooperative-GEMM cliff between 50 and 66 tokens</td>
 </tr>
 <tr>
 <td style="text-align: left;">Decode curve</td>
@@ -398,9 +400,8 @@ below</td>
 <tr>
 <td style="text-align: left;">Concurrency</td>
 <td style="text-align: left;"><code>1 to 8 streams</code></td>
-<td style="text-align: left;"><code>PERF-GAP.md</code> item 7 — 99%
-engine occupancy at two streams against a generic path stuck at 66% with
-eight</td>
+<td style="text-align: left;">99% engine occupancy at two streams
+against a generic path stuck at 66% with eight</td>
 </tr>
 <tr>
 <td style="text-align: left;">Embeddings</td>
@@ -601,6 +602,90 @@ two together would be meaningless.</p>
 <p>Because the token counts are approximate (the tool has no tokenizer),
 <code>added</code> is a target and <code>processed</code> is the truth —
 history rows are recorded against <code>processed</code>.</p>
+<h3 id="chat-mode---chat-a-coding-session-turn-by-turn">Chat mode
+(<code>--chat</code>) — a coding session, turn by turn</h3>
+<p>Every other text mode sends a repeated sentence to
+<code>/v1/completions</code>, which skips the chat template, the tool
+declarations and the prefix cache a conversation depends on.
+<code>--chat TURNS</code> sends what a coding agent sends: a system
+prompt, a tool array and a conversation that grows by one user message
+and the model’s own reply per turn, to
+<code>/v1/chat/completions</code>. A reply that calls a tool is answered
+with a placeholder tool result, so the transcript stays one a template
+accepts.</p>
+<p>The conversation is built in — a coding agent’s system prompt, four
+tools and eight turns that carry source code — unless
+<code>--chat-fixture</code> names a JSON file of the same shape
+(<code>{"system": "...", "tools": [...], "turns": ["...", ...]}</code>).
+Each repetition opens with a system line of its own, so one repetition’s
+cache never serves the next one’s first turn.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--chat</span> 8 <span class="at">--gen</span> 64 <span class="at">--reps</span> 3</span></code></pre></div>
+<pre><code>turn | prompt | cached |  hit |  ttft_ms |    pp_ms | other_ms |  tg t/s | pp/ttft mean ± sd
+--------------------------------------------------------------------------------------------------
+   1 |    975 |      0 |   0% |    211.7 |    209.9 |      1.7 |  553.39 |   4386.1 ± 307.4
+   2 |   1408 |    960 |  68% |    135.8 |    134.3 |      1.5 |  434.45 |  10095.8 ± 284.6
+ ...
+cache: 39552 of 48387 prompt tokens (81.7%) · 0 tool call(s)</code></pre>
+<p>Per turn: the prompt as the server counted it, how much of it the
+cache supplied, time to first token, the server’s prefill time, and
+<code>other_ms</code> — everything else before the first token
+(template, tokenizer, queueing, the network). The recorded rate (mode
+<code>chat</code>, <code>n</code> = turn) is the prompt over the time to
+first token, so a turn answered from cache and a turn rendered faster
+both read higher. The reply’s decode rate is recorded beside it as mode
+<code>chat-tg</code>: what a decode-side change such as speculation
+moves, and a prompt-side one should leave alone.</p>
+<h3
+id="interference-mode---interference-one-requests-prefill-against-anothers-decode">Interference
+mode (<code>--interference</code>) — one request’s prefill against
+another’s decode</h3>
+<p>Two agents on one server share one device, and a decode step queued
+behind a prefill submission waits for it.
+<code>--interference LIST</code> starts one stream decoding
+<code>--gen</code> tokens and, eight tokens in, sends a second request
+whose prompt is each listed length. It reports the decoding stream’s
+inter-token gaps — median, 99th percentile and worst — and how long the
+second request took. The recorded value (mode <code>itl</code>) is the
+worst gap in milliseconds, lower is better.</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--interference</span> 1024,4096 <span class="at">--gen</span> 400</span></code></pre></div>
+<p>It needs a server with at least two slots (<code>slots = 2</code> in
+its configuration); on one slot the second request queues and the gaps
+show nothing.</p>
+<h3 id="kl-mode---kl-has-a-change-moved-the-models-answers">KL mode
+(<code>--kl</code>) — has a change moved the model’s answers?</h3>
+<p>A change to how the arithmetic is done — a KV storage format, a
+kernel’s summation order, a weight layout, the multi-position verify
+path — can be fast because it is wrong, and a few generated replies that
+read well do not show it. <code>--kl PATH</code> asks the server’s
+<code>/logits</code> for its teacher-forced next-token distributions
+over <code>--kl-tokens</code> tokens (default 1024) of
+<code>--kl-text</code>, or of the chat fixture’s system prompt and turns
+when that is not given.</p>
+<p>The first run against a <code>PATH</code> that does not exist saves
+the answer there as the reference. Every later run sends the reference’s
+exact tokens and reports, position by position, the KL divergence from
+the reference (mean, 99th percentile and worst), how often the most
+likely token is the same, and milliseconds a position on both sides.</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference: this build, its default configuration</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--kl</span> ref.json</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># the same server, verifying 8 positions a pass instead of decoding one</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--kl</span> ref.json <span class="at">--kl-rows</span> 8</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># a second build or configuration, started on the same port</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--kl</span> ref.json</span></code></pre></div>
+<p>Each side keeps <code>--kl-top</code> candidates a position (default
+32), so the divergence is taken over the reference’s candidates and one
+bucket for the rest. A candidate the other side did not keep is given
+that side’s smallest kept probability, which is an upper bound on what
+it held. The recorded values are mode <code>kl</code> (the mean, lower
+is better) and mode <code>top1</code> (agreement in percent), with
+<code>n</code> the rows a pass.</p>
+<p>Read a mean KL near zero and agreement near 100% as the same model.
+Two runs of one build on one device are the floor to compare against: a
+device whose sums run in a different order from run to run does not
+reach zero against itself.</p>
 <h3 id="decode-cpu-per-token---decode-cpu">Decode CPU per token
 (<code>--decode-cpu</code>)</h3>
 <p>Reports the <strong>server’s own CPU time per generated
@@ -608,8 +693,8 @@ token</strong>, read from <code>/proc/&lt;pid&gt;/stat</code>, with
 prefill excluded. Useful when a change is expected to remove CPU work
 rather than wall-clock time — a throughput number can be too noisy to
 show a few percent, while CPU seconds are counted by the kernel.</p>
-<div class="sourceCode" id="cb11"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 192 <span class="at">--decode-cpu</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 192 <span class="at">--decode-cpu</span></span></code></pre></div>
 <pre><code>   depth |   n_tok | prefilled |  cpu_ms/token |    tok/s
 ----------------------------------------------------------
        0 |      33 |         1 | 14.427 ± 0.052 |    22.06
@@ -650,10 +735,10 @@ warmup included. <code>--embed</code> sweeps prompt lengths against
 <code>/v1/embeddings</code> and reports forward-pass throughput, which
 is what <code>--pp</code> reports for a generative model: an embedding
 pass is prompt processing without the decode that follows it.</p>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> embeddinggemma-300M-Q8_0.gguf <span class="at">--embedding</span> <span class="kw">&amp;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15  <span class="co"># the reference</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> embeddinggemma-300M-Q8_0.gguf <span class="at">--embedding</span> <span class="kw">&amp;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--embed</span> 64,128,256 <span class="at">--reps</span> 15  <span class="co"># the reference</span></span></code></pre></div>
 <pre><code>   embed |   n_tok |   wall_ms |     best |        mean ± sd
 ------------------------------------------------------------
       64 |      81 |    1163.3 |    70.49 |    68.33 ±  1.64
@@ -686,10 +771,10 @@ timings (the <code>timings</code> object on the completed event:
 <code>encode_ms</code>, <code>steps_ms</code>, <code>decode_ms</code>),
 so a slow picture is a slow <em>phase</em> — and, with
 <code>--flamegraph</code>, a slow phase is a hot function.</p>
-<div class="sourceCode" id="cb15"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> unsloth/Qwen-Image-2512-GGUF:Q4_K_M <span class="kw">&amp;</span>     <span class="co"># comes up in the image role</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--image</span> 256 <span class="at">--reps</span> 1 <span class="at">--flamegraph</span> cat.svg</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--image</span> 256,512 <span class="at">--image-steps</span> 4 <span class="at">--image-cfg</span> 1 <span class="at">--reps</span> 3</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> unsloth/Qwen-Image-2512-GGUF:Q4_K_M <span class="kw">&amp;</span>     <span class="co"># comes up in the image role</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--image</span> 256 <span class="at">--reps</span> 1 <span class="at">--flamegraph</span> cat.svg</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--image</span> 256,512 <span class="at">--image-steps</span> 4 <span class="at">--image-cfg</span> 1 <span class="at">--reps</span> 3</span></code></pre></div>
 <pre><code>    image | tokens | steps | encode_s |   step_s | decode_s |  total_s |     best |   mean ± sd(n-1)
 --------------------------------------------------------------------------------------------------------
  256x256  |    256 |   1x2 |      6.3 |     43.7 |      6.6 |     56.6 |     11.7 |     11.7 ±     —
@@ -729,12 +814,10 @@ vision tower, the text encoder reading the picture and the transformer’s
 prompt prefix — minutes at 1024 pixels, which the server log splits
 (<code>[image] reference …</code>, <code>[image] edit prompt …</code>);
 elsewhere it is a start picture. Give it an instruction:</p>
-<div class="sourceCode" id="cb17"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--image</span> 1024 <span class="at">--image-steps</span> 1 <span class="at">--reps</span> 1 <span class="dt">\</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--image-init</span> apple.png <span class="at">--image-prompt</span> <span class="st">&quot;Make the apple green.&quot;</span> <span class="dt">\</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--flamegraph</span> /mnt/fast/edit.svg <span class="at">--flamegraph-freq</span> 199</span></code></pre></div>
-<p><code>doc/PERF-IMAGE.md</code> is where these measurements are kept
-and turned into tasks.</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--image</span> 1024 <span class="at">--image-steps</span> 1 <span class="at">--reps</span> 1 <span class="dt">\</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--image-init</span> apple.png <span class="at">--image-prompt</span> <span class="st">&quot;Make the apple green.&quot;</span> <span class="dt">\</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--flamegraph</span> /mnt/fast/edit.svg <span class="at">--flamegraph-freq</span> 199</span></code></pre></div>
 <p><code>tokens</code> is the transformer’s sequence: one latent token
 per 16×16 pixels (the VAE’s 8× compression times the transformer’s 2×2
 patch), so a 256-pixel square is 256 tokens and a 1024-pixel one is
@@ -808,13 +891,13 @@ fresh server and on a server that had only seen wide widths, but
 <strong>94 tok/s</strong> on a server that had just been swept across
 eight narrow widths — the identical request, four runs out of four. The
 cause is not established (an arena-pressure hypothesis was implemented
-and measured neutral, see <code>PERF-GAP.md</code>).</p>
+and measured neutral).</p>
 <p>What to do about it:</p>
 <ul>
 <li><strong>Comparisons within one sweep order are still valid.</strong>
 If both arms of an A/B sweep the same widths in the same order, whatever
-the effect is applies to both, and the ratio survives. This is why the
-A/Bs in <code>PERF-GAP.md</code> pin the width list across arms.</li>
+the effect is applies to both, and the ratio survives. This is why an
+A/B should pin the width list across arms.</li>
 <li><strong>A single absolute number is not.</strong> If a specific
 width’s rate is the result, measure that width on a fresh server rather
 than reading it off the end of a long sweep.</li>
@@ -857,23 +940,73 @@ same-order runs</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Write each value more than once, in both orders</strong> —
-<code>VAR=a,b,b,a</code> and <code>VAR=b,a,a,b</code> — so every value
-holds every position, and pool the runs. And score on <strong>mean ± sd,
+<p>So a sweep of two values written <code>VAR=a,b</code> runs as
+<strong><code>VAR=a,b,b,a</code></strong>: each value holds each
+position once, and each arm is measured twice.
+<code>--sweep-as-given</code> runs the list in the order written
+instead. A list of three or more values, or one that already repeats its
+values, always runs as written; for those, write each value more than
+once, in both orders, and pool the runs. And score on <strong>mean ± sd,
 not best-of</strong>: the extra variance in the late slot inflates a
 best-of statistic, which is how the +0.11% change above also produced a
 confident-looking +4.9% “win”.</p>
+<h3 id="the-sweep-verdict---fail-on-regression">The sweep verdict
+(<code>--fail-on-regression</code>)</h3>
+<p>A <code>--sweep</code> of exactly two distinct values, each run at
+least twice — <code>VAR=a,b</code>, which runs as <code>a,b,b,a</code>,
+or a longer list such as <code>VAR=a,b,b,a,a,b</code> — ends with a
+verdict: the second value (the candidate) judged against the first (the
+control) at every measured point, as a change in percent beside the
+noise it has to beat. The noise is the larger of twice the standard
+error and one arm’s own run-to-run spread, and each point reads
+<code>better</code>, <code>WORSE</code> or <code>within noise</code>.
+The run-to-run spread is measured from an arm’s own runs, so a value run
+once has none, and a sweep with such a value prints
+<code>no verdict</code> instead.</p>
+<pre><code>verdict — on against 0, noise = max(2 × standard error, one arm&#39;s run-to-run spread)
+  tg 0             +3.4%  noise ±  1.2%  better
+  tg 4096          -0.6%  noise ±  1.9%  within noise</code></pre>
+<p><code>--fail-on-regression</code> makes that verdict the exit status:
+<code>orangu-bench</code> exits <code>2</code> when any point came out
+<code>WORSE</code>, and <code>0</code> otherwise, so a script or CI job
+can refuse a change on it. A sweep that could never reach a verdict —
+not two distinct values, or a value with fewer than two runs
+(<code>a,b</code> with <code>--sweep-as-given</code>) — is refused
+before any server starts.</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_FEATURE=0,1&#39;</span> <span class="dt">\</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server -c bench.conf &lt;model&gt;&quot;</span> <span class="at">--fail-on-regression</span></span></code></pre></div>
+<h3 id="keeping-a-sweeps-winner---write-profile">Keeping a sweep’s
+winner (<code>--write-profile</code>)</h3>
+<p><code>--write-profile</code> keeps the verdict’s answer in the
+server’s tuning profile,
+<code>~/.orangu/server/tuning/&lt;key&gt;.json</code>, where
+<code>&lt;key&gt;</code> is the device’s own, as the swept server
+reports it at <code>/props</code> under <code>gpu.tuning.key</code>. The
+candidate is written when it was better at some point and worse at none;
+any other verdict leaves the file as it was and says why. An empty
+candidate (<code>VAR=1,</code>) removes the variable from the profile,
+which leaves it at its built-in default. The other values in the file
+are kept.</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_REDUCE_N_ROWS=1,2&#39;</span> <span class="dt">\</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server -c bench.conf &lt;model&gt;&quot;</span> <span class="at">--write-profile</span></span></code></pre></div>
+<p>It needs a sweep the verdict can judge (two values, each run twice),
+an <code>ORANGU_*</code> variable, and every point on the same device;
+the profile is written under the home directory of the user running
+<code>orangu-bench</code>, which is the server’s when
+<code>--sweep-cmd</code> starts it on this machine.</p>
 <h3 id="storage-mode---storage-probe-what-request-size-is-worth">Storage
 mode (<code>--storage-probe</code>) — what request size is worth</h3>
 <p><code>[orangu-server].read_size</code> exists because read throughput
 is a function of request size, and the shape of that function is a
 property of the drive, the bus and the bridge rather than something
 derivable from <code>sysfs</code>. This measures it:</p>
-<div class="sourceCode" id="cb18"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--storage-probe</span> 4,64,128,256,512,1024,2048,4096,8192 <span class="dt">\</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--storage-file</span> <span class="op">&lt;</span>a model shard<span class="op">&gt;</span> --storage-span 384 <span class="at">--storage-ramp</span> 16 <span class="dt">\</span></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--history</span> storage-history.tsv <span class="at">--chart</span> storage-curve.svg <span class="dt">\</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--chart-y-label</span> <span class="st">&quot;MB/s (log)&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--storage-probe</span> 4,64,128,256,512,1024,2048,4096,8192 <span class="dt">\</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--storage-file</span> <span class="op">&lt;</span>a model shard<span class="op">&gt;</span> --storage-span 384 <span class="at">--storage-ramp</span> 16 <span class="dt">\</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--history</span> storage-history.tsv <span class="at">--chart</span> storage-curve.svg <span class="dt">\</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--chart-y-label</span> <span class="st">&quot;MB/s (log)&quot;</span></span></code></pre></div>
 <p>Sizes are KiB. <code>--storage-file</code> names the file to read;
 without it the probe asks the server at <code>--url</code> for its
 largest shard, which is usually what you want and needs a server
@@ -905,6 +1038,42 @@ requests put this drive into a slow state and large ones never
 do.</strong> That is the argument for a large <code>read_size</code>,
 and it is a stronger one than “clear a threshold”.</p>
 <h3
+id="download-mode---download-probe-how-many-connections-a-link-wants">Download
+mode (<code>--download-probe</code>) — how many connections a link
+wants</h3>
+<p><code>orangu-server download</code> fetches every file in 64 MiB
+pieces over several connections at once
+(<code>ORANGU_DOWNLOAD_CONNECTIONS</code>, 8 by default). Whether that
+helps depends on the link: a CDN caps what one connection carries, so on
+a fast line more connections are faster, while a slow line is already
+full with one. This measures which kind of line you are on:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--download-probe</span> 1,2,4,8,16 <span class="at">--download-seconds</span> 20 <span class="dt">\</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--download-dir</span> /path/on/the/models/disk <span class="dt">\</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--history</span> download-history.tsv <span class="at">--chart</span> download-curve.svg</span></code></pre></div>
+<p>Counts are connections. Each point runs the server’s own download
+code against <code>--download-file</code>
+(<code>&lt;user&gt;/&lt;repo&gt;:&lt;path&gt;</code>, by default a 15
+GiB file large enough that no link finishes it inside the window) for
+<code>--download-seconds</code>, writes into <code>--download-dir</code>
+(the system temporary directory unless given — put it on the disk the
+models go to, or a slow temporary disk is what gets measured) and
+deletes what it wrote. No server is involved, and <code>HF_TOKEN</code>
+and <code>HF_ENDPOINT</code> apply as they do to a download.</p>
+<p>As with the storage probe, every count is measured <strong>ascending
+then descending</strong> and both passes are reported, since a shared
+link changes over the minutes a probe takes:</p>
+<pre class="text"><code>  conns |     MB/s |       up |     down |  spread
+--------------------------------------------------
+      1 |      4.5 |      4.5 |      4.6 |    1.4%
+      2 |      4.8 |      4.8 |      4.8 |    1.2%
+      8 |      4.9 |      4.8 |      5.0 |    4.7%
+     16 |      4.6 |      4.6 |      4.6 |    0.6%</code></pre>
+<p>That is a ~40 Mbit/s line one connection already fills: the default
+costs nothing there, but gains nothing either. A curve that keeps rising
+past 8 says to raise <code>ORANGU_DOWNLOAD_CONNECTIONS</code>; one that
+peaks early says to lower it.</p>
+<h3
 id="capped-runs---cap-the-regime-a-large-model-actually-meets">Capped
 runs (<code>--cap</code>) — the regime a large model actually meets</h3>
 <p>A model smaller than RAM is served from the page cache, so a
@@ -913,10 +1082,10 @@ the working set exceeds what the kernel will hold, and reproducing that
 on a large host otherwise means finding a large enough model.</p>
 <p><code>--cap</code> runs each <code>--sweep</code> server inside a
 memory-capped transient cgroup:</p>
-<div class="sourceCode" id="cb20"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--cap</span> 4G <span class="at">--drop-model-cache</span> <span class="dt">\</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep</span> <span class="st">&#39;ORANGU_CHUNK_POLICY=flat,adaptive&#39;</span> <span class="dt">\</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server -c bench.conf &lt;model&gt;&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--cap</span> 4G <span class="at">--drop-model-cache</span> <span class="dt">\</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep</span> <span class="st">&#39;ORANGU_CHUNK_POLICY=flat,adaptive&#39;</span> <span class="dt">\</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server -c bench.conf &lt;model&gt;&quot;</span></span></code></pre></div>
 <p>It uses <code>systemd-run --user --scope</code>, so it needs no root
 and the scope is cleaned up when the server exits. Swap is pinned off —
 a cap the kernel can satisfy by swapping measures the swap device
@@ -954,11 +1123,11 @@ invocation can cover several.</p>
 <p><code>ORANGU_DEVICE</code> is read ahead of the config file precisely
 so a sweep can walk a machine’s cards without editing anything between
 runs:</p>
-<div class="sourceCode" id="cb22"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the same model, every card in the machine, one invocation</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> ORANGU_DEVICE=0,1 <span class="dt">\</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server --model gemma-4-E2B-it-Q4_K_M.gguf&quot;</span> <span class="dt">\</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> cards.svg</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the same model, every card in the machine, one invocation</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> ORANGU_DEVICE=0,1 <span class="dt">\</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server --model gemma-4-E2B-it-Q4_K_M.gguf&quot;</span> <span class="dt">\</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> cards.svg</span></code></pre></div>
 <p>Each point starts its own server, waits for it to answer, proves
 through <code>/props</code> that the process answering is the one it
 started, measures it, and stops it — see the warnings in <em>A sweep can
@@ -976,9 +1145,9 @@ devices, so an ordinary tuning sweep’s output is unchanged.</p>
 runs through a shell with the swept variable exported, so the variable
 does not have to be one the engine reads — it can be one the command
 line reads:</p>
-<div class="sourceCode" id="cb24"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;MODEL=/models/a.gguf;/models/b.gguf&#39;</span> <span class="dt">\</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&#39;orangu-server --model &quot;$MODEL&quot;&#39;</span> <span class="at">--pp</span> 512</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;MODEL=/models/a.gguf;/models/b.gguf&#39;</span> <span class="dt">\</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&#39;orangu-server --model &quot;$MODEL&quot;&#39;</span> <span class="at">--pp</span> 512</span></code></pre></div>
 <p><strong>Values that contain commas need <code>;</code>.</strong> A
 split ratio is written <code>3,1</code>, which is also how the value
 list is separated: <code>--sweep ORANGU_DEVICE_SPLIT=off,all,3,1</code>
@@ -986,8 +1155,8 @@ would be four points, two of them halves of a ratio, and because
 <code>3</code> and <code>1</code> are themselves legal one-entry ratios
 nothing would complain. A spec containing a semicolon is therefore split
 on semicolons and never on commas:</p>
-<div class="sourceCode" id="cb25"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=off;all;3,1&#39;</span> <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server ...&quot;</span> <span class="at">--depths</span> 0</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=off;all;3,1&#39;</span> <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server ...&quot;</span> <span class="at">--depths</span> 0</span></code></pre></div>
 <p>A spec with no semicolon splits on commas exactly as before. The one
 case a parser can still catch is caught: a comma-separated sweep of
 <code>ORANGU_DEVICE_SPLIT</code> containing a bare number is refused,
@@ -997,18 +1166,18 @@ harness</h4>
 <p>The comparison this tool exists for — orangu against another engine,
 on the same model, through the same requests — is a <code>--sweep</code>
 whose variable the <em>command</em> reads rather than the engine:</p>
-<div class="sourceCode" id="cb26"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> serve.sh <span class="op">&lt;&lt;&#39;END&#39;</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="st">#!/bin/sh</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="st">case &quot;$ENGINE&quot; in</span></span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="st">  orangu)    exec orangu-server &quot;$MODEL&quot; --port 8100 --web 0 --device 5500M ;;</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="st">  reference) exec other-server -m &quot;$MODEL&quot; --port 8100 --device Vulkan1 ;;</span></span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="st">esac</span></span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a><span class="op">END</span></span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> ENGINE=orangu,reference <span class="at">--sweep-cmd</span> ./serve.sh <span class="dt">\</span></span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-env</span> MODEL=/models/gemma-4-E2B-it-Q4_K_M.gguf <span class="dt">\</span></span>
-<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">--label</span> gemma-4-E2B-it-Q4_K_M <span class="at">--depths</span> 0,1024,4096 <span class="at">--delay</span> 15 <span class="dt">\</span></span>
-<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">--history</span> gemma-4-E2B-it-Q4_K_M.tsv <span class="at">--chart</span> gemma-4-E2B-it-Q4_K_M.svg</span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&gt;</span> serve.sh <span class="op">&lt;&lt;&#39;END&#39;</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="st">#!/bin/sh</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="st">case &quot;$ENGINE&quot; in</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a><span class="st">  orangu)    exec orangu-server &quot;$MODEL&quot; --port 8100 --web 0 --device 5500M ;;</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="st">  reference) exec other-server -m &quot;$MODEL&quot; --port 8100 --device Vulkan1 ;;</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="st">esac</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a><span class="op">END</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> ENGINE=orangu,reference <span class="at">--sweep-cmd</span> ./serve.sh <span class="dt">\</span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-env</span> MODEL=/models/gemma-4-E2B-it-Q4_K_M.gguf <span class="dt">\</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">--label</span> gemma-4-E2B-it-Q4_K_M <span class="at">--depths</span> 0,1024,4096 <span class="at">--delay</span> 15 <span class="dt">\</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">--history</span> gemma-4-E2B-it-Q4_K_M.tsv <span class="at">--chart</span> gemma-4-E2B-it-Q4_K_M.svg</span></code></pre></div>
 <p>Every guarantee the sweep makes for a tuning knob then holds for the
 engine comparison: each point is a freshly started server on a port that
 was free, proved to be the process this invocation spawned, measured,
@@ -1050,16 +1219,16 @@ model</h4>
 cartesian product costs the product of two model loads, and its result
 is not a table anyone can read — so the matrix is a shell loop around
 the sweep, writing into <strong>one</strong> history file:</p>
-<div class="sourceCode" id="cb27"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model <span class="kw">in</span> /models/llama-1b.gguf /models/gemma-12b.gguf<span class="kw">;</span> <span class="cf">do</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="dt">\</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sweep</span> ORANGU_DEVICE=0,1 <span class="dt">\</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server </span><span class="va">$model</span><span class="st"> --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--depths</span> 0,512,2048 <span class="at">--gen</span> 128 <span class="at">--reps</span> 3 <span class="dt">\</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--label</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$model</span><span class="st">&quot;</span> .gguf<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--history</span> matrix.tsv</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> matrix.tsv <span class="at">--chart</span> matrix.svg</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model <span class="kw">in</span> /models/llama-1b.gguf /models/gemma-12b.gguf<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="dt">\</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sweep</span> ORANGU_DEVICE=0,1 <span class="dt">\</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server </span><span class="va">$model</span><span class="st"> --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--depths</span> 0,512,2048 <span class="at">--gen</span> 128 <span class="at">--reps</span> 3 <span class="dt">\</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--label</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">basename</span> <span class="st">&quot;</span><span class="va">$model</span><span class="st">&quot;</span> .gguf<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--history</span> matrix.tsv</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> matrix.tsv <span class="at">--chart</span> matrix.svg</span></code></pre></div>
 <p>The three things that vary land in three different fields, which is
 what makes the file readable rather than a pile of colliding rows:</p>
 <ul>
@@ -1081,6 +1250,46 @@ every run’s rows are already in it, so nothing has to be re-measured to
 redraw. Each series comes out as
 <code>llama-1b · Vulkan/Radeon RX 5500M</code>, and the four
 combinations sit on one pair of axes.</p>
+<p>With many models, one pair of axes crowds. <code>--chart-grid</code>
+draws a panel for each model and mode instead, with one line per swept
+value:</p>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> matrix.tsv <span class="at">--chart</span> matrix.svg <span class="dt">\</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--chart-grid</span> <span class="at">--chart-panels</span> pp,tg <span class="at">--chart-png</span></span></code></pre></div>
+<ul>
+<li><strong>Panels.</strong> A label’s text before the first
+<code>·</code> is its group: the <code>--label</code> given to the loop.
+Each group gets a panel per mode, and each mode is a column, prefill on
+the left and decode on the right, the groups in the order the file first
+holds them.</li>
+<li><strong>Lines.</strong> The rest of the label, the swept value, is
+the series. A series keeps its colour in every panel, so the legend
+names it once.</li>
+<li><strong>Devices.</strong> A group measured on more than one device
+gets a panel per device, its title naming the device.</li>
+<li><strong>Axes.</strong> Every panel takes the same axes, so a height
+or a position means the same in each: the context runs from zero to the
+longest measured, and tokens per second on a log axis from below the
+slowest point to above the fastest. <code>--chart-scale</code> pins that
+range.</li>
+<li><strong>Legend.</strong> Below the panels.</li>
+<li><strong>Points.</strong> Each point is the best repetition, as on
+every chart.</li>
+</ul>
+<p><code>--chart-overlay</code> takes the same labels and draws every
+line on one panel:</p>
+<ul>
+<li><strong>Colours.</strong> Each group and mode has a hue of its own.
+Its series are shades of that hue: the last series in the file at full
+strength, earlier ones lighter.</li>
+<li><strong>Legend.</strong> Below the panel, one entry per line,
+<code>&lt;group&gt; · &lt;series&gt;</code>.</li>
+<li><strong>Axes.</strong> One x-axis and one log tokens-per-second
+axis, as on a grid. The x-axis is the prompt length for prefill and the
+context depth for decode.</li>
+<li><strong>Limits.</strong> Six hues and four shades; a group or series
+past them is left out.</li>
+</ul>
 <p>Two practical notes for a matrix that takes hours. Give each model
 its own <code>--sweep-cmd</code> port only if you are running loops
 concurrently — otherwise let them share one, since each sweep frees the
@@ -1132,10 +1341,10 @@ a <strong>fixed</strong> cost paid the moment the model is split at all,
 and a <strong>marginal</strong> cost for each layer that ends up on the
 slower device. Separating them is one sweep — move the boundary and
 watch the slope:</p>
-<div class="sourceCode" id="cb30"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=off;15,1;14,2;12,4;8,8&#39;</span> <span class="dt">\</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server model.gguf --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0 <span class="at">--gen</span> 32 <span class="at">--reps</span> 4</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=off;15,1;14,2;12,4;8,8&#39;</span> <span class="dt">\</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server model.gguf --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0 <span class="at">--gen</span> 32 <span class="at">--reps</span> 4</span></code></pre></div>
 <p><code>off</code> is the baseline, and every other point has
 <strong>exactly one boundary</strong> — the plan hands out layers in
 contiguous runs — so anything the points share is fixed and anything
@@ -1206,11 +1415,11 @@ time.</p></li>
 <li><p><strong><code>ORANGU_NO_SPLIT_FUSION=1</code> is the A/B for the
 split’s GPU paths</strong>, from one binary and two runs — the way to
 check they are live rather than assume it:</p>
-<div class="sourceCode" id="cb31"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_NO_SPLIT_FUSION=;1&#39;</span> <span class="dt">\</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-env</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=12,4&#39;</span> <span class="dt">\</span></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server model.gguf --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0 <span class="at">--gen</span> 32 <span class="at">--reps</span> 2</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--sweep</span> <span class="st">&#39;ORANGU_NO_SPLIT_FUSION=;1&#39;</span> <span class="dt">\</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-env</span> <span class="st">&#39;ORANGU_DEVICE_SPLIT=12,4&#39;</span> <span class="dt">\</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--sweep-cmd</span> <span class="st">&quot;orangu-server model.gguf --port 8100 --web 0&quot;</span> <span class="dt">\</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0 <span class="at">--gen</span> 32 <span class="at">--reps</span> 2</span></code></pre></div>
 <p>The empty first value means <em>unset</em>, so the two points are
 “fusion on” against “fusion off”. Here that was 34.8 against 20.8 tok/s
 — per-layer fusion is worth <strong>+68%</strong> on a split, which is
@@ -1244,6 +1453,32 @@ the device and clock state beside it cannot be compared against one
 recorded later. Under <code>--json</code> the same information is the
 first object emitted, tagged <code>"type": "env"</code>, so a stored
 result carries its own provenance.</p>
+<p>A server that heads a tree of workers (<code>[workers]</code>, the
+manual’s <em>Workers</em> chapter) says so in a line of its own, from
+its <code>GET /v1/workers</code>: how its layers are planned and how
+many of its workers are connected. Every number in the run is then the
+tree’s, not one machine’s:</p>
+<pre class="text"><code>  workers  tree: alpha:8400 0..9, beta:8400 9..18, gamma:8400 18..28 (2 of 2 workers connected)</code></pre>
+<p>A server alone, or a worker, gets no such line; <code>--json</code>
+carries the answer verbatim as <code>workers</code>.</p>
+<h4 id="a-tree-against-its-node-alone---workers">A tree against its node
+alone (<code>--workers</code>)</h4>
+<p><code>--workers compare</code> runs the same options twice against
+one top-level node: first serving alone — the model’s own paths, as a
+server without <code>[workers]</code> runs them — then through its tree,
+and prints the two side by side. <code>off</code> or <code>on</code>
+runs one of them. The server is switched through
+<code>POST /props</code> between runs and put back as it was; each arm’s
+rows are labelled
+<code>… · workers off</code>/<code>… · workers on</code>. A server
+without a tree says so and runs the plain benchmark; a worker, or a node
+with only part of the model, is refused.</p>
+<pre class="text"><code>== workers compared (tok/s)
+    mode |       n |  alone best |  alone mean |   tree best |   tree mean |  tree/alone
+--------------------------------------------------------------------------------------
+      pp |     572 |       40.26 |       38.47 |       76.26 |       64.65 |       1.68x</code></pre>
+<p>Under <code>--json</code> the comparison is one more object,
+<code>workers_compare</code>.</p>
 <h3 id="options">Options</h3>
 <p><code>orangu-bench --help</code>:</p>
 <pre class="text"><code>Measure throughput of an OpenAI-compatible server
@@ -1258,6 +1493,17 @@ Options:
       --pg &lt;LIST&gt;                      Combined mode: prompt lengths prefilled and generated in one request
       --decode-cpu                     Report the server&#39;s CPU time per generated token, with prefill excluded
       --streams &lt;LIST&gt;                 Concurrency mode: comma-separated stream counts; reports AGGREGATE tok/s
+      --streams-echo                   Concurrency mode: each stream copies a passage out of its prompt, which speculation drafts
+      --streams-warm                   Concurrency mode: prefill the prompts before each run, so all streams decode at once
+      --streams-depth &lt;N&gt;              Concurrency mode: tokens of context in front of each stream&#39;s instruction; 0 is none [default: 0]
+      --interference &lt;LIST&gt;            Interference mode: prompt lengths a second request prefills while one stream decodes; reports the decoder&#39;s stalls
+      --chat &lt;TURNS&gt;                   Chat mode: replay this many turns of a coding session through /v1/chat/completions; 0 disables [default: 0]
+      --chat-fixture &lt;PATH&gt;            The conversation `--chat` replays (JSON: system, tools, turns). Default: the built-in coding session
+      --kl &lt;PATH&gt;                      KL mode: compare the server&#39;s teacher-forced distributions with this reference, saving it first if absent
+      --kl-rows &lt;N&gt;                    Positions per `--kl` pass: 1 runs decode steps, more runs verify passes [default: 1]
+      --kl-top &lt;N&gt;                     Candidates `--kl` keeps per position [default: 32]
+      --kl-tokens &lt;N&gt;                  Tokens `--kl` runs [default: 1024]
+      --kl-text &lt;PATH&gt;                 The text `--kl` runs. Default: the chat fixture&#39;s system prompt and turns
       --pp-continue-base &lt;N&gt;           Prompt length (tokens) to prime the prefix cache with for `--pp-continue` [default: 512]
       --embed &lt;LIST&gt;                   Embedding mode: prompt lengths to sweep against /v1/embeddings
       --image &lt;LIST&gt;                   Image mode: square picture sizes (pixels, multiples of 16) to sweep against /v1/images/generations
@@ -1290,11 +1536,14 @@ Options:
       --chart-y-label &lt;TEXT&gt;           Label for the chart&#39;s y-axis [default: &quot;tok/s (log)&quot;]
       --chart-x-label &lt;TEXT&gt;           Label for the chart&#39;s x-axis
       --chart-panels &lt;LIST&gt;            Draw only these modes&#39; panels (e.g. `pp,tg`); default: every mode in the file
+      --chart-grid                     Draw one panel per label group (text before ` · `) and mode, on shared axes
+      --chart-overlay                  Draw every label group and mode on one panel: hue per group, shade per series
       --flamegraph &lt;PATH&gt;              Record a CPU flamegraph of the server over the measured window
       --flamegraph-pid &lt;PID&gt;           Process to profile (default: the server&#39;s own, else the URL port&#39;s owner)
       --flamegraph-freq &lt;HZ&gt;           Sampling frequency in Hz for `--flamegraph` [default: 999]
       --flamegraph-call-graph &lt;MODE&gt;   Call-graph mode for `--flamegraph`: `auto`, `fp` or `dwarf` [default: auto]
       --flamegraph-png                 Also render a PNG beside the flamegraph SVG
+      --flamegraph-keep-data           Keep the raw perf.data beside the flamegraph instead of deleting it
       --flamegraph-layers &lt;DIR&gt;        Profile every running orangu, orangu-coordinator and orangu-server for `--flamegraph-duration` while you drive the workload; one flamegraph per process in DIR. Measures nothing itself.
       --flamegraph-duration &lt;SECONDS&gt;  Seconds to keep sampling under `--flamegraph-layers` or `--flamegraph-watch` [default: 60]
       --flamegraph-watch               With `--flamegraph PATH`: profile the server for `--flamegraph-duration` while something else drives it. Measures nothing itself.
@@ -1303,6 +1552,9 @@ Options:
       --read-bundle &lt;LIST&gt;             Read bundles and report them side by side; measure nothing
       --sweep &lt;SPEC&gt;                   Sweep one tuning variable: `VAR=v1,v2,...` (`;` if a value has a comma); needs `--sweep-cmd`
       --sweep-cmd &lt;CMD&gt;                Shell command that starts the server, run once per `--sweep` value
+      --fail-on-regression             After a two-value --sweep, exit 2 if the second value is worse beyond the noise
+      --sweep-as-given                 Run a two-value --sweep in the order written instead of as a,b,b,a
+      --write-profile                  After a two-value --sweep, keep the winning value in the server&#39;s tuning profile
       --sweep-env &lt;K=V&gt;                Environment held constant across every `--sweep` point (repeatable)
       --sweep-start-timeout &lt;SECONDS&gt;  Seconds to wait for a swept server to come up [default: 300]
       --render-profile &lt;PATH&gt;          Re-render an already-collapsed `.folded` profile to SVG; measure nothing
@@ -1334,15 +1586,15 @@ path-taking ones (<code>--history</code>, <code>--chart</code>,
 <code>--report</code>) complete files,
 <code>--flamegraph-call-graph</code> its three modes and
 <code>--host</code> the usual bind addresses:</p>
-<div class="sourceCode" id="cb34"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bash — add to ~/.bashrc:</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">orangu-bench</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># zsh — write once to your fpath directory:</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.zsh/completions/_orangu-bench</span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="co"># fish — add to ~/.config/fish/config.fish:</span></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">-s</span> <span class="kw">|</span> <span class="bu">source</span></span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># PowerShell — add to $PROFILE:</span></span>
-<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">-s</span> <span class="kw">|</span> <span class="ex">Out-String</span> <span class="kw">|</span> <span class="ex">Invoke-Expression</span></span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bash — add to ~/.bashrc:</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="bu">eval</span> <span class="st">&quot;</span><span class="va">$(</span><span class="ex">orangu-bench</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="co"># zsh — write once to your fpath directory:</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">-s</span> <span class="op">&gt;</span> ~/.zsh/completions/_orangu-bench</span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="co"># fish — add to ~/.config/fish/config.fish:</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">-s</span> <span class="kw">|</span> <span class="bu">source</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a><span class="co"># PowerShell — add to $PROFILE:</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">-s</span> <span class="kw">|</span> <span class="ex">Out-String</span> <span class="kw">|</span> <span class="ex">Invoke-Expression</span></span></code></pre></div>
 <h4
 id="mixture-of-experts-models-and-models-that-do-not-fit">Mixture-of-experts
 models, and models that do not fit</h4>
@@ -1518,14 +1770,14 @@ engines’ profiles are as comparable as their two rates.</p>
 SVG is interactive on its own: click a frame to zoom into it, click the
 title to reset, Ctrl-F to highlight every frame matching a substring and
 report what share of samples matched.</p>
-<div class="sourceCode" id="cb37"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server, decode: one profile of the 512-token generation that was timed</span></span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-orangu-decode.svg <span class="at">--flamegraph-png</span></span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference engine on :8300, the same workload through the same harness</span></span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-reference-decode.svg <span class="at">--flamegraph-png</span></span></code></pre></div>
+<div class="sourceCode" id="cb49"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu-server, decode: one profile of the 512-token generation that was timed</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-orangu-decode.svg <span class="at">--flamegraph-png</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference engine on :8300, the same workload through the same harness</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--depths</span> 0 <span class="at">--gen</span> 512 <span class="at">--reps</span> 2 <span class="dt">\</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--flamegraph</span> perf/gemma4-e2b-reference-decode.svg <span class="at">--flamegraph-png</span></span></code></pre></div>
 <p>Three files come out of one <code>--flamegraph out.svg</code>:</p>
 <table>
 <colgroup>
@@ -1560,17 +1812,45 @@ samples, cores busy</td>
 <code>--flamegraph-png</code>, for documents that cannot embed an
 SVG</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>out.perf.data</code>,
+<code>out.perf.log</code></td>
+<td style="text-align: left;">the raw recording and
+<code>perf record</code>’s log, with
+<code>--flamegraph-keep-data</code></td>
+</tr>
 </tbody>
 </table>
-<p>The transient <code>perf.data</code> is removed once collapsed: it is
-the largest artifact by an order of magnitude and nothing downstream
-reads it. The <code>.folded</code> file is the durable one.</p>
+<p>The <code>perf.data</code> is removed once collapsed unless
+<code>--flamegraph-keep-data</code> asks for it: it is the largest
+artifact by an order of magnitude and nothing downstream reads it. Keep
+it for what the collapsed stacks cannot answer —
+<code>perf report</code>, or <code>perf annotate</code> on a hot
+function’s instructions. Its path is printed under the flamegraph’s.
+Under <code>--flamegraph-layers</code> the one system-wide capture is
+kept as <code>system.perf.data</code> in the directory. The
+<code>.folded</code> file is the durable one.</p>
+<p>Under <code>--call-graph dwarf</code> a recording can lose most of
+its user-space call chains: <code>perf</code>’s unwinder sometimes
+refuses the program’s modules for the rest of a file
+(<code>perf script -v</code> reports “address range overlaps an existing
+module”), and whether it does changes from one run of the same binary to
+the next. Such a sample is not dropped. A second
+<code>perf script</code> pass without call chains reads the frame each
+one was executing, and the flamegraph files it under
+<code>[user stack lost]</code> right below its thread, so the top
+self-time frames still add up and the missing callers show as what they
+are. The share is in <code>out.meta.json</code>
+(<code>lost_stacks_pct</code>), and above 5% the summary says so:</p>
+<pre class="text"><code>           78.8% of samples lost their call stack (perf&#39;s unwinder): their own frames are kept, under [user stack lost]</code></pre>
+<p>Re-running the measurement usually gets a recording with whole
+stacks.</p>
 <p>Because it is durable, the SVG can be rebuilt from it at any time
 without measuring again:</p>
-<div class="sourceCode" id="cb38"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded <span class="at">--flamegraph</span> new.svg</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded <span class="at">--flamegraph-png</span></span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded <span class="at">--flamegraph</span> new.svg</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--render-profile</span> out.folded <span class="at">--flamegraph-png</span></span></code></pre></div>
 <p><code>--render-profile</code> measures nothing. It writes beside its
 input unless <code>--flamegraph</code> names an output, and combining it
 with <code>--flamegraph-png</code> adds the PNG a run could not produce
@@ -1612,10 +1892,10 @@ found the same way <code>--flamegraph</code> finds it, or
 <code>--flamegraph-pid</code> — for <code>--flamegraph-duration</code>
 seconds while something else drives it, and writes the same SVG (and PNG
 with <code>--flamegraph-png</code>):</p>
-<div class="sourceCode" id="cb40"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--flamegraph-watch</span> <span class="at">--flamegraph-duration</span> 20 <span class="dt">\</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--flamegraph</span> first-turn.svg <span class="at">--flamegraph-png</span> <span class="kw">&amp;</span></span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-p</span> <span class="st">&quot;Hello, who are you ?&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--flamegraph-watch</span> <span class="at">--flamegraph-duration</span> 20 <span class="dt">\</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">--flamegraph</span> first-turn.svg <span class="at">--flamegraph-png</span> <span class="kw">&amp;</span></span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu</span> <span class="at">-p</span> <span class="st">&quot;Hello, who are you ?&quot;</span></span></code></pre></div>
 <p>It attaches to one process (<code>perf record -p</code>), so it works
 under <code>kernel.perf_event_paranoid = 2</code>, where
 <code>--flamegraph-layers</code> — which samples the whole machine to
@@ -1755,8 +2035,8 @@ whichever engine happened to be sampled more.
 <code>--compare-profiles</code> reads the <code>.folded</code> files
 back and puts them in one table — the <code>--chart-only</code> of
 profiling, no server and no re-run:</p>
-<div class="sourceCode" id="cb45"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--compare-profiles</span> perf/gemma4-e2b-orangu-decode.folded,perf/gemma4-e2b-reference-decode.folded</span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--compare-profiles</span> perf/gemma4-e2b-orangu-decode.folded,perf/gemma4-e2b-reference-decode.folded</span></code></pre></div>
 <pre class="text"><code>bucket         | gemma-orangu-decode | gemma-reference-decode
 ------------------------------------------------------------
 app/other      |               22.5% |              66.2%
@@ -1834,9 +2114,9 @@ is <strong>9% slower at a small model’s decode and 5% at a
 prefill</strong>. They are also not a profile setting — stable cargo has
 no per-profile <code>rustflags</code> — so a build that wants them says
 so, and then <code>auto</code> picks <code>fp</code> for it:</p>
-<div class="sourceCode" id="cb47"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUSTFLAGS</span><span class="op">=</span><span class="st">&quot;-C force-frame-pointers=yes -C target-feature=+avx2,+fma,+sse4.2&quot;</span> <span class="dt">\</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> build <span class="at">--profile</span> release-with-debug <span class="at">--bin</span> orangu-server</span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="va">RUSTFLAGS</span><span class="op">=</span><span class="st">&quot;-C force-frame-pointers=yes -C target-feature=+avx2,+fma,+sse4.2&quot;</span> <span class="dt">\</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> build <span class="at">--profile</span> release-with-debug <span class="at">--bin</span> orangu-server</span></code></pre></div>
 <p><code>--flamegraph-call-graph fp</code> or <code>dwarf</code>
 overrides the question entirely, and <code>dwarf,&lt;bytes&gt;</code>
 passes a stack-dump size through to <code>perf</code>.</p></li>
@@ -1852,8 +2132,8 @@ the device? (<code>--streams</code>)</h3>
 <p>Sweeps the number of <strong>concurrent</strong> decode streams and
 reports the aggregate tok/s across them — what a server’s capacity
 actually is, which no single-stream number shows.</p>
-<div class="sourceCode" id="cb48"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--streams</span> 1,2,4,8 <span class="at">--gen</span> 160</span></code></pre></div>
+<div class="sourceCode" id="cb61"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--streams</span> 1,2,4,8 <span class="at">--gen</span> 160</span></code></pre></div>
 <pre><code> streams |    aggregate |  per-stream |   tokens
 ------------------------------------------------
        1 |  37.76 ± 0.00 |       37.76 |      160
@@ -1875,6 +2155,31 @@ opposite sides of that: one reaches 98–99% engine occupancy with two
 streams, the other never passes 66% with eight. Same device.</p>
 <p>Each stream gets a distinct prompt so no two share a prefix-cache
 entry and get a free ride.</p>
+<p>The prompts ask for a story, which prompt-lookup speculation rarely
+drafts. <code>--streams-echo</code> asks every stream to copy a passage
+of code out of its prompt instead, so most of each reply is drafted and
+verified. That is the workload where speculation and batching compete
+for the same steps; its history rows are recorded as mode
+<code>tg-echo</code>.</p>
+<p>All streams are sent at once, but the server prefills their prompts
+one after another, so the first stream decodes alone while the others’
+prompts run, and the measured window includes that ramp.
+<code>--streams-warm</code> sends each stream’s prompt first, unmeasured
+and one at a time, with one token to generate and the prefix cache on;
+the measured requests then find their prompts cached, and every stream
+decodes from the first step. Its history rows are recorded as mode
+<code>tg-warm</code> (<code>tg-echo-warm</code> with
+<code>--streams-echo</code>).</p>
+<p><code>--streams-depth N</code> puts about N tokens of prose in front
+of each story stream’s instruction, each prompt starting with its
+stream’s number so no two share a cached prefix. Every step then reads N
+rows of KV per stream as well as the weights, which is how batched
+decode is measured at the depth of a long conversation. Pair it with
+<code>--streams-warm</code>, or the measured window holds every prompt’s
+prefill. Its history rows carry the depth in their mode
+(<code>tg-warm-d3500</code>), a series of their own.
+<code>--streams-echo</code> keeps its own prompt and ignores the
+depth.</p>
 <h3 id="was-it-memory-bound-engine-and-memory-busy">Was it memory-bound?
 (<code>engine</code> and <code>memory</code> busy)</h3>
 <p>On Linux with an AMD card, every run also reports the mean occupancy
@@ -1927,17 +2232,17 @@ appends each measured point to a tab-separated file that accumulates
 across runs, and <code>--chart</code> draws the chart from <strong>that
 file</strong> rather than from the run that produced it. A run measuring
 only orangu still redraws the reference engine’s line beside it.</p>
-<div class="sourceCode" id="cb52"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;reference b10104&quot;</span> <span class="dt">\</span></span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
-<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
-<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co"># orangu, recorded as its own series</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--label</span> <span class="st">&quot;orangu </span><span class="va">$(</span><span class="fu">git</span> rev-parse <span class="at">--short</span> HEAD<span class="va">)</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--pp</span> 128,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="co"># the reference, same harness, same file</span></span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8300 <span class="at">--label</span> <span class="st">&quot;reference b10104&quot;</span> <span class="dt">\</span></span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">--depths</span> 0,512,1024,2048 <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a><span class="co"># redraw after hand-editing the file — no server needed</span></span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf-history.tsv <span class="at">--chart</span> perf-history.svg</span></code></pre></div>
 <p>The file is plain TSV with a <code>#</code> header, so it diffs in
 review and is hand-editable; blank lines, comments and unparseable rows
 are skipped rather than fatal. Each row is <code>date</code>,
@@ -2031,11 +2336,11 @@ every model on its own row, one column per engine, and the ratio.
 <code>--table FILE.md</code> writes exactly that from the history file,
 as markdown, so the table in a report is produced by the tool that took
 the measurements rather than retyped from terminal transcripts:</p>
-<div class="sourceCode" id="cb54"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co"># after a run, beside the chart</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> … <span class="at">--history</span> perf.tsv <span class="at">--chart</span> perf.svg <span class="at">--table</span> perf.md</span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="co"># from the file alone, no server needed</span></span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf.tsv <span class="at">--table</span> <span class="at">-</span></span></code></pre></div>
+<div class="sourceCode" id="cb67"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># after a run, beside the chart</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> … <span class="at">--history</span> perf.tsv <span class="at">--chart</span> perf.svg <span class="at">--table</span> perf.md</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a><span class="co"># from the file alone, no server needed</span></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--chart-only</span> <span class="at">--history</span> perf.tsv <span class="at">--table</span> <span class="at">-</span></span></code></pre></div>
 <p>One table per mode, in the order the modes appear in the file; each
 cell is the best repetition with the mean ± sample sd beside it. Rows
 come from the label convention the sweep writes —
@@ -2061,10 +2366,10 @@ mail to someone with different hardware — and the parts that make it
 <em>checkable</em> are the parts a terminal cannot carry: the chart it
 sits on and the profile that explains it. <code>--report FILE.pdf</code>
 writes all of it as one file:</p>
-<div class="sourceCode" id="cb56"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 128 <span class="dt">\</span></span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--chart</span> run.svg <span class="at">--flamegraph</span> run-profile.svg <span class="dt">\</span></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--report</span> run.pdf</span></code></pre></div>
+<div class="sourceCode" id="cb69"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--url</span> http://127.0.0.1:8100 <span class="at">--depths</span> 0,512,1024 <span class="at">--gen</span> 128 <span class="dt">\</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>             <span class="at">--chart</span> run.svg <span class="at">--flamegraph</span> run-profile.svg <span class="dt">\</span></span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">--report</span> run.pdf</span></code></pre></div>
 <p>The document holds, in order:</p>
 <ul>
 <li><strong>What produced it</strong> — the URL, model, backend, the
@@ -2089,8 +2394,8 @@ and the flamegraph, embedded.</li>
 </ul>
 <p>The same document can be rebuilt later from what the run
 archived:</p>
-<div class="sourceCode" id="cb57"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--read-bundle</span> run/bundle.json <span class="at">--report</span> run.pdf</span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--read-bundle</span> run/bundle.json <span class="at">--report</span> run.pdf</span></code></pre></div>
 <p>A single <code>--read-bundle</code> with <code>--report</code> writes
 a <em>run</em> report rather than a comparison — one bundle is not a
 comparison — and looks for the pictures beside the bundle, which is
@@ -2115,8 +2420,8 @@ avoids that entirely: it does <strong>one</strong> generation of
 instantaneous decode rate per <code>--bucket</code>-token context
 window. That is the cleanest way to see decode-vs-context scaling, and
 it works identically against any OpenAI-compatible server.</p>
-<div class="sourceCode" id="cb58"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
+<div class="sourceCode" id="cb71"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-bench</span> <span class="at">--curve</span> 3072 <span class="at">--bucket</span> 256   <span class="co"># decode rate at ctx 0, 256, 512, …, 2816</span></span></code></pre></div>
 <pre class="text"><code>orangu-bench → http://127.0.0.1:8100 (curve: 3072 tokens, bucket 256)
      ctx |    tok/s
 ------------------
@@ -2183,14 +2488,14 @@ two runs minutes apart are not comparable (check
 <em>why</em> a compute kernel is slow — its register (VGPR) count and
 occupancy — there is a <strong>clock-independent</strong> measure: the
 RADV driver’s compile-time shader statistics.</p>
-<div class="sourceCode" id="cb61"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
-<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
-<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
-<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
-<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
-<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print per-pipeline VGPR/SGPR/occupancy as RADV compiles each kernel.</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Run it through the cross-check </span><span class="al">TEST</span><span class="co">, not the server: the test builds the</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a><span class="co"># GPU backend and compiles the pipelines, and is immune to model load and to</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the occasional flaky long-lived server startup. `,nocache` forces a fresh</span></span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compile every run (RADV otherwise serves the stats-less disk cache).</span></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a><span class="va">RADV_DEBUG</span><span class="op">=</span>shaderstats,nocache <span class="dt">\</span></span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>  <span class="ex">cargo</span> test <span class="at">--bin</span> orangu-server matmul_matches_cpu_backend_for_q4_k <span class="at">--</span> <span class="at">--nocapture</span></span></code></pre></div>
 <p>To attribute a stats block to a specific kernel, capture with the
 kernel’s env flag on and off (e.g. <code>ORANGU_Q4K_LIGHT=1</code> vs
 unset) and diff the <code>VGPRs:</code> / <code>Code size:</code> blocks

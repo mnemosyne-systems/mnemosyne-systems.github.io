@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -790,12 +794,15 @@ create pr
 open pr
 new pr</code></pre>
 <h2 id="comment">/comment</h2>
-<p>Adds a comment to a GitHub issue or GitLab issue. Requires the
-<code>gh</code> or <code>glab</code> CLI.</p>
+<p>Adds a comment to a GitHub issue or GitLab issue, or to every open
+pull/merge request. Requires the <code>gh</code> or <code>glab</code>
+CLI.</p>
 <pre class="text"><code>/comment &lt;number&gt; &quot;&lt;comment&gt;&quot;
 /comment &lt;number&gt; &lt;file&gt;
 /comment &lt;number&gt; with review
-/comment &lt;number&gt; with auto review</code></pre>
+/comment &lt;number&gt; with auto review
+/comment all &lt;file&gt;
+/comment on all &lt;file&gt;</code></pre>
 <p>It runs
 <code>gh issue comment &lt;number&gt; --body &lt;body&gt;</code> (or the
 GitLab equivalent). Without the CLI installed it reports an error, since
@@ -805,6 +812,30 @@ it is treated as a filename relative to <code>~/.orangu/comments/</code>
 and the file contents become the body — Tab completion after
 <code>/comment &lt;number&gt;</code> (without a leading <code>"</code>)
 lists files in that directory.</p>
+<h3 id="commenting-on-every-open-pull-request">Commenting on every open
+pull request</h3>
+<p><code>/comment all &lt;file&gt;</code> (also written
+<code>/comment on all &lt;file&gt;</code>) posts the same comment on
+every open pull request — every open merge request on GitLab. The open
+requests are listed with <code>gh pr list --state open</code>
+(<code>glab mr list</code>), and each one gets
+<code>gh pr comment &lt;number&gt; --body &lt;body&gt;</code>
+(<code>glab mr note &lt;number&gt; --message &lt;body&gt;</code>). The
+body is read once and takes the same forms as for a single number: a
+template file from <code>~/.orangu/comments/</code>, a quoted inline
+body, or <code>with review</code> / <code>with auto review</code>.</p>
+<p>The output has one
+<code>Added comment on pull request #&lt;number&gt;</code> line per
+request. A request the forge refuses (locked, no permission) does not
+stop the rest: it is listed last as
+<code>Failed to comment on pull request #&lt;number&gt;: &lt;error&gt;</code>,
+and the output is shown as an error. With no open requests it reports
+<code>No open pull requests to comment on</code>. <code>all</code> is
+matched case-insensitively as the first word only, so
+<code>/comment 51 all.md</code> still posts the template
+<code>all.md</code> on #51. Tab completion after
+<code>/comment all</code> lists the template files, as after a
+number.</p>
 <h3 id="submitting-a-review-as-the-comment">Submitting a review as the
 comment</h3>
 <p><code>with review</code> posts the last <code>/review</code> summary
@@ -836,12 +867,16 @@ available keywords.</p>
 <p>The last review or auto review report as the body:</p>
 <pre class="text"><code>/comment 48 with review
 /comment 48 with auto review</code></pre>
+<p>The same template on every open pull request:</p>
+<pre class="text"><code>/comment all rebase-needed.md</code></pre>
 <p>Natural-language forms:</p>
 <pre class="text"><code>add comment on 51 &quot;My comment&quot;
 add comment to 51 &quot;My comment&quot;
 comment on 51 &quot;My comment&quot;
 comment on 48 with review
-comment on 48 with auto review</code></pre>
+comment on 48 with auto review
+comment on all rebase-needed.md
+add comment on all rebase-needed.md</code></pre>
 <h2 id="close">/close</h2>
 <p>Closes a GitHub/GitLab issue or pull request. Requires the
 <code>gh</code> or <code>glab</code> CLI.</p>
@@ -864,9 +899,12 @@ merge request.</li>
 close pr 58</code></pre>
 <h2 id="issue">/issue</h2>
 <p>Adds a <strong>reviewer</strong>, <strong>assignee</strong>, or
-<strong>label</strong> to a GitHub/GitLab issue or pull/merge request.
-Requires the <code>gh</code> or <code>glab</code> CLI.</p>
-<pre class="text"><code>/issue &lt;reviewer|assignee|label&gt; &lt;number&gt; &lt;value&gt;</code></pre>
+<strong>label</strong> to a GitHub/GitLab issue or pull/merge request,
+or creates a new issue. Requires the <code>gh</code> or
+<code>glab</code> CLI.</p>
+<pre class="text"><code>/issue &lt;reviewer|assignee|label&gt; &lt;number&gt; &lt;value&gt;
+/issue create &lt;title&gt; [--body &lt;text&gt;] [--label &lt;label&gt;] [--assignee &lt;user&gt;]
+/issue create --title &lt;title&gt; [--body &lt;text&gt;] [--label &lt;label&gt;] [--assignee &lt;user&gt;]</code></pre>
 <p>The three subcommands are:</p>
 <ul>
 <li><strong><code>reviewer</code></strong> — request a review from a
@@ -892,26 +930,63 @@ or
 or
 <code>glab issue update &lt;n&gt; --assignee|--label &lt;value&gt;</code>.</li>
 </ul>
+<h3 id="creating-an-issue">Creating an issue</h3>
+<p><code>/issue create</code> opens a new issue with the given title.
+The title is either every positional word up to the first
+<code>--flag</code> — quote it when it carries spaces — or the value of
+<code>--title</code>/<code>-t</code>; give one or the other, not both.
+<code>--description</code> (and <code>-b</code>/<code>-d</code>) are
+aliases of <code>--body</code>; <code>--label</code>/<code>-l</code> and
+<code>--assignee</code>/<code>-a</code> repeat and accept
+comma-separated lists:</p>
+<ul>
+<li>GitHub —
+<code>gh issue create --title &lt;title&gt; --body &lt;body&gt; [--label &lt;label&gt;]... [--assignee &lt;user&gt;]...</code>.</li>
+<li>GitLab —
+<code>glab issue create --title &lt;title&gt; --description &lt;body&gt; [--label &lt;label&gt;]... [--assignee &lt;user&gt;]... --yes</code>.</li>
+</ul>
+<p>The body is optional (an empty body is sent so the CLI never
+prompts), and the command prints the new issue’s URL.</p>
 <h3 id="completion">Completion</h3>
 <p>Every part Tab-completes (and shows the inline ghost hint):</p>
 <ul>
 <li>the <strong>subcommand</strong> completes against
-<code>reviewer</code>, <code>assignee</code>, <code>label</code>;</li>
+<code>reviewer</code>, <code>assignee</code>, <code>label</code>,
+<code>create</code>;</li>
 <li>the <strong>value</strong> completes against the repository’s
 candidates for that subcommand — collaborators for
 <code>reviewer</code>, assignable users for <code>assignee</code>, and
-label names for <code>label</code>.</li>
+label names for <code>label</code>;</li>
+<li>after <code>create</code>, a <code>-</code>-prefixed token offers
+<code>--title</code>/<code>--body</code>/<code>--description</code>/<code>--label</code>/<code>--assignee</code>,
+and the token after <code>--label</code>/<code>--assignee</code> (or the
+value of <code>--label=</code>/<code>--assignee=</code>) offers the
+cached labels/assignees. In the natural-language forms,
+<code>with</code> offers the option names, and <code>with label</code> /
+<code>with assignee</code> offer the same cached values.</li>
 </ul>
 <p>The candidate lists are fetched once at startup (via
 <code>gh</code>/<code>glab</code>) and cached, so completion never
-shells out on a keystroke. The <code>&lt;number&gt;</code> is typed
-directly (no completion). So
+shells out on a keystroke. The <code>&lt;number&gt;</code> and the issue
+title/body are typed directly (no completion). So
 <code>/issue re&lt;TAB&gt; 114 je&lt;TAB&gt;</code> expands to
 <code>/issue reviewer 114 jesperpedersen</code>.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/issue reviewer 114 jesperpedersen
 /issue assignee 51 alice
-/issue label 51 needs triage</code></pre>
+/issue label 51 needs triage
+/issue create --title &quot;Crash on startup&quot; --body &quot;Steps to reproduce...&quot; --label bug --assignee alice</code></pre>
+<p>Natural-language forms:</p>
+<pre class="text"><code>create issue Crash on startup with label bug
+new issue Crash on startup with body &quot;Steps to reproduce...&quot; with assignee alice</code></pre>
+<p>Natural-language forms accept <code>with title</code>,
+<code>with body</code> (or <code>with description</code>),
+<code>with label</code>, and <code>with assignee</code>. Repeat
+<code>with label</code> or <code>with assignee</code> for multiple
+values, or use comma-separated lists. Quote multi-word option values and
+any title or body containing a literal <code>with label</code>,
+<code>with body</code>, or other option phrase. The slash-command flags
+also remain available.</p>
 <h2 id="get_comments">/get_comments</h2>
 <p>Lists the comments on a GitHub/GitLab issue or pull request. Requires
 the <code>gh</code> or <code>glab</code> CLI.</p>

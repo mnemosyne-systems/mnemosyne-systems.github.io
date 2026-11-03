@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Generation — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html" class="active">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#video-generation" id="toc-video-generation">Video
+generation</a>
+<ul>
+<li><a href="#the-model-in-five-files"
+id="toc-the-model-in-five-files">The model, in five files</a></li>
+<li><a href="#starting-the-server" id="toc-starting-the-server">Starting
+the server</a></li>
+<li><a href="#time-and-memory" id="toc-time-and-memory">Time and
+memory</a></li>
+<li><a href="#two-stages" id="toc-two-stages">Two stages</a></li>
+<li><a href="#length-and-frame-rate"
+id="toc-length-and-frame-rate">Length and frame rate</a></li>
+<li><a href="#in-the-web-console" id="toc-in-the-web-console">In the web
+console</a></li>
+<li><a href="#through-the-api" id="toc-through-the-api">Through the
+API</a></li>
+<li><a href="#what-to-expect-and-what-not"
+id="toc-what-to-expect-and-what-not">What to expect, and what
+not</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="video-generation">Video generation</h1>
+<p><code>orangu-server</code> makes short clips with sound. Point it at
+a video model and every chat turn in the web console, and every
+<code>/v1/videos</code> or <code>/v1/chat/completions</code> request, is
+answered with a clip: an MP4 of AV1 video with a FLAC sound track. That
+plays in any current browser, and the server makes it without an
+external encoder. This chapter is the practical side: what to download,
+how to start the server, and what the web console’s settings do. The
+<em>Inference server</em> chapter’s <strong>Video generation</strong>
+section has the reference for every key, and the <em>HTTP endpoints</em>
+chapter the API.</p>
+<figure>
+<img src="images/orangu-video-street.png"
+alt="Frames 1, 61 and 121 of a five-second, 768 × 448 clip from a prompt about a street musician playing guitar and singing on a rainy sidewalk at night: two stages, with sound, 23 minutes on a twelve-core ARM board" />
+<figcaption aria-hidden="true">Frames 1, 61 and 121 of a five-second,
+768 × 448 clip from a prompt about a street musician playing guitar and
+singing on a rainy sidewalk at night: two stages, with sound, 23 minutes
+on a twelve-core ARM board</figcaption>
+</figure>
+<h2 id="the-model-in-five-files">The model, in five files</h2>
+<p>The video model is <strong>LTX-2.5</strong>, Lightricks’
+22-billion-parameter audio-video diffusion transformer. It draws the
+picture and the sound together, so a clip of a street at night comes
+with its traffic and a person who speaks has the voice under the lips.
+Unsloth publishes it as GGUF, and the <strong>distilled</strong>
+checkpoint is the one to serve: it makes a clip in eight steps plus
+three, without guidance.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/LTX-2.5-GGUF:Q4_K_M</span></code></pre></div>
+<p>That is the transformer, 12.65 GiB at <code>Q4_K_M</code> (21.22 GiB
+at <code>Q8_0</code>). It carries the transformer and the two text
+connectors, but none of the rest. The same repository publishes the rest
+beside the GGUFs, and <code>download</code> fetches all four after the
+transformer, each skipped when the models directory already holds
+one:</p>
+<ul>
+<li><strong>The text encoder</strong>:
+<code>text_encoders/gemma4-12b-with-proj-ltx-2.5-bf16.safetensors</code>,
+24.5 GiB. It is LTX’s own Gemma 4 12B, with the two heads that project
+its hidden states for the transformer. LTX reads every one of Gemma’s
+layers, not only the last, which is why a plain Gemma 4 GGUF will not
+do: the projection heads live in this file.</li>
+<li><strong>The video VAE</strong>:
+<code>vae/ltx-2.5-video-vae-conv-bf16.safetensors</code>, 1.35 GiB. It
+turns the latents into frames. It is the <em>conv</em> one: LTX-2.5’s
+diffusion decoder, which Lightricks also publishes, is not run by this
+server.</li>
+<li><strong>The audio VAE</strong>:
+<code>vae/ltx-2.5-audio-vae-bf16.safetensors</code>, 0.34 GiB. It holds
+the spectrogram decoder and the vocoder that turns the spectrogram into
+48 kHz stereo sound. Without it every clip is silent.</li>
+<li><strong>The latent upscaler</strong>:
+<code>latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors</code>,
+0.93 GiB. It doubles the first stage’s latent for the second (see
+<strong>Two stages</strong> below). Without it a clip is drawn in one
+stage, at its full size.</li>
+</ul>
+<p>None of them is gated: the one command fetches 40 GiB in all, and no
+token is needed.</p>
+<p><strong>The text encoder is converted once.</strong> It is published
+as <code>bf16</code> safetensors, the form the transformer was trained
+against, and the server serves language models from GGUF. At the first
+start that needs it, the server converts it to a GGUF
+(<code>Q6_K</code>, the norms in <code>f32</code>) under
+<code>&lt;models&gt;/orangu-converted/</code> (10.0 GiB), which takes
+about two minutes on the twelve-core ARM board this chapter’s numbers
+come from, and says so in the log; every later start uses the GGUF. The
+conversion is llama.cpp’s own for Gemma 4: the same tensor names,
+hyperparameters and vocabulary, so the file reads as an ordinary
+<code>gemma4</code> model. Once it exists the safetensors may be
+deleted. A GGUF of the encoder made elsewhere, such as
+<code>elix3r/gemma4-12b-with-proj-ltx-2.5-GGUF</code>, is used as it
+is.</p>
+<p>The server finds each companion by what is inside the file, not by
+its name: the encoder by its Gemma 4 configuration and its two
+projection heads, the VAEs and the upscaler by their tensors. A file in
+another directory is named in the configuration instead
+(<code>text_encoder</code>, <code>vae</code>, <code>audio_vae</code>,
+<code>upscaler</code>).</p>
+<p><code>list</code> shows the transformer as <code>Yes (ltxv)</code>,
+both <code>Q4_K_M</code> and <code>Q8_0</code>:</p>
+<pre><code>39  unsloth/LTX-2.5-GGUF   Q4_K_M   12.65 GiB   Never   Yes (ltxv)
+40  unsloth/LTX-2.5-GGUF   Q8_0     21.22 GiB   Never   Yes (ltxv)</code></pre>
+<p>The converted text encoder is listed as <code>Yes (gemma4)</code>,
+being a Gemma 4, but it is of no use on its own as a chat model.</p>
+<h2 id="starting-the-server">Starting the server</h2>
+<p>The video model is served in its own role, <code>video</code>, and
+<code>--video</code> is the flag that asks for it:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--video</span></span></code></pre></div>
+<p>That prints the model table with every model that is not a video
+model greyed out, and pre-selects the first video model, so Enter takes
+it. The server then reports the companions it found and what a clip at
+the defaults costs:</p>
+<pre><code>ltxv text encoder …/orangu-converted/gemma4-12b-with-proj-ltx-2.5-Q6_K.gguf
+ltxv video VAE …/vae/ltx-2.5-video-vae-conv-bf16.safetensors (int8)
+ltxv audio VAE …/vae/ltx-2.5-audio-vae-bf16.safetensors
+ltxv latent upscaler …/latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors
+[video] a clip at the defaults (768x448, 121 frames at 24 fps, two stages, with sound) takes about 23 min here</code></pre>
+<p>With the model named in the configuration, the table pre-selects it,
+and <code>--daemon</code> starts on it without the table;
+<code>orangu-server -i</code> writes such a configuration. Pick the
+video model at its <code>model</code> prompt and the wizard asks for the
+clip keys, each offering what the server does without it:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/.cache/huggingface/hub</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/LTX-2.5-GGUF:Q4_K_M</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8200</span></span></code></pre></div>
+<p>Nothing else is needed. The defaults are a five-second clip (121
+frames at 24 fps) at 768 × 448, in two stages, with sound. The keys are
+in the <em>Inference server</em> chapter’s <strong>Video
+generation</strong> section: <code>video_size</code>,
+<code>video_seconds</code> (or <code>video_frames</code>),
+<code>video_fps</code>, <code>video_audio</code>,
+<code>video_two_stage</code> and <code>video_quality</code>, plus the
+four companions.</p>
+<p>The picker will not serve a video model in any other role
+(<code>--image</code> is an error that says so), nor a language model
+under <code>--video</code>. <code>bundle</code> refuses a video model,
+which does not fit in one file.</p>
+<h2 id="time-and-memory">Time and memory</h2>
+<p>A clip is many minutes on a CPU. On the twelve-core ARM board this
+chapter’s numbers come from, a clip at the defaults (768 × 448, 121
+frames, two stages, with sound) took 23 minutes:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">phase</th>
+<th style="text-align: left;">time</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Encoding the prompt</td>
+<td style="text-align: left;">12 s</td>
+<td style="text-align: left;">Gemma 4 over the prompt’s tokens,
+once</td>
+</tr>
+<tr>
+<td style="text-align: left;">Stage 1</td>
+<td style="text-align: left;">7 min 14 s</td>
+<td style="text-align: left;">eight steps of 54 s at half the size,
+1,344 video tokens</td>
+</tr>
+<tr>
+<td style="text-align: left;">Upscaling</td>
+<td style="text-align: left;">20 s</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">Stage 2</td>
+<td style="text-align: left;">11 min 34 s</td>
+<td style="text-align: left;">three steps of 3 min 51 s at the full
+size, 5,376 video tokens</td>
+</tr>
+<tr>
+<td style="text-align: left;">Decoding</td>
+<td style="text-align: left;">2 min 41 s</td>
+<td style="text-align: left;">the video VAE, 121 frames</td>
+</tr>
+<tr>
+<td style="text-align: left;">Sound</td>
+<td style="text-align: left;">16 s</td>
+<td style="text-align: left;">the audio VAE and the vocoder</td>
+</tr>
+<tr>
+<td style="text-align: left;">Encoding the file</td>
+<td style="text-align: left;">48 s</td>
+<td style="text-align: left;">AV1 and FLAC into a 2.4 MB MP4</td>
+</tr>
+</tbody>
+</table>
+<p>Smaller clips are much quicker: two seconds at 512 × 320 take about
+seven minutes and one second about four. A full-size step costs four
+times a half-size one and more, since every token attends to every
+other, so stage 2’s three steps take longer than stage 1’s eight.</p>
+<p>The server measures what a step costs at startup and says what a clip
+at the defaults will take
+(<code>[video] a clip at the defaults … takes about 23 min here</code>).
+After every clip it replaces that estimate with what the clip measured,
+and the console counts down from it.</p>
+<p>While a clip is made the server holds about 16 GB: the transformer’s
+13 GB of weights mapped from disk and read as it runs, the encoder’s 10
+GB mapped beside it and read once a clip, and the decoders. A machine
+with 32 GB serves it; one with less reads the transformer back from disk
+as it runs, which is slower by however long the disk takes.</p>
+<h2 id="two-stages">Two stages</h2>
+<p>The distilled checkpoint was made for a two-stage recipe, and the
+server runs it whenever the latent upscaler is there:</p>
+<ol type="1">
+<li><strong>Stage 1</strong> draws the clip at half its width and
+height: eight steps from noise, on the fixed schedule the model was
+distilled for.</li>
+<li><strong>The upscaler</strong> doubles the latent’s width and
+height.</li>
+<li><strong>Stage 2</strong> adds noise back to the latent and refines
+it at the full size in three more steps.</li>
+</ol>
+<p>The first stage has a quarter of the tokens, so most of the steps are
+cheap and only three run at the full size. Width and height must
+therefore be multiples of 64 (half of them a multiple of the model’s
+32). Without the upscaler, or with <code>video_two_stage = no</code>,
+all eight steps run at the full size, which is slower and not what the
+model was distilled for. Multiples of 32 are then enough.</p>
+<p>The sound is drawn in both stages along with the picture, by the same
+transformer: the two streams attend to each other in every block, which
+is what keeps the sound in time with the frames.</p>
+<h2 id="length-and-frame-rate">Length and frame rate</h2>
+<p>The model draws time in steps of eight frames, plus the first frame
+on its own, so a clip has 8k + 1 frames. Ask for five seconds at 24 fps
+(120 frames) and you get 121; ask for 100 frames and you get 97. The
+caption under a clip, and the API’s answer, give the frames actually
+drawn.</p>
+<p>The time grows with the length, and a little faster than in
+proportion, since every frame’s tokens attend to every other
+frame’s.</p>
+<h2 id="in-the-web-console">In the web console</h2>
+<p>Open the console (<code>http://&lt;host&gt;:8200</code>). The topbar
+names the model, and the gear at its right is
+<strong>Settings</strong>.</p>
+<h3 id="downloading-from-the-console">Downloading from the console</h3>
+<p><strong>Settings › Models</strong> is the model manager. Type
+<code>unsloth/LTX-2.5-GGUF:Q4_K_M</code> into the download box and the
+transformer arrives first, then its companions, with progress for each
+file. The companions follow it. When the downloads finish, the row’s
+<strong>Load</strong> button restarts the server on the model, and the
+console reconnects on its own.</p>
+<h3 id="clip-settings">Clip settings</h3>
+<p><strong>Settings › Video</strong> holds what every clip gets. Each
+row has an <strong>(i)</strong> that explains it on hover.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">setting</th>
+<th style="text-align: left;">choices</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Size</strong></td>
+<td style="text-align: left;">512 × 320 up to 1280 × 704, or
+<em>Other…</em> for any <code>WIDTHxHEIGHT</code></td>
+<td style="text-align: left;">Multiples of 64 in two stages, 32 in one.
+768 × 448 is the default; 512 × 320 is a preview</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Length</strong></td>
+<td style="text-align: left;">2, 3, 5, 8, 10 seconds, or a number</td>
+<td style="text-align: left;">Snapped to 8k + 1 frames; the line under
+the rows says how many</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Frame rate</strong></td>
+<td style="text-align: left;">24, 25, 30</td>
+<td style="text-align: left;">The model is trained at 24</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sound</strong></td>
+<td style="text-align: left;">on, off</td>
+<td style="text-align: left;">Off skips decoding the sound into the
+file. The model draws it either way. Greyed without the audio VAE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Two stages</strong></td>
+<td style="text-align: left;">on, off</td>
+<td style="text-align: left;">The distilled recipe above. Greyed without
+the upscaler</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Quality</strong></td>
+<td style="text-align: left;">40, 80, 120, 160, or a number</td>
+<td style="text-align: left;">The AV1 encoder’s quantizer: lower looks
+better and makes a larger file</td>
+</tr>
+</tbody>
+</table>
+<p>Under the rows, a line gives the frame count and what a clip at these
+settings costs on this server, from the server’s own measured rate, and
+updates as you change them. <strong>Reset</strong> puts the form back to
+the configuration file’s values, and the dialog’s <strong>Save</strong>
+makes the form the server’s defaults until it restarts.</p>
+<h3 id="making-a-clip">Making a clip</h3>
+<p>Type a prompt and send it. The robot blinks beside the phase and a
+countdown: <em>Encoding</em>, <em>Stage 1 · step 3/11 · 6m 10s</em>,
+<em>Upscaling</em>, <em>Stage 2</em>, <em>Decoding</em>, <em>Sound</em>,
+<em>Encoding the file</em>. The time comes from the server’s estimate,
+corrected at every step. The reply is the clip in the browser’s own
+player, with a save control under it that downloads the MP4, and a
+caption with the size, frames, frame rate, length, whether it has sound,
+and the seed. Clips are kept beside the session and come back through
+<strong>History</strong>.</p>
+<p>A long clip can be stopped with the console’s Stop button, or by
+closing the tab: the work ends at the next transformer block. Ctrl+C on
+the server ends it as quickly.</p>
+<h3 id="writing-a-prompt">Writing a prompt</h3>
+<p>LTX-2.5 was trained on long, concrete descriptions, and works best
+with one: the subject and what it does, the camera and how it moves, the
+light, and the sound. For example:</p>
+<blockquote>
+<p>A red fox trots through fresh snow at the edge of a pine forest at
+dawn, its breath steaming. The camera tracks alongside at its height.
+Soft blue light, falling snowflakes. The crunch of paws in snow and a
+distant crow.</p>
+</blockquote>
+<p>One sentence works too, but the model fills in what it is not told,
+and the sound most of all.</p>
+<h2 id="through-the-api">Through the API</h2>
+<p>Everything the console does, a client can:</p>
+<ul>
+<li><code>POST /v1/videos</code> is OpenAI’s Videos API. It takes
+<code>prompt</code>, <code>seconds</code> and <code>size</code>, plus
+the local knobs <code>frames</code>, <code>fps</code>,
+<code>seed</code>, <code>audio</code>, <code>two_stage</code> and
+<code>quality</code>. It answers at once with a <code>video</code>
+object (<code>status: "queued"</code>). <code>GET /v1/videos/{id}</code>
+reports its <code>progress</code>, its <code>phase</code> and this
+server’s <code>eta_seconds</code>, and
+<code>GET /v1/videos/{id}/content</code> returns the MP4 once the status
+is <code>completed</code>. <code>stream: true</code> keeps the
+connection open and sends progress events until the clip is done, for a
+client that would rather not poll.</li>
+<li><code>POST /v1/chat/completions</code> on the same server treats the
+last user message as the prompt and answers with a link to the clip’s
+content.</li>
+<li><code>GET /props</code> reports the companions, the defaults and the
+measured rate, and <code>POST /props</code> sets the defaults. The Video
+pane’s Save calls it.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/v1/videos <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;prompt&quot;: &quot;A paper boat drifts down a rain-filled gutter&quot;, &quot;seconds&quot;: 3, &quot;size&quot;: &quot;512x320&quot;}&#39;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># {&quot;id&quot;: &quot;video_…&quot;, &quot;status&quot;: &quot;queued&quot;, …}</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> localhost:8100/v1/videos/video_… <span class="kw">|</span> <span class="ex">jq</span> .progress</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-o</span> boat.mp4 localhost:8100/v1/videos/video_…/content</span></code></pre></div>
+<p>All of it is documented field by field in the <em>HTTP endpoints</em>
+chapter.</p>
+<h2 id="what-to-expect-and-what-not">What to expect, and what not</h2>
+<ul>
+<li><strong>One clip at a time.</strong> A second request waits for the
+first.</li>
+<li><strong>The video pipeline runs on the CPU.</strong> The transformer
+is 13 GiB and more, past what a card holds beside the text encoder. The
+encoder stays on the CPU as well, with its weights as the file has them,
+since it reads one prompt a clip and the memory is the transformer’s; an
+explicit <code>backend</code> or <code>prompt_weights</code> overrides
+that.</li>
+<li><strong>The first estimate is a calibration.</strong> Until a clip
+has been made, the wait is reckoned from one block timed at startup (23
+minutes estimated for the defaults here, 23.1 measured). After a clip it
+is that clip’s own measured rate.</li>
+<li><strong>Text to video only.</strong> LTX-2.5 can also start a clip
+from a picture. This server does not do that yet, and the console’s
+attach menu does not offer it.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

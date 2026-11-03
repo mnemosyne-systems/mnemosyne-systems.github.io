@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -828,8 +832,9 @@ The denylist wins over <code>enabled_tools</code></td>
 <td style="text-align: left;"><code>approval_mode</code></td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">How tool calls are confirmed. Defaults to
-<code>auto</code>. Options: <code>auto</code>, <code>prompt</code>,
-<code>writes</code>, <code>deny</code></td>
+<code>auto</code>. Options: <code>auto</code> (or its alias
+<code>approve</code>), <code>prompt</code>, <code>writes</code>,
+<code>deny</code></td>
 </tr>
 </tbody>
 </table>

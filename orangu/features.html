@@ -81,7 +81,19 @@
         </div>
         <div class="g-cell">
           <h3>Image generation</h3>
-          <p>Serve Qwen-Image 2.1 and a chat turn, or a <code>/v1/images/generations</code> request, is answered with a picture &mdash; with transparency, and edits of a picture you attach.</p>
+          <p>Serve Qwen-Image 2.1 or FLUX2 and a chat turn, or a <code>/v1/images/generations</code> request, is answered with a picture &mdash; with transparency, and edits of a picture you attach.</p>
+        </div>
+        <div class="g-cell">
+          <h3>Video and speech</h3>
+          <p>Short clips with sound from LTX-2.5 over <code>/v1/videos</code>, and text spoken aloud by Qwen3-TTS over <code>/v1/audio/speech</code> &mdash; from the same server.</p>
+        </div>
+        <div class="g-cell">
+          <h3>Workers</h3>
+          <p>Deploy <code>orangu-server</code> as a pyramid: a tree of nodes splits one model layer by layer, so a model too large for any one machine can still be served.</p>
+        </div>
+        <div class="g-cell">
+          <h3>OpenAI and Anthropic APIs</h3>
+          <p><code>orangu-server</code> answers the OpenAI-compatible endpoints and the Anthropic Claude API&rsquo;s <code>/v1/messages</code>, so existing clients run against your own models.</p>
         </div>
         <div class="g-cell">
           <h3>Model Context Protocol</h3>

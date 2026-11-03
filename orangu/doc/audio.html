@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speech Generation — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html" class="active">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#speech-generation" id="toc-speech-generation">Speech
+generation</a>
+<ul>
+<li><a href="#the-model-in-three-files"
+id="toc-the-model-in-three-files">The model, in three files</a></li>
+<li><a href="#starting-the-server" id="toc-starting-the-server">Starting
+the server</a></li>
+<li><a href="#how-the-voice-is-made" id="toc-how-the-voice-is-made">How
+the voice is made</a></li>
+<li><a href="#in-the-web-console" id="toc-in-the-web-console">In the web
+console</a></li>
+<li><a href="#through-the-api" id="toc-through-the-api">Through the
+API</a></li>
+<li><a href="#what-to-expect-and-what-not"
+id="toc-what-to-expect-and-what-not">What to expect, and what
+not</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="speech-generation">Speech generation</h1>
+<p><code>orangu-server</code> speaks text aloud. Point it at a speech
+model and every chat turn in the web console, and every
+<code>/v1/audio/speech</code> or <code>/v1/chat/completions</code>
+request, is answered with the text spoken: 24 kHz mono speech, as WAV,
+FLAC or raw PCM, in a voice from a voice pack. This chapter is the
+practical side: what to download, how to start the server, and what the
+web console’s settings do. The <em>Inference server</em> chapter’s
+<strong>Speech generation</strong> section has the reference for every
+key, and the <em>HTTP endpoints</em> chapter the API.</p>
+<h2 id="the-model-in-three-files">The model, in three files</h2>
+<p>The speech model is <strong>Qwen3-TTS</strong>, published as GGUF in
+two sizes, 1.7B and 0.6B. The Base checkpoints are the ones to serve,
+and <code>Q8_0</code> is the quantization to take:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download cstr/qwen3-tts-1.7b-base-GGUF:Q8_0</span></code></pre></div>
+<p>That is the model. It carries three parts:</p>
+<ul>
+<li><strong>The talker</strong>, a Qwen3 decoder that reads the text and
+writes the speech one frame at a time, as the first of sixteen codebooks
+of a 12 Hz speech codec.</li>
+<li><strong>The code predictor</strong>, which fills in the other
+fifteen codebooks of each frame.</li>
+<li><strong>A speaker encoder</strong>, which this server does not
+use.</li>
+</ul>
+<p>Two more kinds of file make it speak, and <code>download</code>
+fetches both after the model, each skipped when the models directory
+already holds one:</p>
+<ul>
+<li><strong>The speech codec</strong>:
+<code>qwen3-tts-tokenizer-12hz.gguf</code> from
+<code>cstr/qwen3-tts-tokenizer-12hz-GGUF</code>. It turns each frame’s
+sixteen codes, twelve and a half frames a second, into 24 kHz mono
+sound. The server takes the largest codec it finds, so the
+<code>F16</code> file is preferred over a <code>q8_0</code> one beside
+it. One codec serves both model sizes.</li>
+<li><strong>A voice pack</strong>: from
+<code>cstr/qwen3-tts-voices-GGUF</code>,
+<code>qwen3-tts-voice-1.7b-designed.gguf</code> for the 1.7B model and
+<code>qwen3-tts-voice-0.6b-designed.gguf</code> for the 0.6B. A pack is
+who speaks: a speaker embedding, and a short reference recording as its
+transcript and its codec codes. The two sizes need packs of their own
+width; <code>download</code> fetches the one that fits, when none of
+that width is there.</li>
+</ul>
+<p>The server finds the codec and the voice packs by what is inside the
+file, not by its name. A file in another directory is named in the
+configuration instead (<code>codec</code>, <code>voices</code>).</p>
+<p><code>list</code> shows the model as <code>Yes (qwen3tts)</code>, and
+the codec and the voice packs as <code>Companion (qwen3tts)</code>: they
+are part of a speech model and are never served on their own.</p>
+<h2 id="starting-the-server">Starting the server</h2>
+<p>The speech model is served in its own role, <code>audio</code>, and
+<code>--audio</code> is the flag that asks for it:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--audio</span></span></code></pre></div>
+<p>That prints the model table with every model that is not a speech
+model greyed out, so the pick is a speech model. A speech model given on
+the command line, or named in the configuration, comes up in the
+<code>audio</code> role without the flag. The server then reports the
+codec and the voice packs it found:</p>
+<pre><code>qwen3tts codec …/qwen3-tts-tokenizer-12hz.gguf
+qwen3tts voice pack …/qwen3-tts-voice-1.7b-designed.gguf</code></pre>
+<p>and the voices they hold. A voice that a pack calls
+<code>default</code> is named after its file instead, the file name
+without <code>qwen3-tts-voice-</code>: the 1.7B pack’s voice is
+<code>1.7b-designed</code>. A pack made for the other model size is
+skipped, with a line in the log saying so.</p>
+<p>With the model named in the configuration, <code>--daemon</code>
+starts on it without the table; <code>orangu-server -i</code> writes
+such a configuration, and answers <code>role: audio</code> on its own
+when the model is a speech model:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/.cache/huggingface/hub</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> cstr/qwen3-tts-1.7b-base-GGUF:Q8_0</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8200</span></span></code></pre></div>
+<p>Nothing else is needed. The defaults are the first voice loaded, the
+language detected from the text, WAV, and at most two minutes of speech
+a reply. The keys are in the <em>Inference server</em> chapter’s
+<strong>Speech generation</strong> section: <code>audio_voice</code>,
+<code>audio_language</code>, <code>audio_format</code>,
+<code>audio_temperature</code>, <code>audio_top_k</code>,
+<code>audio_repetition_penalty</code> and
+<code>audio_max_seconds</code>, plus <code>codec</code> and
+<code>voices</code>.</p>
+<p>The picker will not serve a speech model in any other role
+(<code>--code</code> is an error that says so), nor a language model
+under <code>--audio</code>. <code>bundle</code> refuses a speech model,
+which needs its codec and voice packs beside it.</p>
+<h2 id="how-the-voice-is-made">How the voice is made</h2>
+<p>The voice is cloned in context. The server gives the talker the voice
+pack’s reference transcript followed by the text to speak, laid over the
+reference recording’s frames, and the talker carries on from there in
+the same voice, saying the new text. The codec then turns the frames
+into sound.</p>
+<p>A clip ends when the model ends it. Two limits stop one that runs on:
+the longest reply (<code>audio_max_seconds</code>, two minutes by
+default), and a guard of eight seconds plus 1.2 seconds for every token
+of the text. A clip cut short is said so in the log, and in the
+console’s caption.</p>
+<p>The server logs one line a clip:</p>
+<pre><code>orangu-server: [audio] 4.6 s of speech (58 frames, voice 1.7b-designed, language auto, seed …) in … s — prompt (… rows) … s, speaking … s, decoding … s</code></pre>
+<h2 id="in-the-web-console">In the web console</h2>
+<p>Open the console (<code>http://&lt;host&gt;:8200</code>). The topbar
+names the model, and the gear at its right is
+<strong>Settings</strong>.</p>
+<h3 id="downloading-from-the-console">Downloading from the console</h3>
+<p><strong>Settings › Models</strong> is the model manager. Type
+<code>cstr/qwen3-tts-1.7b-base-GGUF:Q8_0</code> into the download box
+and the model arrives first, then the codec and the voice pack, with
+progress for each file. When the downloads finish, the row’s
+<strong>Load</strong> button restarts the server on the model, and the
+console reconnects on its own.</p>
+<h3 id="speech-settings">Speech settings</h3>
+<p><strong>Settings › Audio</strong> holds what every reply gets. Each
+row has an <strong>(i)</strong> that explains it on hover. On a model
+that is not a speech model the tab is greyed, with <em>Not a speech
+model</em>.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: left;">setting</th>
+<th style="text-align: left;">choices</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Voice</strong></td>
+<td style="text-align: left;">the voices loaded</td>
+<td style="text-align: left;">The pack’s description is under it</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Language</strong></td>
+<td style="text-align: left;">Auto, or one of Chinese, English, French,
+German, Italian, Japanese, Korean, Portuguese, Russian, Spanish</td>
+<td style="text-align: left;">Auto lets the model tell from the
+text</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Format</strong></td>
+<td style="text-align: left;">WAV, FLAC</td>
+<td style="text-align: left;">How the reply is kept beside the session.
+FLAC is smaller and sounds the same</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Temperature</strong></td>
+<td style="text-align: left;">0 to 2</td>
+<td style="text-align: left;">How freely the model reads the text: lower
+is steadier, and <code>0</code> always takes the likeliest</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Longest reply</strong></td>
+<td style="text-align: left;">seconds, up to 600</td>
+<td style="text-align: left;">A reply also stops when the model ends it,
+which is normally long before this</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reset</strong> puts the form back to the configuration file’s
+values, and the dialog’s <strong>Save</strong> makes the form the
+server’s defaults until it restarts, as on the Video pane.</p>
+<h3 id="speaking-a-reply">Speaking a reply</h3>
+<p>Type the text and send it. While it is made the progress reads
+<em>Reading the text</em>, <em>Speaking — 3 s so far</em>, then
+<em>Decoding</em>. The reply is the text spoken, in the browser’s own
+audio player, with a download button under it, and a caption with the
+length, the voice, the language and the seed:</p>
+<blockquote>
+<p><em>4.6 s, voice 1.7b-designed, language auto, seed 1234567</em></p>
+</blockquote>
+<p>A reply the length limit cut ends its caption with <em>— cut at the
+length limit</em>. Replies are kept beside the session, as WAV, or FLAC
+when that is the format, and come back through
+<strong>History</strong>.</p>
+<p>Stop ends the reply at the next frame, and so does closing the
+tab.</p>
+<h2 id="through-the-api">Through the API</h2>
+<p>Everything the console does, a client can:</p>
+<ul>
+<li><code>POST /v1/audio/speech</code> is OpenAI’s speech API. It takes
+<code>input</code> and <code>voice</code> (a name, or
+<code>{"id": name}</code>), <code>response_format</code>
+(<code>wav</code>, <code>flac</code> or <code>pcm</code>), plus the
+local knobs <code>language</code>, <code>temperature</code>,
+<code>top_k</code>, <code>repetition_penalty</code>,
+<code>max_seconds</code> and <code>seed</code>. The answer is the audio
+itself, as <code>audio/wav</code>, <code>audio/flac</code> or
+<code>audio/pcm</code> (bare 16-bit little-endian mono at 24 kHz, as
+OpenAI’s), with headers that name the voice, the seed, the frames, the
+sample rate and whether the model ended the clip.</li>
+<li><code>GET /v1/audio/voices</code> lists the voices, the languages
+and the formats, and names the default voice.</li>
+<li><code>POST /v1/chat/completions</code> on the same server speaks the
+last user message and answers in OpenAI’s audio-output shape: the
+message’s <code>audio</code> holds the clip as base64, its format, its
+transcript, the voice and its length.</li>
+<li><code>GET /props</code> reports the codec, the voice packs, the
+voices and the defaults, and <code>POST /props</code> sets the defaults.
+The Audio pane’s Save calls it.</li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download cstr/qwen3-tts-1.7b-base-GGUF:Q8_0</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--audio</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> http://localhost:8100/v1/audio/speech <span class="at">-H</span> <span class="st">&#39;Content-Type: application/json&#39;</span> <span class="dt">\</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-d</span> <span class="st">&#39;{&quot;input&quot;: &quot;Hello from orangu.&quot;, &quot;voice&quot;: &quot;1.7b-designed&quot;}&#39;</span> <span class="at">-o</span> hello.wav</span></code></pre></div>
+<p>The text endpoints that have no speech to give —
+<code>/v1/completions</code>, <code>/completion</code>,
+<code>/v1/embeddings</code> and <code>/v1/messages</code> — answer
+<code>501</code> on a speech model. All of it is documented field by
+field in the <em>HTTP endpoints</em> chapter.</p>
+<h2 id="what-to-expect-and-what-not">What to expect, and what not</h2>
+<ul>
+<li><strong>One clip at a time.</strong> A second request waits for the
+first.</li>
+<li><strong>The speech pipeline runs on the CPU.</strong> The talker,
+the code predictor and the codec run on the CPU whatever
+<code>backend</code> and <code>device</code> say, and none of a language
+model’s startup — placement, probes, the KV pool, the warm-up —
+applies.</li>
+<li><strong>The clip is sent whole.</strong> It is not streamed as it is
+spoken: <code>stream_format: "sse"</code> is refused, and a streamed
+chat request gets the whole clip in one chunk.</li>
+<li><strong>Voices come from voice packs.</strong> Cloning a voice from
+your own recording needs the codec’s encoder and the speaker encoder,
+which this server does not run.</li>
+<li><strong>No voice design.</strong> A Base model speaks in the voice
+it is given and cannot be steered by a description, so
+<code>instructions</code> is refused.</li>
+<li><strong>One speed.</strong> <code>speed</code> other than
+<code>1.0</code> is refused.</li>
+<li><strong>WAV, FLAC and PCM only.</strong> <code>mp3</code>,
+<code>opus</code> and <code>aac</code> are refused, with the formats
+that are supported named.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

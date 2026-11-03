@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -153,7 +157,7 @@ class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-
 <p>The script installs to <code>~/.local/bin</code> (Linux/macOS) or
 <code>%USERPROFILE%\.local\bin</code> (Windows) and warns if the
 directory is not in your <code>PATH</code>. See <a
-href="https://github.com/mnemosyne-systems/orangu/blob/main/BUILDING.md">BUILDING.md</a>
+href="https://github.com/mnemosyne-systems/orangu/blob/2.0.0/BUILDING.md">BUILDING.md</a>
 for instructions on building from source.</p>
 <h2 id="configure-orangu-server">Configure orangu-server</h2>
 <p><code>orangu-server -i</code> (long form <code>--init</code>) writes
@@ -229,12 +233,14 @@ asks for its <code>tls_key</code>.</td>
 </tr>
 <tr>
 <td><code>slots</code></td>
-<td><code>1</code> (<code>8</code> for <code>embedding</code>)</td>
-<td>Concurrent requests, each with its own KV cache.</td>
+<td><code>4</code> (<code>1</code> for <code>review</code>,
+<code>8</code> for <code>embedding</code>)</td>
+<td>Concurrent requests, each with its own KV cache; decoding requests
+share one forward pass a step.</td>
 </tr>
 <tr>
 <td><code>queue_limit</code></td>
-<td><code>0</code></td>
+<td><code>16</code></td>
 <td>Requests allowed to wait for a slot before <code>503</code>;
 <code>0</code> is unbounded.</td>
 </tr>
@@ -319,16 +325,29 @@ for <code>log_path</code>.</td>
 <td><code>Add web console</code></td>
 <td><code>Y</code></td>
 <td><code>n</code> writes no <code>[web]</code> section and serves no
-console. Accepting asks four more: the console’s <code>host</code>
-(defaulting to the API’s), <code>port</code> (<code>8101</code>),
-<code>reexec</code> (may it load a different model), and
-<code>delete</code> (may it delete models).</td>
+console. Accepting asks five more: the console’s <code>host</code>
+(defaulting to the API’s), <code>port</code> (<code>8200</code>),
+<code>reexec</code> (may it load a different model), <code>delete</code>
+(may it delete models), and <code>download</code> (may it download
+models).</td>
 </tr>
 <tr>
 <td><code>Add Prometheus metrics</code></td>
-<td><code>N</code></td>
-<td>Accepting asks for its <code>host</code> and <code>port</code>
+<td><code>Y</code></td>
+<td><code>n</code> writes no <code>[prometheus]</code> section.
+Accepting asks for its <code>host</code> and <code>port</code>
 (<code>8300</code>).</td>
+</tr>
+<tr>
+<td><code>Add workers</code></td>
+<td><code>Y</code></td>
+<td><code>n</code> writes no <code>[workers]</code> section. Accepting
+asks for its <code>host</code>, <code>port</code> (<code>8400</code>),
+<code>workers</code>, <code>standby</code>, <code>secret</code>
+(<code>none</code>, the default, <code>generate</code> — shown, to give
+every node the same — or <code>type</code>) and
+<code>activations</code>; with no workers listed the server is a node
+another can use as a worker.</td>
 </tr>
 </tbody>
 </table>
@@ -344,7 +363,15 @@ class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#c
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span></code></pre></div>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8200</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[prometheus]</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8300</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8400</span></span></code></pre></div>
 <p><code>-i</code> always targets
 <code>~/.orangu/orangu-server.conf</code> and ignores
 <code>-c</code>/<code>--config</code>. See the <em>Inference server</em>
@@ -389,8 +416,12 @@ is the general-purpose one, and the default. The alternatives are
 <code>--embedding</code> (embeddings only, with the chat and completion
 endpoints disabled). They are mutually exclusive. A sixth,
 <code>--image</code>, is not picked: a Qwen-Image
-(<code>qwen_image</code> or <code>qwen_image_2_1</code>) picture
-generator always comes up in it, and no other model can.</p>
+(<code>qwen_image</code> or <code>qwen_image_2_1</code>) or FLUX.2
+[klein] (<code>flux2_klein</code>) picture generator always comes up in
+it, and no other model can. A seventh, <code>--video</code>, is the same
+for an LTX-2.5 (<code>ltxv</code>) video generator, and an eighth,
+<code>--audio</code>, for a Qwen3-TTS (<code>qwen3tts</code>) speech
+generator.</p>
 <p>The server binds the host and port from step 1 and serves an
 OpenAI-compatible endpoint, which is what <strong>orangu</strong>
 connects to and what step 4 asks for:</p>

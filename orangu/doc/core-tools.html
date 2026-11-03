@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -897,6 +901,21 @@ edit file src/main.rs</code></pre>
 <h2 id="show_file">/show_file</h2>
 <p>Shows the contents of a workspace file, optionally at a specific Git
 ref and optionally with per-line blame columns.</p>
+<p>For a PDF, the command extracts embedded text and adds it to the
+conversation for follow-up questions. For example, run
+<code>/show_file report.PDF</code>, then ask for a summary. PDF files
+use the built-in renderer, including at a Git ref; <code>--hash</code>
+and <code>--author</code> are unavailable because extracted text lines
+do not correspond to binary Git blame lines. Scanned pages use local OCR
+when its models are installed. The tools chapter documents model setup
+and limits.</p>
+<p>For workspace PDFs, use <code>--start-page N</code> and
+<code>--end-page N</code> to select a range, or
+<code>--query "search words"</code> to select relevant pages. For
+example,
+<code>/show_file --start-page 21 --end-page 30 report.pdf</code> reads
+the next part of a long document. Output retains original page numbers
+and identifies OCR text and unavailable pages.</p>
 <pre class="text"><code>/show_file [--hash] [--author] &lt;path&gt; [&lt;ref&gt;]</code></pre>
 <p>The command is workspace-scoped. Without a ref, the current workspace
 file is shown — when <code>bat</code> is installed (as <code>bat</code>
@@ -2510,17 +2529,20 @@ empty rather than repeating the same entry as
 <strong>Newest</strong>.</li>
 <li><strong>Page 2 — table of contents.</strong> One entry per open pull
 request, <code>#N Title</code>, <strong>clickable links</strong> that
-jump to their page. Each entry ends with a status icon: a <strong>green
-checkmark</strong> when the pull request is neither a draft nor
-conflicting, otherwise a <strong>red “X”</strong>.</li>
+jump to their page. Each entry ends with a status icon: a
+<strong>skull</strong> when the pull request has merge conflicts, a
+<strong>red “X”</strong> when it is a draft or its CI is failing,
+otherwise — not a draft, no conflicts, and every check passing — a
+<strong>green checkmark</strong>.</li>
 <li><strong>Page 3 onward — one page per pull request</strong> (more
-when it changes many files or has a long last comment). The title
+when it changes many files or has many comments). The title
 <strong>links to the pull/merge request’s home page on the
 forge</strong>, followed by a table (spanning the full page width) of
 author, a <strong>Link</strong> row with the pull request’s full URL
 (also clickable), created/updated dates, the branch, draft status,
-merge-conflict status, comment count, assignees, reviewers, and labels —
-whatever the forge returned. The <strong>Draft</strong> and
+merge-conflict status (asked of the forge again for a pull request whose
+state it has not computed yet), comment count, assignees, reviewers, and
+labels — whatever the forge returned. The <strong>Draft</strong> and
 <strong>Conflicts</strong> values are shown in <strong>bold</strong>
 when they are <code>Yes</code>, so an unfinished or blocked pull request
 catches the eye. Each <strong>reviewer</strong> is shown as their name
@@ -2534,13 +2556,12 @@ request, or a dismissed review). Below the table, the <strong>changed
 files</strong>: one line per file, its <strong>full path</strong>
 followed by its added-line count in <strong>green</strong> and
 removed-line count in <strong>red</strong> (GitLab’s merge-request list
-carries no diff, so this section is empty there). Finally a <strong>Last
-comment</strong> table (also full width): a header spanning both
-columns, then one row with the comment’s <strong>author</strong> (left)
-and its <strong>text</strong> (right, word-wrapped and truncated if very
-long); a pull request with no comments — or, on GitLab, whose comment
-bodies the list endpoint does not carry — shows <code>N/A</code> in both
-columns. (A repository with no open pull requests is the status page
+carries no diff, so this section is empty there). Then the
+<strong>Comments</strong>: every conversation comment and inline review
+comment, oldest first, each with its <strong>author</strong> in bold and
+its date, then its text rendered from its Markdown — flowing across
+further pages when there are many (<code>No comments.</code> when there
+are none). (A repository with no open pull requests is the status page
 followed by a short note instead.)</li>
 </ul>
 <p>The <strong>issue</strong> export is organized like the pr
@@ -2559,25 +2580,24 @@ left empty rather than repeating the same entry as
 issue, <code>#N Title</code>, <strong>clickable links</strong> that jump
 to their page.</li>
 <li><strong>Page 3 onward — one page per issue</strong> (more when its
-description is long). The title <strong>links to the issue’s home page
-on the forge</strong>, followed by a table (spanning the full page
-width) of author, a <strong>Link</strong> row with the issue’s full URL
-(also clickable), created/updated dates, milestone, comment count,
-assignees, and labels — whatever the forge returned. The
-<strong>Assignees</strong> value is shown in <strong>bold</strong> when
-it is <code>none</code>, so an issue nobody has picked up catches the
-eye. Below the table, the <strong>Description</strong>: the issue’s body
-rendered from its Markdown the same way the review export renders a
-report — brand-coloured headings, <strong>bold</strong> and
-<em>italic</em> emphasis, lists, fenced code blocks, block quotes, and
-tables — flowing across further pages when it is long
-(<code>No description.</code> when the issue has none). Finally a
-<strong>Last comment</strong> table (also full width): a header spanning
-both columns, then one row with the comment’s <strong>author</strong>
-(left) and its <strong>text</strong> (right, word-wrapped and truncated
-if very long); an issue with no comments — or, on GitLab, whose note
-bodies the list endpoint does not carry — shows <code>N/A</code> in both
-columns. (A repository with no open issues is the status page followed
+description is long or it has many comments). The title <strong>links to
+the issue’s home page on the forge</strong>, followed by a table
+(spanning the full page width) of author, a <strong>Link</strong> row
+with the issue’s full URL (also clickable), created/updated dates,
+milestone, comment count, assignees, and labels — whatever the forge
+returned. The <strong>Assignees</strong> value is shown in
+<strong>bold</strong> when it is <code>none</code>, so an issue nobody
+has picked up catches the eye. Below the table, the
+<strong>Description</strong>: the issue’s body rendered from its
+Markdown the same way the review export renders a report —
+brand-coloured headings, <strong>bold</strong> and <em>italic</em>
+emphasis, lists, fenced code blocks, block quotes, and tables — flowing
+across further pages when it is long (<code>No description.</code> when
+the issue has none). Finally the <strong>Comments</strong>: every
+comment, oldest first, each with its <strong>author</strong> in bold and
+its date, then its text rendered from its Markdown — flowing across
+further pages when there are many (<code>No comments.</code> when there
+are none). (A repository with no open issues is the status page followed
 by a short note instead.)</li>
 </ul>
 <p>On GitHub the report is built from <code>gh issue list</code> (up to
@@ -2698,14 +2718,26 @@ available.</p>
 shortest directed path between two graph nodes. Add
 <code>--undirected</code> when you want to explore a relationship in
 either direction. A path is limited to eight hops by default.</p>
+<p><code>/graph diff</code> writes
+<code>&lt;repository&gt;-&lt;branch&gt;-diff-graph.html</code>: the same
+visualization restricted to the branch-changed files against the merge
+base with main/master, plus their one-hop callers and callees. Changed
+symbols render larger with a <code>changed in this branch</code> badge;
+the sidebar adds a <code>Changed files</code> panel with each file’s
+unified diff (truncated per file) and lists changed files with no graph
+node as <code>Not in graph</code>. On a branch with no changes it
+reports that; when the changed files contribute no symbols (docs-only)
+it says so instead of writing an empty page.</p>
 <p>For a one-shot query, pass either command with <code>-p</code>;
 Orangu prints the result and exits.</p>
 <p><strong>Examples</strong></p>
 <pre class="text"><code>/graph
+/graph diff
 /graph explain shortest_path
 /graph path shortest_path resolve_node
 /graph path resolve_node shortest_path --undirected
 
+orangu -p &quot;/graph diff&quot;
 orangu -p &quot;/graph explain shortest_path&quot;
 orangu -p &quot;/graph path shortest_path resolve_node&quot;</code></pre>
 <p>Natural-language forms:</p>
@@ -2714,6 +2746,10 @@ show graph
 generate graph
 visualize codebase</code></pre>
 <h2 id="search">/search</h2>
+<p>The model can also request semantic search through the
+<code>semantic_search</code> tool, with a <code>query</code> argument.
+Both paths refresh the embedding index before searching and use the same
+ranking, result limit, and semantic token budget.</p>
 <p>Semantic code search. Where <code>/grep</code> matches text and the
 Knowledge Graph matches symbol names and structure, <code>/search</code>
 matches <em>meaning</em>: a query like

@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -258,13 +262,16 @@ requests, and to detect the default branch for the startup sync (see
 below). Without it, <strong>orangu</strong> falls back to plain Git for
 all of these. The <code>/comment</code> command requires <code>gh</code>
 and runs <code>gh issue comment</code> to add a comment to a GitHub
-issue; there is no plain Git fallback for it. The
-<code>/pull_request</code> command also requires <code>gh</code> and
-runs <code>gh pr create</code> to open a pull request from the current
-branch; there is no plain Git fallback for it. The <code>/issue</code>
-command likewise requires <code>gh</code> and runs
-<code>gh pr edit</code> / <code>gh issue edit</code> to add a reviewer,
-assignee, or label; there is no plain Git fallback for it.</p>
+issue, or <code>gh pr list</code> and <code>gh pr comment</code> for
+<code>/comment all</code> to comment on every open pull request; there
+is no plain Git fallback for it. The <code>/pull_request</code> command
+also requires <code>gh</code> and runs <code>gh pr create</code> to open
+a pull request from the current branch; there is no plain Git fallback
+for it. The <code>/issue</code> command likewise requires
+<code>gh</code> and runs <code>gh pr edit</code> /
+<code>gh issue edit</code> to add a reviewer, assignee, or label, or
+<code>gh issue create</code> to open a new issue; there is no plain Git
+fallback for it.</p>
 <p><strong>Installation</strong></p>
 <p><code>gh</code> is not available in the default Fedora repositories.
 Add the official GitHub CLI repository first, then install the
@@ -322,6 +329,13 @@ style="text-align: left;"><code>glab issue note &lt;number&gt; --message "…"</
 </tr>
 <tr>
 <td
+style="text-align: left;"><code>/comment all &lt;file&gt;</code></td>
+<td style="text-align: left;"><code>glab mr list</code>, then
+<code>glab mr note &lt;number&gt; --message "…"</code> for each open
+merge request</td>
+</tr>
+<tr>
+<td
 style="text-align: left;"><code>/issue reviewer &lt;n&gt; &lt;user&gt;</code></td>
 <td
 style="text-align: left;"><code>glab mr update &lt;n&gt; --reviewer &lt;user&gt;</code></td>
@@ -340,6 +354,12 @@ style="text-align: left;"><code>/issue label &lt;n&gt; &lt;label&gt;</code></td>
 style="text-align: left;"><code>glab mr update &lt;n&gt; --label &lt;label&gt;</code>
 / <code>glab issue update &lt;n&gt; --label &lt;label&gt;</code></td>
 </tr>
+<tr>
+<td
+style="text-align: left;"><code>/issue create [--title &lt;title&gt;] ...</code></td>
+<td
+style="text-align: left;"><code>glab issue create --title &lt;title&gt; --description &lt;body&gt; [--label ...] [--assignee ...] --yes</code></td>
+</tr>
 </tbody>
 </table>
 <p>As with <code>gh</code>, <code>/pull</code> and <code>/merge</code>
@@ -349,11 +369,25 @@ fall back to plain Git when <code>glab</code> is not installed, while
 <code>/rebase</code> and the startup sync is detected through Git
 (<code>origin/HEAD</code>, then <code>main</code>/<code>master</code>)
 when running against GitLab.</p>
+<p><strong>Credential prompts at startup</strong></p>
+<p>The startup sync and the startup <code>gh</code>/<code>glab</code>
+fetches run in the background. If one of them needs a password, a
+username, or an SSH key passphrase, the prompt is shown in the input
+area, prefixed with <code>GitHub</code> or <code>GitLab</code> according
+to <code>[orangu].platform</code>:</p>
+<pre><code>&gt; GitHub: Enter passphrase for key &#39;/home/me/.ssh/id_ed25519&#39;: ******</code></pre>
+<p>Passwords and passphrases are masked. Press <code>Enter</code> to
+answer, or <code>Esc</code> (or <code>Ctrl+C</code>) to cancel the
+prompt, in which case the sync reports that it failed.
+<strong>orangu</strong> does this by acting as <code>GIT_ASKPASS</code>
+and <code>SSH_ASKPASS</code> for those commands. The SSH prompt needs
+OpenSSH 8.4 or later.</p>
 <p><strong>Installation</strong></p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install glab</span></code></pre></div>
-<p>After installation, authenticate with your GitLab account:</p>
 <div class="sourceCode" id="cb10"><pre
-class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">glab</span> auth login</span></code></pre></div>
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dnf install glab</span></code></pre></div>
+<p>After installation, authenticate with your GitLab account:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">glab</span> auth login</span></code></pre></div>
 <p>Please refer to the upstream documentation for full installation and
 configuration details:</p>
 <p><a href="https://gitlab.com/gitlab-org/cli"

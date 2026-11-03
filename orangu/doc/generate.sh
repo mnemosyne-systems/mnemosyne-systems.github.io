@@ -14,7 +14,7 @@
 # ORANGU_REF picks the ref fetched from GitHub — use it to publish the manual as
 # it stood at a release rather than whatever main happens to hold:
 #
-#     ORANGU_REF=1.4.0 ./generate.sh
+#     ORANGU_REF=2.0.0 ./generate.sh
 #
 # Requirements: pandoc, python3, and (unless ORANGU_SRC is set) gh + base64.
 #
@@ -55,6 +55,10 @@ workflows|manual/en/45-workflows|Workflow Files
 server|manual/en/46-server|Inference Server
 gguf|manual/en/47-gguf|Building a Model
 image|manual/en/48-image|Image Generation
+video|manual/en/49-video|Video Generation
+audio|manual/en/50-audio|Speech Generation
+workers|manual/en/51-workers|Workers
+container|manual/en/52-container|Container Image
 http|manual/en/80-http|HTTP Endpoints
 local-llm|manual/en/73-openai|Serving Models per Role
 compression|manual/en/75-compression|Compression

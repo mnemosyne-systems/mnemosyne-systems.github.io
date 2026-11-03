@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workers — orangu</title>
+  <link rel="stylesheet" href="doc.css" />
+  <style>
+    .doc-content img { max-width: min(100%, 640px); height: auto; display: block; border-radius: 6px; margin: 1.25rem 0; }
+    .doc-content figcaption { font-size: 0.8rem; color: var(--text-2); margin-top: -0.75rem; margin-bottom: 1rem; }
+  </style>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('ou-theme') || 'dark');</script>
+</head>
+<body>
+
+<nav class="doc-nav">
+  <a class="doc-nav-logo" href="../index.html">ORANGU</a>
+  <ul class="doc-nav-links">
+    <li><a href="../index.html">Home</a></li>
+    <li><a href="../features.html">Features</a></li>
+    <li><a href="getting-started.html">Docs</a></li>
+    <li><a href="../demo.html">Demo</a></li>
+    <li><a href="../releases.html">Releases</a></li>
+    <li><a href="../community.html">Community</a></li>
+    <li><a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Support</a></li>
+  </ul>
+  <div class="doc-nav-right">
+    <a href="https://github.com/mnemosyne-systems/orangu" target="_blank">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">User Manual</div>
+      <ul>
+        <li><a href="introduction.html">Introduction</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="configuration.html">Configuration</a></li>
+        <li><a href="terminal.html">Terminal Interface</a></li>
+        <li><a href="tools.html">Tools</a></li>
+        <li><a href="core-tools.html">Core Tools</a></li>
+        <li><a href="git-tools.html">Git Tools</a></li>
+        <li><a href="usage-tools.html">Usage Tools</a></li>
+        <li><a href="workspaces.html">Workspaces</a></li>
+        <li><a href="skills.html">Skills</a></li>
+        <li><a href="extra.html">External Tools</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">The Stack</div>
+      <ul>
+        <li><a href="coordinator.html">Coordinator</a></li>
+        <li><a href="workflows.html">Workflow Files</a></li>
+        <li><a href="server.html">Inference Server</a></li>
+        <li><a href="gguf.html">Building a Model</a></li>
+        <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html" class="active">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
+        <li><a href="http.html">HTTP Endpoints</a></li>
+        <li><a href="local-llm.html">Serving Models per Role</a></li>
+        <li><a href="compression.html">Compression</a></li>
+        <li><a href="completions.html">Shell Completions</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Developer</div>
+      <ul>
+        <li><a href="building.html">Developer Information</a></li>
+        <li><a href="coordinator-internals.html">Coordinator Internals</a></li>
+        <li><a href="server-internals.html">Server Internals</a></li>
+        <li><a href="benchmarking.html">Benchmarking</a></li>
+        <li><a href="gguf-internals.html">Model Building Internals</a></li>
+        <li><a href="contributing.html">Contributing</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Offline</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-en.pdf">Manual (PDF)</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/releases/latest/download/orangu-cheatsheet-en.pdf">Cheat sheet (PDF)</a></li>
+      </ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">On this page</div>
+<ul>
+<li><a href="#workers-one-model-over-several-machines"
+id="toc-workers-one-model-over-several-machines">Workers: one model over
+several machines</a>
+<ul>
+<li><a href="#when-it-helps" id="toc-when-it-helps">When it
+helps</a></li>
+<li><a href="#a-tree-of-three-machines"
+id="toc-a-tree-of-three-machines">A tree of three machines</a></li>
+<li><a href="#checks-a-parent-makes"
+id="toc-checks-a-parent-makes">Checks a parent makes</a></li>
+<li><a href="#encryption" id="toc-encryption">Encryption</a></li>
+<li><a href="#watching-a-tree" id="toc-watching-a-tree">Watching a
+tree</a></li>
+<li><a href="#when-a-machine-goes-away"
+id="toc-when-a-machine-goes-away">When a machine goes away</a></li>
+<li><a href="#machines-that-clock-down"
+id="toc-machines-that-clock-down">Machines that clock down</a></li>
+<li><a href="#limits" id="toc-limits">Limits</a></li>
+</ul></li>
+</ul>
+    </div>
+    <hr class="sidebar-divider" />
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Community</div>
+      <ul>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/issues" target="_blank">Issues</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/discussions" target="_blank">Discussions</a></li>
+        <li><a href="https://github.com/mnemosyne-systems/orangu/blob/main/LICENSE" target="_blank">License (GPL v3)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="doc-content">
+<h1 id="workers-one-model-over-several-machines">Workers: one model over
+several machines</h1>
+<p>A model too large for one machine can still be served by several.
+With a <code>[workers]</code> section, <code>orangu-server</code> nodes
+form a tree: the node clients talk to runs some of the model’s layers
+and hands the rest to its workers, and a worker can hand part of its
+share to workers of its own. For every prompt chunk and every generated
+token, the hidden states travel down the tree and back, and the
+top-level node samples, checks stop conditions and streams the reply,
+exactly as a single server does.</p>
+<p>This chapter is the practical side: setting up a tree, securing it,
+and watching it. The <em>Inference server</em> chapter’s <strong>The
+<code>[workers]</code> section</strong> has the reference for every
+key.</p>
+<h2 id="when-it-helps">When it helps</h2>
+<p>Splitting a model is about <strong>room, not speed</strong>. Every
+layer still runs once per token, one machine after another, and each
+hand-over adds a network round trip, so a model that fits on one machine
+is fastest there. A tree is for a model that does not fit, or for
+machines that are each too small to work together. Keep them close: on a
+LAN a round trip is a fraction of a millisecond, and across the internet
+it is tens of milliseconds for every token.</p>
+<p>Each node holds in memory only the layers it runs. Measured with
+<code>Llama-3.2-3B-Instruct-Q8_0</code> (3.4 GB) over three nodes of one
+machine:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: right;">after startup</th>
+<th style="text-align: right;">after a request</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">one server alone</td>
+<td style="text-align: right;">3.5 GiB</td>
+<td style="text-align: right;">3.5 GiB</td>
+</tr>
+<tr>
+<td style="text-align: left;">top (layers 0–8, and the embedding and
+head)</td>
+<td style="text-align: right;">178 MiB</td>
+<td style="text-align: right;">1.5 GiB</td>
+</tr>
+<tr>
+<td style="text-align: left;">middle (layers 9–17)</td>
+<td style="text-align: right;">188 MiB</td>
+<td style="text-align: right;">1.1 GiB</td>
+</tr>
+<tr>
+<td style="text-align: left;">leaf (layers 18–27)</td>
+<td style="text-align: right;">186 MiB</td>
+<td style="text-align: right;">1.2 GiB</td>
+</tr>
+</tbody>
+</table>
+<p>Every node needs the model: its own copy of the file, or, for a
+worker, the parts it runs (below). Llama-family models
+(<code>llama</code>, <code>qwen2</code>, <code>qwen3</code>,
+<code>qwen3moe</code>, <code>mistral</code>, <code>qwen2vl</code>,
+<code>qwen3vl</code>, <code>granite</code>), Phi-3 (<code>phi3</code>),
+Qwen3.5 dense (<code>qwen35</code>, such as Ternary-Bonsai-2-27B), the
+Qwen3.5 mixture (<code>qwen35moe</code>, such as Qwen3.6-35B-A3B),
+Qwen3-Next (<code>qwen3next</code>, such as Qwen3-Coder-Next) and Gemma
+4 can be split so far.</p>
+<p>A worker does not need the whole model. On a machine without it,
+set</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">download </span><span class="ot">=</span><span class="st"> range</span></span></code></pre></div>
+<p>and start it on the model as usual
+(<code>orangu-server --daemon</code> with <code>model</code> set). It
+fetches only what building the model reads, and the layers a parent
+assigns when it does — a third of a model and a little more in a tree of
+three. It serves only as a worker: its own API stays off.</p>
+<p>The small Gemma 4 models limit where they can be cut. Their last
+layers reuse an earlier layer’s KV cache, so they stay on the node that
+has that layer. On <code>gemma-4-E2B</code> that keeps layers 13–34
+together, so the other nodes share the first 13:</p>
+<pre class="text"><code>workers plan: alpha:8400 0..13, beta:8400 13..35</code></pre>
+<p>The 12B, the 31B and the 26B-A4B mixture share no KV and can be cut
+anywhere. Every E2B, E4B and 12B quantization, the 31B and the 26B-A4B
+were checked: split, each answers exactly what the unsplit model
+does.</p>
+<h2 id="a-tree-of-three-machines">A tree of three machines</h2>
+<p>Three machines, <code>alpha</code> (clients talk to it),
+<code>beta</code> and <code>gamma</code>, each with the same model in
+its models directory. <code>alpha</code> hands layers to
+<code>beta</code>, and <code>beta</code> to <code>gamma</code>:</p>
+<pre class="text"><code>   clients ──▶  alpha  ──▶  beta  ──▶  gamma
+               layers       layers     layers
+                0..9        9..18      18..28</code></pre>
+<p>On <code>gamma</code>, the leaf:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8400</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="dt">secret </span><span class="ot">=</span><span class="st"> a-long-random-string</span></span></code></pre></div>
+<p>On <code>beta</code>, in the middle:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8400</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="dt">workers </span><span class="ot">=</span><span class="st"> gamma:8400</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">secret </span><span class="ot">=</span><span class="st"> a-long-random-string</span></span></code></pre></div>
+<p>On <code>alpha</code>, the top:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8400</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="dt">workers </span><span class="ot">=</span><span class="st"> beta:8400</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="dt">secret </span><span class="ot">=</span><span class="st"> a-long-random-string</span></span></code></pre></div>
+<p>Start each one with the model, leaves first:
+<code>orangu-server unsloth/Qwen3-32B-GGUF:Q4_K_M</code>. The top-level
+node logs its plan:</p>
+<pre class="text"><code>workers plan: alpha:8400 0..9, beta:8400 9..18, gamma:8400 18..28</code></pre>
+<p>A tree need not be deep. The same three machines as one top-level
+node with two workers of its own:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># on beta and on gamma</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8400</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="dt">secret </span><span class="ot">=</span><span class="st"> a-long-random-string</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># on alpha</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="dt">host </span><span class="ot">=</span><span class="st"> all</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8400</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="dt">workers </span><span class="ot">=</span><span class="st"> beta:8400, gamma:8400</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="dt">secret </span><span class="ot">=</span><span class="st"> a-long-random-string</span></span></code></pre></div>
+<p><code>alpha</code> runs its share and hands the rest to
+<code>beta</code> and then <code>gamma</code>, in the order listed; a
+prompt’s parts are pipelined through both, so the two workers work at
+the same time. On one board this shape read a 2041-token prompt as fast
+as the chain above.</p>
+<p>To check a tree once it is up:</p>
+<ul>
+<li><code>curl alpha:8100/v1/workers</code> shows the plan, what its
+shares followed, each worker’s connection and its link’s round trip and
+bandwidth (<code>link</code>), and every node’s processors, measured
+speed and what a forward costs it whatever its layers
+(<code>setup</code>, and <code>setups</code> under each worker);
+<code>curl beta:8100/ready</code> answers
+<code>503 serving a parent orangu-server</code>.</li>
+<li>A request’s log line on <code>alpha</code> says where its time went:
+<code>workers: prefill 946 tokens in 8 forwards (alpha:8400 …, beta:8400 …)</code>,
+and a whole answer carries the same in <code>timings.workers</code> and
+a <code>Server-Timing</code> header.</li>
+<li><code>orangu-bench --url http://alpha:8100</code> measures through
+the tree: <code>--pp 2048</code> a long prompt’s prefill,
+<code>--gen 64</code> decode, <code>--streams 3</code> several requests
+at once. <code>--workers compare</code> runs the same options with
+<code>alpha</code> alone and then through the tree, side by side
+(<code>POST /props</code> switches it between the two).</li>
+</ul>
+<p>Machines of different kinds make a tree too — the model check
+compares the file, not the hardware — but their arithmetic rounds
+differently, so a greedy answer can take a different near-tie from one
+server’s, and a <code>f32</code> tree is exact only against itself, not
+against another machine.</p>
+<p>Machines of one kind round alike: the top-level node measures whether
+prompts go through <code>bf16</code> or <code>int8</code> copies of the
+weights (<code>prompt_weights</code>) and hands that choice to every
+worker with its layers, and each node copies only the layers it runs. A
+worker whose cores lack the instruction keeps the file’s weights and
+rounds as those do. To compare a tree with one server exactly, set
+<code>activations = f32</code> on the top-level node.</p>
+<p>Shares follow speed, as far as memory holds. At start each node times
+the model’s first layers on the processor its layers run on — a decode
+step and a 128-token prompt chunk — and reports that, with its CPU, GPUs
+and NPU, to its parent. A parent gives every node (a worker counting
+with its whole subtree) a share of the layers’ bytes in proportion to
+its speed, <code>shares = decode</code> by default or
+<code>shares = prompt</code> for a tree that mostly reads long prompts.
+A node whose share would pass its budget keeps what the budget holds and
+the rest goes to the others the same way. Each node’s budget for weights
+is 90% of its GPU memory, or 80% of its RAM without one; the top-level
+node’s is what its embedding and output head leave. On one board with
+the top-level node on its Mali GPU and two workers on its cores
+(Llama-3.2-3B Q4_K_M):</p>
+<table>
+<thead>
+<tr>
+<th><code>shares</code></th>
+<th>layers (GPU · CPU · CPU)</th>
+<th>prompt, 512 tokens</th>
+<th>decode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>memory</code></td>
+<td>10 · 9 · 9</td>
+<td>87.3 tok/s</td>
+<td>4.97 tok/s</td>
+</tr>
+<tr>
+<td><code>decode</code></td>
+<td>15 · 6 · 7</td>
+<td>64.1 tok/s</td>
+<td>6.28 tok/s</td>
+</tr>
+<tr>
+<td><code>prompt</code></td>
+<td>7 · 12 · 9</td>
+<td>110.9 tok/s</td>
+<td>4.51 tok/s</td>
+</tr>
+</tbody>
+</table>
+<p>With <code>shares = memory</code>, or when a node could not time
+itself (a <code>download = range</code> worker has not got its layers
+yet), shares follow the budgets alone. The layers are cut by their own
+sizes, not their count. A share bigger than its node’s budget is logged
+as a warning naming the node:</p>
+<pre class="text"><code>the workers are short of memory for this model — gamma:8400 gets 21.3 GiB
+for 12.4 GiB; the layers over budget will be paged in from disk as they run</code></pre>
+<p><code>local_layers = 0</code> makes a node a pure coordinator that
+runs no layer itself.</p>
+<p>A top-level node that holds the whole model and decodes faster than
+its tree takes each sequence back once its prompt is through
+(<code>decode = auto</code>): at the first decode step every worker
+sends its layers’ rows back — and, for a hybrid model
+(<code>qwen35</code>, <code>qwen35moe</code>, <code>qwen3next</code>),
+each recurrent layer’s state, a fixed size whatever the prompt’s length
+— and the node decodes alone on the model’s own paths while the workers
+free theirs. The prompt keeps the tree’s speed and the answer the
+node’s. On the board above: decode 15.2 tok/s with the tree’s 58.5 tok/s
+prompts, where decoding through the tree gave 6.2.
+<code>decode = tree</code> keeps every step on the tree,
+<code>decode = top</code> hands over whenever the node holds the model,
+and <code>/v1/workers</code> says which applies. With <code>auto</code>
+the measured speeds decide at first; once requests have decoded through
+the tree, the step they took does, weighed again between requests, and
+the node runs the whole model once before its first sequence decodes
+alone.</p>
+<p>A node with workers does not have to use them. When it holds the
+whole model and its measured speeds say the tree would not take at most
+90% of its time for a request — a 128-token prompt chunk at the tree’s
+slowest stage and an answer as long, its steps through every stage — it
+serves alone and gives its workers nothing (<code>offload = auto</code>,
+the default; <code>always</code> uses them regardless). The whole model
+alone is timed at start for this, on the paths it would run alone; and
+once requests have run through the tree, what they took goes before the
+prediction: between requests, a tree that turns out not to pay gives way
+to the node alone. <code>/v1/workers</code> then says why under
+<code>not_worth_offloading</code>, and every later plan weighs it again.
+On a LAN of this board and two RK3588s with gemma-4-E2B, the node chose
+to serve alone: 261 tok/s on a long prompt, where its tree gave 28. With
+Qwen3.6-35B-A3B the prediction chose the tree; its first requests
+decoded at 2.8 tok/s, where the node alone gives 4.5, and the node then
+served alone.</p>
+<p>When sequences decode through the tree, the output head — a matrix as
+wide as the vocabulary, read once a token — can run on the node with the
+final layer instead (<code>head = last</code>, or <code>auto</code> when
+that node measured the faster decode): it sends logits back rather than
+its layers’ output. That spares a weak top-level node the model’s
+largest read.</p>
+<p>Once requests have run, a lead plans by the speed each node really
+showed — its layers over its time a token — and plans again between
+requests when a node runs more than 20% off what it was planned at;
+<code>/v1/workers</code> shows both (<code>observed_gb_per_s</code>,
+<code>planned_gb_per_s</code>).</p>
+<p>The decisions weigh the links too. A parent times each worker’s link
+when it connects — its round trip and bandwidth — so a fast machine on a
+slow network is not mistaken for a fast part of the tree: handing a
+sequence back to decode alone moves every prompt position’s keys and
+values over it, and moving the head moves a row of logits a token.</p>
+<p>A node with a <code>[workers]</code> section reads and uploads a
+layer’s weights the first time the layer runs, not at startup. It
+skips:</p>
+<ul>
+<li>the probe that times decode on the CPU against the GPU;</li>
+<li>the host preload;</li>
+<li>the NPU’s precompile of every block;</li>
+<li>the automatic split of a model too big for its GPU;</li>
+<li>the prefix warm-up.</li>
+</ul>
+<p>It still chooses its GPU kernels as any server does. A choice an
+earlier start kept in the probe cache is taken as it is; one that was
+not kept is timed, which reads the whole model once. A node that fetches
+its model in ranges (<code>download = range</code>) skips the timing,
+since reading the model is a download there. When a new plan moves
+layers away from a node, it lets go of their pages.</p>
+<p>While <code>beta</code> and <code>gamma</code> work for their parent,
+their own APIs are off: everything but <code>/health</code>,
+<code>/ready</code>, <code>/metrics</code> and <code>/v1/workers</code>
+answers <code>503</code>. When the parent goes away, they serve their
+own clients again.</p>
+<h2 id="checks-a-parent-makes">Checks a parent makes</h2>
+<p>A worker is left out, with a warning naming it and the reason, when
+it:</p>
+<ul>
+<li>cannot be reached within <code>connect_timeout</code>;</li>
+<li>does not know the <code>secret</code>. The secret is never sent:
+each side proves it with an HMAC over fresh random values;</li>
+<li>has a <strong>different file of the same model spec</strong>. The
+parent compares, by content, the tensor types and shapes and samples of
+the weights of the layers it would run, so another release of a spec is
+refused whatever the file is called;</li>
+<li>already works for another parent, or would close a loop in the
+configs.</li>
+</ul>
+<p>The tree then forms without it.</p>
+<p>A worker assigned <strong>another model</strong> than the one it
+serves switches to the lead’s: it answers that it is switching, restarts
+itself on that model — found under its <code>models</code>, or
+downloaded — and the lead takes it back at its next plan. It keeps the
+model it had when the switch fails, or when its
+<code>[web].reexec</code> is <code>no</code>, and is then left out. A
+lead that loads a new model takes its workers with it the same way.</p>
+<p>The lead finds out at the handshake: every worker says which model it
+serves when it connects. One with another model that cannot switch — its
+<code>[web].reexec</code> is <code>no</code> — is left out before any
+layers are planned, and the lead says so once, naming both models:</p>
+<pre class="text"><code>worker left out: beta:8400 serves bartowski/Llama-3.2-1B-Instruct-GGUF:Q4_K_M, not unsloth/gemma-4-E2B-it-GGUF:Q4_K_M, and cannot switch to it ([web].reexec is off there)</code></pre>
+<p>A node serving a picture model does not use its workers: its text
+encoder is not split.</p>
+<h2 id="encryption">Encryption</h2>
+<p><code>secret</code> decides who may take part. To keep what travels
+between nodes — prompts, as hidden states, and every generated token —
+private as well, give the worker listeners a certificate:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dt">tls_cert </span><span class="ot">=</span><span class="st"> /etc/orangu/workers.pem</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="dt">tls_key </span><span class="ot">=</span><span class="st"> /etc/orangu/workers.key</span></span></code></pre></div>
+<p>A node dials its workers with TLS when it trusts a certificate for
+them: <code>tls_ca</code>, or its own <code>tls_cert</code> when that is
+not set. So the simplest setup is <strong>one certificate shared by
+every node</strong>, naming every node’s address:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">openssl</span> req <span class="at">-x509</span> <span class="at">-newkey</span> ec <span class="at">-pkeyopt</span> ec_paramgen_curve:prime256v1 <span class="at">-nodes</span> <span class="dt">\</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-days</span> 365 <span class="at">-subj</span> /CN=orangu-workers <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">-addext</span> <span class="st">&quot;subjectAltName=DNS:alpha,DNS:beta,DNS:gamma,IP:192.168.1.10&quot;</span> <span class="dt">\</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">-addext</span> <span class="st">&quot;basicConstraints=critical,CA:FALSE&quot;</span> <span class="dt">\</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">-keyout</span> workers.key <span class="at">-out</span> workers.pem</span></code></pre></div>
+<p>The certificate has to name the address its parent dials, as a DNS
+name or an IP address. It also has to be a server certificate
+(<code>CA:FALSE</code>): a certificate that is its own authority is
+refused as a server’s.</p>
+<h2 id="watching-a-tree">Watching a tree</h2>
+<ul>
+<li><p><code>GET /v1/workers</code> on any node: its role, the layers it
+runs, the plan below it, each configured worker’s connection, and any
+worker the plan lost.</p></li>
+<li><p><strong>Settings › Workers</strong> in the web console: the same,
+as tables.</p></li>
+<li><p><code>GET /ready</code>:
+<code>serving a parent orangu-server</code> on a worker;
+<code>a worker was lost</code> on a node whose plan lost one and has not
+repaired it yet.</p></li>
+<li><p><code>GET /metrics</code> adds, per worker, the round trip of a
+forward (<code>orangu_server_worker_forward_seconds</code>), bytes each
+way, failures and whether it is up; per node, how often it planned and
+how often a lost worker made it plan again mid-request.</p></li>
+<li><p>When a request finishes, the top-level node logs where its time
+went:</p>
+<pre class="text"><code>workers: prefill 11 tokens in 1 forward (alpha:8400 12 ms, beta:8400 31 ms);
+         decode 70 tokens in 70 forwards (alpha:8400 90 ms, beta:8400 610 ms)</code></pre>
+<p>A worker’s time is its round trip: the network, and its whole
+subtree. The client gets the same, prefill and decode together, as
+<code>timings.workers</code> in the answer and, on a whole answer, a
+<code>Server-Timing</code> header:</p>
+<pre class="text"><code>server-timing: prompt;dur=201.5, generate;dur=202.9,
+  node0;desc=&quot;alpha:8400&quot;;dur=200.5, node1;desc=&quot;beta:8400&quot;;dur=168.5</code></pre></li>
+</ul>
+<h2 id="when-a-machine-goes-away">When a machine goes away</h2>
+<p>A request in flight is not lost with a worker. The top-level node
+plans again over the workers that still answer, rebuilds the
+conversation on the new plan by running its tokens through again, and
+carries on. Tokens already sent stay sent. The rebuilt cache comes from
+one prefill rather than token by token, so a greedy continuation can
+pick a different near-tie from the one an uninterrupted run would
+have.</p>
+<p>A spare machine makes that cheaper. List it as a standby on the node
+above the worker it should cover:</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workers]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="dt">workers </span><span class="ot">=</span><span class="st"> alpha:8400, beta:8400</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="dt">standby </span><span class="ot">=</span><span class="st"> spare:8400</span></span></code></pre></div>
+<p>The standby connects like a worker and waits. When <code>alpha</code>
+or <code>beta</code> is lost mid-request, the standby takes its layers,
+and each conversation is rebuilt there from the inputs the node sent
+into those layers, which it keeps while a standby is configured. The
+other workers keep what they have, the request goes on, and
+<code>/v1/workers</code> shows the standby standing in. A worker that
+does not answer when the node plans is filled in for the same way. When
+the lost worker is back, the node takes it back once it is quiet, and
+the standby goes back to serving its own API.</p>
+<p>A worker that comes back is taken back by the node above it within
+about 30 seconds, once no request has run for two seconds, never in the
+middle of one. A conversation that continues after that is replayed
+through the new plan once, and reuses its rows from then on.</p>
+<h2 id="machines-that-clock-down">Machines that clock down</h2>
+<p>A node works in bursts: its layers of a token, then nothing while the
+nodes after it run theirs. A CPU frequency governor that sees cores busy
+half the time clocks them down, and every layer then runs slower. On the
+development board, a two-node tree held to separate cores decoded at 163
+ms a token that way, against 99 ms for one server.</p>
+<p>On a machine that serves only as a node, set the CPU governor to
+<code>performance</code>. Without root,
+<code>ORANGU_WORKERS_CLOCK=1</code> holds the node’s cores at full clock
+while a request runs, with one idle-priority spinner per core. The
+spinners yield to any real work, and stop about 300 ms after the node’s
+last forward. With them, the same tree decoded at 103 ms a token.</p>
+<p><strong>Do not turn it on for nodes that share a machine’s
+cores.</strong> Each node’s spinners then take the cores another node
+computes on: three nodes on one board, each using every core, decoded at
+237 ms a token with it and 118 ms without. Nodes like that keep each
+other’s cores busy anyway.</p>
+<h2 id="limits">Limits</h2>
+<ul>
+<li>A slot’s next turn reuses its conversation’s rows on the workers,
+and a new conversation copies a prompt prefix another slot’s
+conversation has in common, on every worker. The prefix cache, paged KV,
+MTP heads and slot save/restore are off on a top-level node with
+workers.</li>
+<li>One request runs through the machines one after another, so a single
+request is not faster than on one machine. What a tree adds is
+concurrency: with several <code>slots</code>, each machine works on a
+different request at the same time. And a long prompt is pipelined:
+while one machine works on a chunk of it, the one before it already
+works on the next chunk. The top cuts the prompt into 128-token parts
+for this (<code>ORANGU_WORKERS_CHUNK</code>).
+<code>ORANGU_WORKERS_PIPELINE=0</code> turns the pipelining off. On one
+board, a pipelined tree of three 4-thread nodes prefilled a 2041-token
+prompt 2.2× faster than without pipelining. One decode step of every
+slot goes as a single message per worker
+(<code>ORANGU_DECODE_BATCH=0</code> sends them one by one).</li>
+<li>On a GPU, a node runs its layers of a decode step as one recorded
+submission, as a whole model does: a Llama-3.2-3B step split in three
+took 67.8 ms against 65.5 ms whole. A prompt chunk still runs layer by
+layer, and so does a Gemma 4 mixture’s decode.</li>
+<li>Each node keeps the whole model file on disk. Fetching only a node’s
+own layers is still to come.</li>
+<li>A GPU keeps the layers it has uploaded until the process ends. A new
+plan frees their host memory, but not their device memory.</li>
+<li>Before a parent claims it, a node serves its own clients with the
+whole model, which reads every layer in. The next plan lets go of those
+pages.</li>
+</ul>
+  </main>
+</div>
+
+<footer class="doc-site-footer">
+  <span>© <a href="https://mnemosyne-systems.ai/" target="_blank">mnemosyne systems</a> · GPL v3</span>
+  <span><a href="https://github.com/mnemosyne-systems/orangu" target="_blank">GitHub</a> · <a href="../community.html">Community</a> · <a href="https://mnemosyne-systems.ai/products/orangu/" target="_blank">Commercial Support</a></span>
+</footer>
+
+<script>
+  (function() {
+    var btn = document.getElementById('theme-toggle');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('ou-theme', t);
+      btn.querySelector('.icon-sun').style.display = t === 'dark' ? 'block' : 'none';
+      btn.querySelector('.icon-moon').style.display = t === 'light' ? 'block' : 'none';
+    }
+    applyTheme(localStorage.getItem('ou-theme') || 'dark');
+    btn.addEventListener('click', function() {
+      applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  })();
+</script>
+
+<script src="../copy-code.js"></script>
+</body>
+</html>

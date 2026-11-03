@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html" class="active">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -132,7 +136,8 @@ the web console’s settings do. The <em>Inference server</em> chapter’s
 <strong>Image generation</strong> section has the reference for every
 key, and the <em>HTTP endpoints</em> chapter the API; the <em>Inference
 server internals</em> chapter says how the pipeline is built.</p>
-<p>orangu serves text and images. There is no audio or video path.</p>
+<p>For clips with sound, see the <em>Video generation</em> chapter, and
+for speech, the <em>Speech generation</em> chapter.</p>
 <figure>
 <img src="images/orangu-image-cat.png"
 alt="A 512 × 512 picture from the prompt “Create an image of a cat”, eight steps on a twelve-core ARM board" />
@@ -180,18 +185,41 @@ transformer works — <code>list</code> shows them as
 <code>Yes (qwen_image_2_1)</code>; <code>Q4_K_M</code> is the one
 measured here. The text encoder is an ordinary language model —
 <code>list</code> shows it, and it can be served alone — and the VAE is
-read as published. The transformer GGUFs carry no metadata at all; the
-server recognises the model by its tensors.</p>
+read as published. The server recognises the model by its tensors,
+whatever the file’s metadata says.</p>
 <p>There is no step-distilled adapter for 2.1, and none is needed: the
 model is released to run forty steps <em>without</em> guidance, one
 transformer pass each, and its prompt is run through the transformer
 once per picture rather than once per step.</p>
+<p><strong>Turbo.</strong>
+<code>unsloth/Qwen-Image-2.1-Turbo-GGUF</code> is the step-distilled
+checkpoint of the same model: the same transformer shape, the same three
+companions, and pictures in <strong>eight</strong> steps instead of
+forty — five times fewer transformer passes.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/Qwen-Image-2.1-Turbo-GGUF:Q4_K_M</span></code></pre></div>
+<p><code>list</code> shows it as <code>Yes (qwen_image_2_1)</code> too.
+The server tells it apart by <code>turbo</code> in the file name, and
+then samples on the fixed eight-step schedule it was distilled for, with
+guidance off; <code>image_steps</code> and <code>image_cfg_scale</code>
+left out of the configuration default to <code>8</code> and
+<code>1</code> (<code>--init</code> suggests the same). Another step
+count reads that schedule at evenly spaced points, which keeps its shape
+but is not what it was trained for. <code>/props</code> reports
+<code>image.turbo</code>.</p>
 <p><strong>Memory.</strong> Serving at <code>Q4_K_M</code> takes about
 10 GB of resident memory, most of it the transformer and the encoder
 mapped from disk and shared with the page cache — 11 GB with the vision
 projector — and 7 GB more for the 8-bit copy of the transformer that
-makes it about twice as fast, which the server makes only on a machine
-with 21 GB or more. A machine with 16 GB is enough.</p>
+makes it about twice as fast, which the server makes only when the
+transformer runs on the CPU, the CPU has an 8-bit matrix kernel
+(<code>i8mm</code>, <code>dotprod</code> or <code>AVX2</code>) and the
+machine has 21 GB or more; a GPU keeps the file’s own weights. A machine
+with 16 GB is enough. Once it is ready the server reads its model files
+through in the background, at the lowest disk priority, when they fit in
+half the available memory
+(<code>reading the model files ahead …</code>): the encoder and the
+transformer reach their devices on the first picture, and from RAM
+rather than from a slow disk if any idle time has passed.</p>
 <p><strong>Time.</strong> A picture is minutes on a CPU, not seconds. On
 the twelve-core ARM board this manual’s numbers come from, a step costs
 4.8 s at 256 × 256, 9.6 s at 512 × 512 and 50 s at 1024 × 1024. By
@@ -202,15 +230,44 @@ about two. The picture is close to, but not the same as, the one every
 step would give; <code>image_cache = off</code> runs them all (about 34
 minutes at the defaults). Those numbers take a copy of the transformer’s
 weights as 8-bit integers (7 GB) that the server makes at startup when
-the machine has at least 21 GB (<code>image_weights</code>, see the
-<em>Inference server</em> chapter); without it a step is about twice as
-long at 512 × 512. A discrete GPU is faster; an integrated one usually
-is not, and the server measures before it commits: under
-<code>backend = auto</code> it times one transformer linear on the
-device and on the CPU and keeps whichever wins, saying so at startup
-(<code>[image] calibration …</code>). The wait is never a surprise: the
-startup log says what a picture at the defaults costs on this machine,
-and the console counts it down.</p>
+the transformer runs on the CPU and the machine has at least 21 GB
+(<code>image_weights</code>, see the <em>Inference server</em> chapter);
+without it a step is about twice as long at 512 × 512. A discrete GPU is
+faster; an integrated one usually is not, and the server measures before
+it commits: under <code>backend = auto</code> it times one transformer
+linear on the device and on the CPU and keeps whichever wins, saying so
+at startup (<code>[image] calibration …</code>). When the text encoder
+has to be split across several devices, it is planned against what the
+transformer leaves on the selected one — the transformer runs every
+step, the encoder once a picture, so the transformer is given the faster
+memory first
+(<code>[vulkan] the head device plans against … for the picture transformer</code>).
+The transformer is then timed on each of the devices and on the CPU and
+runs whole on the fastest (<code>[image] transformer placement …</code>)
+— not necessarily the device it fits on best. The VAE is timed the same
+way, on one of its own convolutions, and runs on the CPU when the CPU is
+faster there (<code>[image] VAE placement …</code>). Its wide,
+low-resolution convolutions are timed again on the device, and run there
+when the device is faster for them
+(<code>[image] VAE wide convolutions …</code>). With the transformer on
+a device, each block’s attention runs on the CPU in chunks of the
+picture’s tokens while the device runs the output projection and the
+feed-forward layers of the chunks already done, so the two work at the
+same time (<code>ORANGU_IMAGE_OVERLAP=0</code> runs them one after the
+other). <code>ORANGU_IMAGE_DEVICE_HEADS=auto</code> also gives the
+device a measured share of each block’s attention heads (a number fixes
+the share); it is off by default, since on the cards measured it made
+the step less steady without making it faster. The log’s
+<code>[image] overlap: …</code> line says how the two sides waited on
+each other. Each block’s feed-forward layers run on the device as one
+submission, their intermediate never coming back to the host. A
+transformer larger than its card keeps as many leading blocks on it as
+fit and streams the rest through a region of the card’s memory, a
+block’s weights crossing the bus once a call rather than being read from
+host memory by every kernel
+(<code>[image] transformer blocks … streamed</code>). The wait is never
+a surprise: the startup log says what a picture at the defaults costs on
+this machine, and the console counts it down.</p>
 <h3 id="transparent-pictures">Transparent pictures</h3>
 <p>Qwen-Image 2.1 draws with an alpha channel, and decides from the
 prompt whether to use it. Its publishers’ wording is the one to use:</p>
@@ -262,7 +319,7 @@ previous model</h3>
 <p>The earlier <strong>Qwen-Image</strong> (the 2512 release, 20 billion
 parameters) is still served, as <code>qwen_image</code>, with four
 files:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/Qwen-Image-2512-GGUF:Q4_K_M</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/Qwen-Image-2512-GGUF:Q4_K_M</span></code></pre></div>
 <p>fetches the transformer (12.3 GiB), its text encoder
 <code>unsloth/Qwen2.5-VL-7B-Instruct-GGUF:Q4_K_M</code> (4.4 GiB), its
 VAE <code>Comfy-Org/Qwen-Image_ComfyUI</code>‘s
@@ -275,10 +332,52 @@ guided ones. It takes about 16 GB of resident memory with the adapter
 merged in, and at the defaults (1024 × 1024, eight steps) about 20
 minutes on the same board. The two models’ companions are different
 files and do not mix; each finds its own.</p>
+<h3 id="flux.2-klein-4b">FLUX.2 [klein] 4B</h3>
+<p><strong>FLUX.2 [klein] 4B</strong> (Black Forest Labs’ compact
+text-to-image model, 4 billion parameters, Apache 2.0) is served as
+<code>flux2_klein</code>. It is the smallest of the three — the quickest
+to draw and the lightest to hold — and needs two companions, which the
+download fetches beside it:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> download unsloth/FLUX.2-klein-base-4B-GGUF:Q4_K_M</span></code></pre></div>
+<ul>
+<li><strong>The transformer</strong> —
+<code>flux-2-klein-base-4b-Q4_K_M.gguf</code> from
+<code>unsloth/FLUX.2-klein-base-4B-GGUF</code>, 2.3 GiB
+(<code>Q8_0</code> is 4.1 GiB).</li>
+<li><strong>The text encoder</strong> — <code>Qwen3-4B-Q8_0.gguf</code>
+from <code>unsloth/Qwen3-4B-GGUF</code>, 4.0 GiB. The picture is
+conditioned on three of its inner layers, which is why the 8-bit file is
+the one fetched; any quantization of Qwen3-4B under <code>models</code>
+is used instead (not Qwen3-Embedding-4B, which <code>list</code> marks
+as an embedding model).</li>
+<li><strong>The VAE</strong> —
+<code>vae/diffusion_pytorch_model.safetensors</code> from
+<code>black-forest-labs/FLUX.2-klein-base-4B</code>, 160 MiB. ComfyUI’s
+<code>flux2-vae.safetensors</code> is read too.</li>
+</ul>
+<p><code>list</code> shows the transformer as
+<code>Yes (flux2_klein)</code>. Its file says <code>flux</code>, the
+name FLUX.1 files carry as well; the server recognises [klein] by its
+tensors, and a FLUX.1 or FLUX.2 [dev] file stays
+<code>No (flux)</code>.</p>
+<p>The <code>base</code> checkpoint is the undistilled model and is
+released to run <strong>fifty steps at guidance 4</strong> — two
+transformer passes a step — which is what <code>image_steps</code> and
+<code>image_cfg_scale</code> default to under it. A step-distilled
+[klein] (a file without <code>base</code> in its name) defaults to
+<strong>four steps without guidance</strong>. Sides are multiples of 16
+pixels, and a blank negative prompt is the empty one FLUX.2 is guided
+against. Every prompt is read as 512 tokens — padded or cut — so a long
+prompt costs no more than a short one, and words past the 512th are not
+read.</p>
+<p>[klein] does not draw transparency, and an attached picture is a
+starting point rather than an edit (see <strong>Strength</strong>
+below). There is no adapter for it: <code>image_lora</code> stays
+<code>auto</code> (nothing) or <code>none</code>.</p>
 <h2 id="starting-the-server">Starting the server</h2>
 <p>The image model is served in its own role, <code>image</code>, and
 <code>--image</code> is the flag that asks for it:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--image</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orangu-server</span> <span class="at">--image</span></span></code></pre></div>
 <p>That prints the model table with every model that is not an image
 model greyed, and pre-selects the first image model — Enter takes it.
 The server then reports the companions it found and the wait:</p>
@@ -291,13 +390,13 @@ pessimistic side; after the first picture it is the measured rate.</p>
 the table, and <code>orangu-server -i</code> writes one — pick the image
 model at its <code>model</code> prompt and the wizard asks for the
 picture keys, each offering what the server does without it:</p>
-<div class="sourceCode" id="cb5"><pre
-class="sourceCode ini"><code class="sourceCode ini"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/.cache/huggingface/hub</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen-Image-2.1-GGUF:Q4_K_M</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8200</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-server]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/.cache/huggingface/hub</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen-Image-2.1-GGUF:Q4_K_M</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[web]</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8200</span></span></code></pre></div>
 <p>Nothing else is needed: the defaults are the model’s own — 1024 ×
 1024, forty steps, guidance off. A config for this board would add
 <code>image_size = 512x512</code> and <code>image_steps = 20</code> for
@@ -357,10 +456,10 @@ that explains it on hover.</p>
 <td style="text-align: left;">256 × 256 up to 2048 × 2048, or
 <em>Other…</em> for any <code>WIDTHxHEIGHT</code></td>
 <td style="text-align: left;">Both sides a multiple of 32 for Qwen-Image
-2.1 (16 for Qwen-Image 2512); a preset the served model cannot draw,
-such as 1280 × 720 on 2.1, is greyed. 1024 × 1024 is the default; 2048 ×
-2048 is 2.1’s native size, and hours on a CPU. 512 × 512 is a preview in
-minutes</td>
+2.1 (16 for Qwen-Image 2512 and FLUX.2 [klein]); a preset the served
+model cannot draw, such as 1280 × 720 on 2.1, is greyed. 1024 × 1024 is
+the default; 2048 × 2048 is 2.1’s native size, and hours on a CPU. 512 ×
+512 is a preview in minutes</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Steps</strong></td>
@@ -368,7 +467,8 @@ minutes</td>
 <td style="text-align: left;">The time is linear in them. Qwen-Image 2.1
 is made for 40, and 20 is a usable draft. For 2512, the 8-step adapter
 is made for 8, the 4-step file for 4, and the base model without an
-adapter needs 50</td>
+adapter needs 50. FLUX.2 [klein] base is made for 50, a distilled
+[klein] for 4</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Guidance</strong></td>
@@ -377,7 +477,8 @@ adapter needs 50</td>
 picture towards the prompt and away from the negative one; it doubles
 the work of every step. Qwen-Image 2.1 is released to run with it off
 (stable-diffusion.cpp’s examples use 6). For 2512: off under a Lightning
-adapter, which was trained without it, and 4 for the base model</td>
+adapter, which was trained without it, and 4 for the base model. FLUX.2
+[klein] base: 4; a distilled [klein]: off</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Negative prompt</strong></td>

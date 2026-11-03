@@ -100,6 +100,7 @@
 
       <!-- Index -->
       <div class="rel-index reveal">
+        <a href="#v2-0-0"><span class="ri-date">November 2, 2026</span><span class="ri-ver">orangu 2.0.0</span></a>
         <a href="#v1-4-0"><span class="ri-date">September 29, 2026</span><span class="ri-ver">orangu 1.4.0</span></a>
         <a href="#v1-3-0"><span class="ri-date">September 9, 2026</span><span class="ri-ver">orangu 1.3.0</span></a>
         <a href="#v1-2-0"><span class="ri-date">August 24, 2026</span><span class="ri-ver">orangu 1.2.0</span></a>
@@ -118,11 +119,32 @@
         <a href="#v0-1-0"><span class="ri-date">May 15, 2026</span><span class="ri-ver">orangu 0.1.0</span></a>
       </div>
 
+      <!-- 2.0.0 -->
+      <article class="rel-entry reveal" id="v2-0-0">
+        <div class="rel-head">
+          <span class="rel-ver">orangu 2.0.0</span>
+          <span class="rel-badge">Latest</span>
+          <span class="rel-date">November 2, 2026</span>
+        </div>
+        <ul class="rel-list">
+          <li><strong>New architecture</strong> &mdash; <code>orangu-server</code> has been reworked from the ground up, and the new architecture brings massive performance improvements across the whole stack.</li>
+          <li><strong>Workers &mdash; deploy <code>orangu-server</code> as a pyramid</strong> &mdash; With a <code>[workers]</code> section, <code>orangu-server</code> nodes form a tree: the node clients talk to runs some of the model&rsquo;s layers and hands the rest to its workers, which may hand part of their share on again. Each node holds only the layers it runs, so a model too large for any one machine can still be served. Links between nodes can be encrypted, and the tree can be watched from the top. See the new <a href="doc/workers.html">Workers</a> chapter.</li>
+          <li><strong>Initial video support</strong> &mdash; Point <code>orangu-server</code> at LTX-2.5 and a chat turn, or a <code>/v1/videos</code> request, is answered with a short clip &mdash; AV1 video with a FLAC sound track in an MP4, made without an external encoder. See the new <a href="doc/video.html">Video generation</a> chapter.</li>
+          <li><strong>Initial audio support</strong> &mdash; With Qwen3-TTS, <code>orangu-server</code> speaks text aloud over <code>/v1/audio/speech</code> or in the web console, as WAV, FLAC or raw PCM, in a voice from a voice pack. See the new <a href="doc/audio.html">Speech generation</a> chapter.</li>
+          <li><strong>Anthropic Claude API</strong> &mdash; <code>orangu-server</code> answers <code>/v1/messages</code> and <code>/v1/messages/count_tokens</code> alongside the OpenAI-compatible endpoints, so clients written for the Claude API run against your own models. See <a href="doc/http.html#anthropic-compatible-endpoints">HTTP Endpoints</a>.</li>
+          <li><strong>Improved PDF support</strong> &mdash; Local OCR for scanned documents, tables preserved in the query context, PDF text as context, and searchable PDF output. A community contribution.</li>
+          <li><strong>New models</strong> &mdash; DeepSeek 4.1, Mistral 4, Muse Spark, Qwen-Image 2.1 Turbo, Gemma Embedding 2, FLUX2, and MiniMax 3.1.</li>
+          <li><strong>Also in this release</strong> &mdash; A Podman/Docker <a href="doc/container.html">container image</a> holding the whole serving stack, a live Monitor pane in the web console, <code>[web]download</code> to gate model downloads from the console, <code>/issue</code> to create an issue, <code>/graph diff</code> and semantic search over the knowledge graph, <code>/comment all</code>, improved <code>/export pr|issue</code>, chunked model downloads, Hugging Face URLs accepted by <code>orangu-server download</code>, the build&rsquo;s Git hash in <code>--version</code> and over HTTP, a password prompt for GitHub/GitLab when needed, <code>orangu-bench --chart-grid</code>, and Windows fixes.</li>
+        </ul>
+        <p class="rel-note">
+          The complete manual ships with the release as <a href="https://github.com/mnemosyne-systems/orangu/releases/download/2.0.0/orangu-en.pdf">PDF</a> and HTML, alongside the four-page <a href="https://github.com/mnemosyne-systems/orangu/releases/download/2.0.0/orangu-cheatsheet-en.pdf">cheat sheet</a>, and is embedded in the binary for offline reading with <code>/manual</code>. 72 commits went into this release &mdash; our thanks to everyone who filed an issue, opened a discussion, or sent a patch.
+        </p>
+      </article>
+
       <!-- 1.4.0 -->
       <article class="rel-entry reveal" id="v1-4-0">
         <div class="rel-head">
           <span class="rel-ver">orangu 1.4.0</span>
-          <span class="rel-badge">Latest</span>
           <span class="rel-date">September 29, 2026</span>
         </div>
         <ul class="rel-list">

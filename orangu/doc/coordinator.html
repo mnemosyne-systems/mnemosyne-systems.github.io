@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -148,10 +152,12 @@ running several <code>orangu-server</code> processes side by side (one
 per port) — which most single-GPU setups can’t afford — or manually
 stopping and restarting <code>orangu-server</code> yourself every time
 you switch tasks.</p>
-<p><code>orangu-coordinator</code> automates that: it owns exactly one
-<code>orangu-server</code> child process, and swaps it out for a
+<p><code>orangu-coordinator</code> automates that: by default it owns
+one <code>orangu-server</code> child process, and swaps it out for a
 different model the moment a request needs one, entirely transparently
-to orangu.</p>
+to orangu. A machine with room for more — a second device, or the CPU
+beside the card — can keep several resident (<code>resident</code>), and
+moving between those swaps nothing.</p>
 <p>The trade-off is latency, not capability: swapping pays the cost of a
 fresh model load, so this suits a single-GPU/single-model machine well,
 but isn’t the right choice if you want every role to stay warm and
@@ -215,11 +221,14 @@ default to <code>all:8100</code> (the same default
 <code>orangu-server</code> itself uses: <code>all</code> means every
 network interface, and the coordinator reaches the profile it started
 over loopback). Sharing one address across profiles is fine even though
-they’re identical: only one profile’s <code>orangu-server</code> is ever
-active at a time, and swapping always fully stops the old one before
-starting the new one, so there’s never a real conflict over the port.
-Set a profile’s <code>host</code> to <code>127.0.0.1</code> if you want
-its <code>orangu-server</code> reachable from this machine only.</p>
+they’re identical: profiles on one address are never running at the same
+time (see <code>resident</code>), and swapping always fully stops the
+old one before starting the new one, so there’s never a real conflict
+over the port. Before it stops the old one, the coordinator lets every
+response still streaming from it finish (for up to two minutes), so a
+swap requested by one client never cuts off another client’s answer. Set
+a profile’s <code>host</code> to <code>127.0.0.1</code> if you want its
+<code>orangu-server</code> reachable from this machine only.</p>
 <table>
 <colgroup>
 <col style="width: 25%" />
@@ -283,6 +292,15 @@ Defaults to <code>67108864</code> (64 MiB)</td>
 <td style="text-align: left;">Seconds of inactivity before automatically
 unloading the active model to free system resources (RAM/VRAM). Disabled
 by default.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resident</code></td>
+<td style="text-align: left;"><code>[orangu-coordinator]</code></td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">How many profiles’
+<code>orangu-server</code>s may run at once. Defaults to <code>1</code>:
+every swap stops the running one. Above one, see Keeping several models
+resident</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>shutdown_token</code></td>
@@ -363,8 +381,16 @@ the same default <code>orangu-server</code> itself uses</td>
 <td style="text-align: left;">No</td>
 <td style="text-align: left;">Forwarded to this profile’s
 <code>orangu-server</code> as <code>[orangu-server].backend</code>
-(<code>auto</code>/<code>cpu</code>/<code>vulkan</code>/<code>metal</code>/<code>cuda</code>/<code>opencl</code>/<code>rocm</code>/<code>npu</code>)
+(<code>auto</code>/<code>cpu</code>/<code>vulkan</code>/<code>metal</code>/<code>dx12</code>/<code>cuda</code>/<code>opencl</code>/<code>rocm</code>/<code>npu</code>)
 when set</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>device</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Forwarded to this profile’s
+<code>orangu-server</code> as <code>[orangu-server].device</code> when
+set — which of the machine’s devices it runs on</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>slots</code></td>
@@ -373,6 +399,15 @@ when set</td>
 <td style="text-align: left;">Forwarded to this profile’s
 <code>orangu-server</code> as <code>[orangu-server].slots</code> when
 set</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>context</code></td>
+<td style="text-align: left;">profile</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Forwarded to this profile’s
+<code>orangu-server</code> as <code>[orangu-server].context</code> when
+set — the tokens of context the server keeps room for on its device. The
+check before a swap counts this context’s KV cache</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>web</code></td>
@@ -463,9 +498,51 @@ use</h2>
 (or <code>all</code> if you haven’t configured a dedicated
 <code>code</code> profile). The coordinator reads that and starts (or
 keeps running) whichever <code>orangu-server</code> actually backs the
-requested role, stopping anything else that happens to be running first.
-You never pick a model yourself when a coordinator is in charge — that’s
-the whole point.</p>
+requested role, stopping first whatever it cannot run beside (with the
+default <code>resident = 1</code>, anything else that is running). You
+never pick a model yourself when a coordinator is in charge — that’s the
+whole point.</p>
+<h3 id="keeping-several-models-resident">Keeping several models
+resident</h3>
+<p>With <code>resident</code> above one, a profile that has a place of
+its own starts beside the ones already running instead of replacing
+them, and going back to any of them restarts nothing. A profile has a
+place of its own when it listens on its own <code>port</code> and runs
+on the CPU (<code>backend = cpu</code>) or on a <code>device</code> no
+running profile names. Two profiles that name no device both use the
+default one, and two servers on one card would each size their memory as
+if they had it alone, so those still swap. When the set is full, the
+least recently used profile is the one stopped. A server stopped either
+way finishes what it is streaming and saves its slots first, exactly as
+a swap does.</p>
+<p>Before a profile starts — whether it replaces a running one or starts
+beside them — the coordinator asks
+<code>orangu-server plan --deep --json</code> whether its model can run
+here: its shards are present, this build knows its architecture, and
+what it needs fits. What it needs is the weights every token touches
+plus, when the profile sets <code>context</code>, that context’s KV
+cache; what the machine has is its memory plus its dedicated cards’
+memory; and the models that stay running beside it count against that
+too. A start that does not fit is refused with what it would take, and
+every running profile keeps serving:</p>
+<pre class="text"><code>&#39;big&#39; cannot run on this machine: it needs 40.2 GB, and beside &#39;chat&#39; (30.1 GB)
+that is more than this machine&#39;s 66.8 GB — &#39;chat&#39; keeps serving</code></pre>
+<p>Only a definite answer refuses: a plan that cannot be had in time, or
+a server too old to report what a model needs, lets the start go
+ahead.</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode ini"><code class="sourceCode ini"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[orangu-coordinator]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">models </span><span class="ot">=</span><span class="st"> ~/.cache/huggingface/hub</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">resident </span><span class="ot">=</span><span class="st"> </span><span class="dv">2</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[main]</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="dt">device </span><span class="ot">=</span><span class="st"> 5500M</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">[explorer]</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="dt">model </span><span class="ot">=</span><span class="st"> unsloth/Qwen3-1.7B-GGUF</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="dt">backend </span><span class="ot">=</span><span class="st"> cpu</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="dt">port </span><span class="ot">=</span><span class="st"> </span><span class="dv">8101</span></span></code></pre></div>
 <p>If a role you’re using has no dedicated profile in
 <code>orangu-coordinator.conf</code>, the coordinator falls back to the
 <code>all</code> profile instead, so nothing errors out; it just means
@@ -494,10 +571,18 @@ other request.</p>
 <h2 id="things-to-know-while-using-it">Things to know while using
 it</h2>
 <ul>
+<li>A request that needs a different model while another client’s answer
+is still streaming waits for that answer to finish before the swap
+starts.</li>
 <li>The first request after a swap waits for the new model to finish
 loading — swapping to a role you haven’t used yet in this session pays a
 real cold-load cost, same as starting <code>orangu-server</code>
 fresh.</li>
+<li>A swap saves the outgoing model’s conversations to disk first, and
+the model’s next start loads them back, so a conversation picks up where
+it was instead of reading its whole history again. Saving a long
+conversation adds a few seconds to the swap away from it (a 4 800-token
+one on a 3B model is a 1.1 GB file).</li>
 <li>Once connected to a coordinator, orangu shows “Automatic” for the
 model everywhere in the UI (the header banner, the status line,
 <code>/review</code> and <code>/auto_review</code>) instead of a
@@ -515,6 +600,16 @@ automatically (polled every ~5 seconds) without needing a restart.</li>
 load (e.g. out of memory), the coordinator automatically falls back to
 starting the <code>all</code>-role profile rather than failing the
 request entirely.</li>
+<li><strong>Swap progress</strong>: a streamed request
+(<code>"stream": true</code>) that has to wait more than a second for a
+swap gets its response straight away, opening with a progress line every
+two seconds — SSE comment lines such as
+<code>: orangu-coordinator: making 'code' active: loading org/model (12s) — &lt;the server's last line of output&gt;</code>,
+which every OpenAI-compatible client ignores — and then the model’s
+answer. A swap that fails after that point arrives as an error event in
+the stream rather than a <code>502</code>. Any client can also read the
+same progress from <code>GET /v1/coordinator</code> under
+<code>activating</code>.</li>
 <li><strong>Crash recovery</strong>: a profile whose
 <code>orangu-server</code> has stopped — it lost its GPU device to a
 driver reset (see the Server chapter), was OOM-killed, or was killed by

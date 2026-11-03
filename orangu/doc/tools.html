@@ -63,6 +63,10 @@
         <li><a href="server.html">Inference Server</a></li>
         <li><a href="gguf.html">Building a Model</a></li>
         <li><a href="image.html">Image Generation</a></li>
+        <li><a href="video.html">Video Generation</a></li>
+        <li><a href="audio.html">Speech Generation</a></li>
+        <li><a href="workers.html">Workers</a></li>
+        <li><a href="container.html">Container Image</a></li>
         <li><a href="http.html">HTTP Endpoints</a></li>
         <li><a href="local-llm.html">Serving Models per Role</a></li>
         <li><a href="compression.html">Compression</a></li>
@@ -169,7 +173,8 @@ runtime.</p>
 <tbody>
 <tr>
 <td style="text-align: left;"><code>show_file</code></td>
-<td style="text-align: left;">Show a text file from the workspace</td>
+<td style="text-align: left;">Show a text file or extract PDF text from
+the workspace</td>
 <td style="text-align: left;"><code>path</code>, optional
 <code>start_line</code>, optional <code>end_line</code>, optional
 <code>mode</code></td>
@@ -224,9 +229,9 @@ optional <code>mode</code>, <code>parents</code></td>
 <tr>
 <td style="text-align: left;"><code>list_directory</code></td>
 <td style="text-align: left;">List files and directories below the
-workspace</td>
+workspace, or the files a glob matches</td>
 <td style="text-align: left;">optional <code>path</code>, optional
-<code>max_depth</code></td>
+<code>max_depth</code>, optional <code>pattern</code></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>fetch_url</code></td>
@@ -248,8 +253,108 @@ workspace</td>
 output using its hash ID</td>
 <td style="text-align: left;"><code>id</code></td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>semantic_search</code></td>
+<td style="text-align: left;">Search workspace code by meaning,
+refreshing the embedding index first</td>
+<td style="text-align: left;"><code>query</code></td>
+</tr>
 </tbody>
 </table>
+<p><code>semantic_search</code> uses the same implementation and
+embeddings server as <code>/search</code>. It reuses embeddings for
+unchanged files and refreshes changed or deleted files before returning
+up to ten results with source locations. If no embeddings-capable server
+is available, it reports that semantic search is unavailable.</p>
+<h3 id="pdf-documents">PDF documents</h3>
+<p><code>show_file</code> extracts text from PDF files, including
+<code>.PDF</code> paths, so the model can answer questions about their
+contents. Use <code>/show_file report.pdf</code> to load a document into
+the conversation, then ask a question. Line ranges in the model tool
+refer to extracted text lines, not PDF page numbers.
+<code>fetch_url</code> also extracts text from PDF responses, with its
+usual <code>max_chars</code> limit. Each page is labelled with its
+original number and extraction source. Scanned pages use local OCR when
+its models are installed. Pages with a small amount of embedded text and
+an image also try OCR, which handles scans with digitally added page
+numbers. Failed pages are marked unavailable while readable pages remain
+usable.</p>
+<p>Use page ranges or query keywords for larger documents:</p>
+<pre class="text"><code>/show_file --start-page 21 --end-page 30 report.pdf
+/show_file --query &quot;annual revenue&quot; report.pdf</code></pre>
+<p>The model tool and <code>/v1/show_file</code> accept
+<code>start_page</code>, <code>end_page</code> and <code>query</code>.
+Page numbers start at one and the range includes both endpoints.
+Ordinary reads inspect the first 20 pages. Queries inspect up to 200
+pages and select up to six pages by keyword overlap, keeping their
+original page numbers. This is keyword retrieval, not semantic search.
+Specify a starting page to search another part of a long document. Page
+selection applies to workspace files; PDF reads at a Git ref use the
+default range.</p>
+<p>The web console stores a bounded PDF page index alongside the
+attachment. Each follow-up question selects up to six stored pages
+again, without rerunning OCR. Older saved attachments continue to use
+their stored text. Uploads inspect up to 200 pages. At most 20 pages per
+extraction use OCR; use narrower page ranges in the file tools for
+additional scanned pages. Extraction retains up to 200,000 characters,
+with 30,000 per page, and each PDF context includes up to 60,000 text
+characters. Limits and omissions are reported in the context. PDF input
+is limited to 64 MiB, in addition to any upload-size limit configured by
+the web server.</p>
+<h4 id="local-ocr-setup">Local OCR setup</h4>
+<p>OCR uses the existing <code>ocrs</code> engine with
+<code>hayro</code> for PDF rendering. Both run locally in Rust. Install
+the official models once in <code>~/.orangu/ocr/</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ~/.orangu/ocr</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fL</span> https://ocrs-models.s3-accelerate.amazonaws.com/text-detection.onnx <span class="at">-o</span> ~/.orangu/ocr/text-detection.onnx</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fL</span> https://ocrs-models.s3-accelerate.amazonaws.com/text-recognition.onnx <span class="at">-o</span> ~/.orangu/ocr/text-recognition.onnx</span></code></pre></div>
+<p>On Windows, the default directory is
+<code>%USERPROFILE%\.orangu\ocr</code>. Set
+<code>ORANGU_OCR_MODEL_DIR</code> before launching the terminal or
+server to use another directory containing those two files. Reading a
+PDF never downloads models or sends its contents to a service. Missing
+or invalid models are reported on affected pages; embedded text
+extraction continues to work. Reattach a document after installing
+models if it was previously uploaded without them, so its stored page
+index includes the OCR results.</p>
+<p>The supplied OCR recognition model supports Latin script. OCR text is
+marked as potentially inaccurate; it has no fabricated numerical
+confidence score. Use a release build for OCR; the inference libraries
+are much slower without optimization. Page images render at a target 200
+DPI, bounded to 4096 pixels per edge and 12 million pixels per page. See
+the <a href="https://github.com/robertknight/ocrs">ocrs
+documentation</a> for model and language support.</p>
+<p><code>create_file</code> renders its <code>content</code> as a
+searchable PDF when the output path ends in <code>.pdf</code>, with an
+embedded font, line wrapping and multiple pages as needed. For example,
+ask the model to save its answer to <code>summary.pdf</code>. The same
+behavior is available through <code>/v1/create_file</code>. Existing
+documents are replaced when <code>overwrite</code> is true. This creates
+a plain text document; <code>/export</code> remains available for
+formatted session and review reports.</p>
+<h4 id="tables-in-query-context">Tables in query context</h4>
+<p>Table extraction uses <code>pdfni</code> with positioned native text
+or OCR characters. Bordered tables retain rows, columns, empty cells,
+and merged-cell spans. Scanned borders are detected with
+<code>imageproc</code>; table extraction needs no additional models.
+Native tables work without the OCR models installed. Query context
+includes complete HTML tables with row and column spans, and keeps
+narrative text outside the tables. The saved web attachment index
+retains this structure for follow-up questions.</p>
+<p>Borderless tables use text alignment and are explicitly marked as
+inferred. Their merged cells cannot be verified. Ambiguous layouts
+produce a warning; flattened text should not be used to guess cell
+associations. OCR can still misread characters and numbers. Rotated,
+skewed, broken-border, nested, and cross-page tables are not guaranteed.
+Context and storage limits omit entire tables rather than cutting cells
+in half, with an explicit omission notice. URL character limits and
+model-tool line ranges also omit tables that would be cut. Use PDF page
+ranges to retrieve a complete table.</p>
+<p>Damaged or password-protected documents may be unreadable. Extracted
+text does not preserve the original page layout. PDF line edits and text
+replacement are refused; save a new document with
+<code>create_file</code> instead. Saving does not preserve an existing
+PDF’s forms, annotations or layout.</p>
 <p>The eight file-lifecycle tools are the same operations
 <code>orangu-server</code> serves over HTTP as
 <code>/v1/create_file</code>, <code>/v1/modify_file</code> and so on —
@@ -335,13 +440,13 @@ current directory, unless <code>orangu</code> was started with
 workspace after normalization.</p>
 <h2 id="show_file"><code>show_file</code></h2>
 <p><code>show_file</code> returns text content with line numbers:</p>
-<div class="sourceCode" id="cb1"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src/main.rs&quot;</span><span class="fu">,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;start_line&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;end_line&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mode&quot;</span><span class="fu">:</span> <span class="st">&quot;full&quot;</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src/main.rs&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;start_line&quot;</span><span class="fu">:</span> <span class="dv">10</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;end_line&quot;</span><span class="fu">:</span> <span class="dv">20</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mode&quot;</span><span class="fu">:</span> <span class="st">&quot;full&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Behavior:</p>
 <ul>
 <li><code>path</code> is required</li>
@@ -353,6 +458,11 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="
 item declarations for an overview).</li>
 <li>Each returned line is prefixed as <code>N. text</code> (only applies
 to <code>full</code> mode)</li>
+<li>A picture (PNG, JPEG, GIF or WebP, known by its first bytes,
+whatever its name) is not shown as text: the tool says it is a picture,
+with its media type and size. A client that can hand a model the picture
+itself — the Managed Agents <code>read</code> tool on a model with a
+vision tower — reads its bytes instead</li>
 <li>Repeated unchanged whole-file reads in the same conversation may
 return a cache stub instead of resending the entire file</li>
 <li>The cache stub means the model should reuse the earlier full content
@@ -363,16 +473,16 @@ needed</li>
 <h2 id="modify_file"><code>modify_file</code></h2>
 <p><code>modify_file</code> performs a targeted replacement inside a
 workspace file:</p>
-<div class="sourceCode" id="cb2"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src/main.rs&quot;</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;old_text&quot;</span><span class="fu">:</span> <span class="st">&quot;fn old_name()&quot;</span><span class="fu">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;new_text&quot;</span><span class="fu">:</span> <span class="st">&quot;fn new_name()&quot;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src/main.rs&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;old_text&quot;</span><span class="fu">:</span> <span class="st">&quot;fn old_name()&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;new_text&quot;</span><span class="fu">:</span> <span class="st">&quot;fn new_name()&quot;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Optional flags:</p>
 <ul>
-<li><code>replace_all</code> replaces every match instead of only the
-first one</li>
+<li><code>replace_all</code> replaces every match; without it
+<code>old_text</code> must occur exactly once</li>
 </ul>
 <p>Important details:</p>
 <ul>
@@ -384,9 +494,15 @@ with <code>new_text</code> as its contents</li>
 <code>new_text</code></li>
 <li>If <code>old_text</code> is not found in an existing file, the tool
 returns an error</li>
+<li>If <code>old_text</code> occurs more than once and
+<code>replace_all</code> is not set, the tool returns an error saying
+how many times: the model includes more of the surrounding text, or sets
+<code>replace_all</code></li>
 <li>Successful edits return JSON with <code>path</code>,
-<code>created</code>, <code>updated</code>, <code>original_bytes</code>,
-<code>new_bytes</code>, <code>mode</code>, and <code>git</code></li>
+<code>created</code>, <code>updated</code>, <code>replacements</code>
+(how many matches were replaced; <code>0</code> for a created or wholly
+replaced file), <code>original_bytes</code>, <code>new_bytes</code>,
+<code>mode</code>, and <code>git</code></li>
 <li>Instead of <code>old_text</code>/<code>new_text</code>,
 <code>edits</code> may be given — an array of
 <code>{start_line, end_line, replacement}</code> line ranges, exactly as
@@ -398,11 +514,11 @@ pass <code>"git": false</code> to leave the index alone</li>
 <h2 id="list_directory"><code>list_directory</code></h2>
 <p><code>list_directory</code> is a workspace-scoped directory listing
 tool:</p>
-<div class="sourceCode" id="cb3"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src&quot;</span><span class="fu">,</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;max_depth&quot;</span><span class="fu">:</span> <span class="dv">3</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;max_depth&quot;</span><span class="fu">:</span> <span class="dv">3</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Behavior:</p>
 <ul>
 <li><code>path</code> defaults to <code>.</code></li>
@@ -413,14 +529,31 @@ class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="
 <code>file</code></li>
 <li>Paths are shown relative to the workspace when possible</li>
 </ul>
+<p>With <code>pattern</code>, a glob over the paths below
+<code>path</code>, it lists the matching files instead — one
+workspace-relative path per line, newest first:</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;path&quot;</span><span class="fu">:</span> <span class="st">&quot;src&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;pattern&quot;</span><span class="fu">:</span> <span class="st">&quot;**/*.rs&quot;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<ul>
+<li><code>*</code> and <code>?</code> stay within one directory;
+<code>**</code> crosses any number of them</li>
+<li><code>.git</code> is never entered, and directories are not
+listed</li>
+<li>At most 1000 paths, followed by a <code>(N more not shown)</code>
+line when there are more</li>
+<li><code>No files match.</code> when nothing does</li>
+</ul>
 <h2 id="fetch_url"><code>fetch_url</code></h2>
 <p><code>fetch_url</code> retrieves external documentation or reference
 material:</p>
-<div class="sourceCode" id="cb4"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://example.com/docs&quot;</span><span class="fu">,</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;max_chars&quot;</span><span class="fu">:</span> <span class="dv">12000</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://example.com/docs&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;max_chars&quot;</span><span class="fu">:</span> <span class="dv">12000</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Behavior:</p>
 <ul>
 <li><code>url</code> is required</li>
@@ -436,10 +569,10 @@ that <code>orangu</code> kept outside the prompt to save tokens. Most
 truncation markers point directly to the complete original blob; bounded
 workflows such as <code>/create_patch</code> may instead point to a
 small index whose entries can be expanded selectively.</p>
-<div class="sourceCode" id="cb5"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;abc1234567&quot;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;abc1234567&quot;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Behavior:</p>
 <ul>
 <li><code>id</code> is required and must be a 10-character cache
@@ -457,12 +590,12 @@ automatically deleted when the session ends.</li>
 <h2 id="run_shell_command"><code>run_shell_command</code></h2>
 <p><code>run_shell_command</code> executes a Bash command inside the
 workspace:</p>
-<div class="sourceCode" id="cb6"><pre
-class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;cargo test --quiet&quot;</span><span class="fu">,</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cwd&quot;</span><span class="fu">:</span> <span class="st">&quot;crates/core&quot;</span><span class="fu">,</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeout_seconds&quot;</span><span class="fu">:</span> <span class="dv">60</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;cargo test --quiet&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;cwd&quot;</span><span class="fu">:</span> <span class="st">&quot;crates/core&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;timeout_seconds&quot;</span><span class="fu">:</span> <span class="dv">60</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Behavior:</p>
 <ul>
 <li><code>command</code> is required</li>
